@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국어 게임 웹앱</title>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f4f7;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 40px;
+        }
+
+        .button-container {
+            display: grid;
+            gap: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .activity-button {
+            display: block;
+            padding: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, background-color 0.2s;
+            text-align: center;
+        }
+        
+        /* 어휘 버튼 스타일 */
+        .btn-vocabulary {
+            background-color: #007BFF;
+        }
+
+        .btn-vocabulary:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+        }
+
+        /* 문법 버튼 스타일 (각기 다른 조도) */
+        .btn-grammar-1 {
+            background-color: #28a745;
+        }
+
+        .btn-grammar-1:hover {
+            background-color: #1e7e34;
+            transform: translateY(-3px);
+        }
+
+        .btn-grammar-2 {
+            background-color: #20c997;
+        }
+
+        .btn-grammar-2:hover {
+            background-color: #199469;
+            transform: translateY(-3px);
+        }
+
+        .btn-grammar-3 {
+            background-color: #17a2b8;
+        }
+
+        .btn-grammar-3:hover {
+            background-color: #117a8b;
+            transform: translateY(-3px);
+        }
+
+        .btn-grammar-4 {
+            background-color: #4CAF50;
+        }
+
+        .btn-grammar-4:hover {
+            background-color: #45a049;
+            transform: translateY(-3px);
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+                margin-bottom: 20px;
+            }
+            .activity-button {
+                font-size: 1em;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>활동을 선택하세요</h1>
+    <div class="button-container">
+        <a href="vocabulary.html" class="activity-button btn-vocabulary">어휘</a>
+        <a href="grammar1.html" class="activity-button btn-grammar-1">문법 1</a>
+        <a href="grammar2.html" class="activity-button btn-grammar-2">문법 2</a>
+        <a href="grammar3.html" class="activity-button btn-grammar-3">문법 3</a>
+        <a href="grammar4.html" class="activity-button btn-grammar-4">문법 4</a>
+    </div>
+</body>
+</html>
