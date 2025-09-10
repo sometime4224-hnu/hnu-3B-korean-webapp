@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국어 3B 학습 활동</title>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f4f7;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 40px;
+        }
+
+        .button-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .activity-button {
+            display: block;
+            padding: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            background-color: #007BFF;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, background-color 0.2s;
+            text-align: center;
+        }
+        
+        .activity-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+        }
+
+        /* 비활성화된 버튼 스타일 */
+        .activity-button.disabled {
+            background-color: #a0a0a0;
+            cursor: not-allowed;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .activity-button.disabled:hover {
+            background-color: #a0a0a0;
+            transform: none;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+                margin-bottom: 20px;
+            }
+            .activity-button {
+                font-size: 1em;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>한국어 3B 학습 활동</h1>
+    <div class="button-container">
+        <a href="c10/index.html" class="activity-button">10과</a>
+        <a href="c11/index.html" class="activity-button">11과</a>
+        <a href="c12/index.html" class="activity-button">12과</a>
+        <a href="c13/index.html" class="activity-button">13과</a>
+        <a href="c14/index.html" class="activity-button">14과</a>
+        <a href="c15/index.html" class="activity-button">15과</a>
+        <a href="c16/index.html" class="activity-button">16과</a>
+        <a href="c17/index.html" class="activity-button">17과</a>
+        <a href="c18/index.html" class="activity-button">18과</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.activity-button');
+            
+            buttons.forEach(button => {
+                const fileUrl = button.getAttribute('href');
+                
+                // GitHub Pages는 CORS 정책으로 인해 로컬 파일 시스템의 유효성을 검사할 수 없으므로,
+                // GitHub Pages의 URL 구조를 기반으로 유효성을 확인해야 합니다.
+                // 여기서는 간단한 fetch 요청으로 파일 존재 여부를 확인합니다.
+                fetch(fileUrl, { method: 'HEAD' })
+                    .then(response => {
+                        if (!response.ok) {
+                            button.classList.add('disabled');
+                            button.setAttribute('title', '준비 중인 활동입니다.');
+                        }
+                    })
+                    .catch(error => {
+                        // 네트워크 오류 등으로 인해 파일을 확인할 수 없을 때
+                        button.classList.add('disabled');
+                        button.setAttribute('title', '오류가 발생했습니다.');
+                    });
+            });
+        });
+    </script>
+</body>
+</html>
