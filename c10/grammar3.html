@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나의 미래 설계 시뮬레이터</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .grammar-highlight {
+            color: #1d4ed8; /* Deeper blue color */
+            font-weight: 700;
+        }
+        .choice-button {
+            transition: all 0.2s ease-in-out;
+            border: 2px solid transparent;
+        }
+        .choice-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+            border-color: #38bdf8;
+        }
+        .progress-bar-fill {
+            transition: width 0.5s ease-in-out;
+        }
+        /* Modal styles */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+    </style>
+</head>
+<body class="bg-sky-100 flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 max-w-2xl w-full mx-auto">
+        
+        <h1 class="text-2xl md:text-3xl font-bold text-center text-slate-800 mb-2">나의 미래 설계 시뮬레이터 🚀</h1>
+        <p class="text-center text-slate-500 mb-6">당신의 선택이 미래를 만듭니다!</p>
+
+        <div id="stats-container" class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6 text-sm">
+            <!-- Stats will be dynamically inserted here -->
+        </div>
+
+        <div class="bg-slate-50 rounded-lg p-4 sm:p-6 mb-6 min-h-[150px] flex flex-col justify-center">
+            <div class="flex items-center gap-4">
+                <img id="avatar" src="https://placehold.co/80x80/a7f3d0/333333?text=😊" alt="Avatar" class="rounded-full w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
+                <div>
+                    <h2 id="story-title" class="font-bold text-lg text-slate-800 mb-1">사회초년생</h2>
+                    <p id="story-text" class="text-slate-600">게임이 곧 시작됩니다...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="choices-container" class="grid grid-cols-1 gap-4">
+            <!-- Choices will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <!-- Modal for Game Over and Endings -->
+    <div id="modal-container" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full mx-auto text-center">
+            <img id="modal-image" src="" class="w-24 h-24 mx-auto mb-4 rounded-full" alt="Result Image">
+            <h2 id="modal-title" class="text-2xl font-bold text-slate-800 mb-2"></h2>
+            <p id="modal-text" class="text-slate-600 mb-6"></p>
+            <div id="modal-stats-container" class="mb-6"></div>
+            <button id="restart-button" class="w-full bg-sky-500 text-white p-3 rounded-lg font-bold hover:bg-sky-600">새로운 인생 시작하기</button>
+        </div>
+    </div>
+
+<script>
+    const stats = {
+        happiness: { name: '😊 행복', value: 50, color: 'bg-yellow-400' },
+        health: { name: '❤️ 건강', value: 70, color: 'bg-red-500' },
+        money: { name: '💰 재산', value: 10, color: 'bg-green-500' },
+        career: { name: '👔 경력', value: 0, color: 'bg-blue-500' }
+    };
+
+    const events = {
+        start: {
+            title: "첫 회사, 첫 다짐",
+            story: "첫 회사에 들어왔어요. 어떻게 일하고 싶어요?",
+            avatar: "https://placehold.co/80x80/a7f3d0/333333?text=🤔",
+            choices: [
+                { text: "성공하고 싶어요. 야근도 열심히 <span class='grammar-highlight'>할 예정이에요</span>.", effect: { career: 15, money: 5, health: -15, happiness: -5 }, next: 'first_salary' },
+                { text: "쉬는 것도 중요해요. 일과 휴식의 균형을 <span class='grammar-highlight'>찾을 생각이에요</span>.", effect: { happiness: 10, health: 5, career: 5 }, next: 'first_salary' }
+            ]
+        },
+        first_salary: {
+            title: "첫 월급을 받았어요!",
+            story: "첫 월급으로 무엇을 하고 싶어요?",
+            avatar: "https://placehold.co/80x80/fef08a/333333?text=🎉",
+            choices: [
+                { text: "미래를 위해 돈을 <span class='grammar-highlight'>저축할 계획이에요</span>.", effect: { money: 15, happiness: 5 }, next: 'burnout' },
+                { text: "나를 위해 선물을 <span class='grammar-highlight'>살 생각이에요</span>.", effect: { happiness: 15, money: -5 }, next: 'burnout' }
+            ]
+        },
+        burnout: {
+            title: "너무 피곤해요",
+            story: "일이 너무 많아서 힘들어요. 어떻게 할까요?",
+            avatar: "https://placehold.co/80x80/e9d5ff/333333?text=😵",
+            choices: [
+                { text: "건강을 위해 운동을 <span class='grammar-highlight'>시작할 계획이에요</span>.", effect: { health: 20, money: -5, happiness: 5 }, next: 'opportunity' },
+                { text: "재미있는 취미를 <span class='grammar-highlight'>찾아볼 생각이에요</span>.", effect: { happiness: 20, health: 5, money: -5 }, next: 'opportunity' }
+            ]
+        },
+        opportunity: {
+            title: "더 좋은 회사",
+            story: "다른 회사에서 오라고 연락이 왔어요. 어떻게 할까요?",
+            avatar: "https://placehold.co/80x80/6ee7b7/333333?text=💼",
+            choices: [
+                { text: "새로운 곳에서 <span class='grammar-highlight'>도전할 생각이에요</span>.", effect: { career: 20, money: 10, happiness: -5 }, next: 'investment' },
+                { text: "지금 회사에서 계속 <span class='grammar-highlight'>일할 계획이에요</span>.", effect: { happiness: 10, career: 10 }, next: 'investment' }
+            ]
+        },
+        investment: {
+            title: "돈을 모았어요",
+            story: "조금 모은 돈이 있어요. 이 돈을 어떻게 할까요?",
+            avatar: "https://placehold.co/80x80/bae6fd/333333?text=📈",
+            choices: [
+                { text: "안전하게 은행에 <span class='grammar-highlight'>저축할 예정이에요</span>.", effect: { money: 20, happiness: 5 }, next: 'mid_life' },
+                { text: "친구와 가게를 <span class='grammar-highlight'>열 생각이에요</span>.", effect: { career: 25, happiness: 10, money: -15 }, next: 'mid_life' }
+            ]
+        },
+        mid_life: {
+            title: "10년 후",
+            story: "회사에서 일한 지 10년이 되었어요. 앞으로 무엇을 하고 싶어요?",
+            avatar: "https://placehold.co/80x80/f9a8d4/333333?text=✨",
+            choices: [
+                { text: "더 공부하기 위해 대학원에 <span class='grammar-highlight'>갈 예정이에요</span>.", effect: { career: 30, money: -20, health: -10 }, next: 'final_choice' },
+                { text: "열심히 일했어요. 1년 동안 <span class='grammar-highlight'>쉴 생각이에요</span>.", effect: { happiness: 30, health: 15, career: -10, money: -10 }, next: 'final_choice' }
+            ]
+        },
+        final_choice: {
+            title: "나의 꿈",
+            story: "이제 정말 중요한 시간이에요. 당신의 최종 목표는 무엇인가요?",
+            avatar: "https://placehold.co/80x80/fde047/333333?text=🏆",
+            choices: [
+                { text: "부자가 되는 삶을 <span class='grammar-highlight'>살 계획이에요</span>.", next: 'end', effect: { money: 30 } },
+                { text: "행복하게 사는 삶을 <span class='grammar-highlight'>만들 생각이에요</span>.", next: 'end', effect: { happiness: 30 } }
+            ]
+        },
+        gameOver_health: {
+            title: "GAME OVER",
+            story: "건강을 잃으면 모든 것을 잃어요. 다음엔 건강을 꼭 챙기세요!",
+            avatar: "https://placehold.co/80x80/fca5a5/333333?text=🤒",
+        },
+        gameOver_money: {
+            title: "GAME OVER",
+            story: "돈이 없으면 살기 힘들어요. 다음엔 계획적으로 돈을 쓰세요!",
+            avatar: "https://placehold.co/80x80/d1d5db/333333?text=💸",
+        },
+        gameOver_happiness: {
+            title: "GAME OVER",
+            story: "행복하지 않으면 의미가 없어요. 당신의 행복을 먼저 생각하세요!",
+            avatar: "https://placehold.co/80x80/a5f3fc/333333?text=😭",
+        },
+        gameOver_career: {
+            title: "GAME OVER",
+            story: "직업이 없으면 불안해요. 당신의 능력을 더 발전시켜 보세요!",
+            avatar: "https://placehold.co/80x80/facc15/333333?text=📉",
+        },
+        end: {} // This is a special trigger for the ending screen
+    };
+
+    const DOM = {
+        gameContainer: document.getElementById('game-container'),
+        statsContainer: document.getElementById('stats-container'),
+        storyTitle: document.getElementById('story-title'),
+        storyText: document.getElementById('story-text'),
+        choicesContainer: document.getElementById('choices-container'),
+        avatar: document.getElementById('avatar'),
+        modal: {
+            container: document.getElementById('modal-container'),
+            image: document.getElementById('modal-image'),
+            title: document.getElementById('modal-title'),
+            text: document.getElementById('modal-text'),
+            statsContainer: document.getElementById('modal-stats-container'),
+            restartButton: document.getElementById('restart-button')
+        }
+    };
+
+    function updateStatsUI() {
+        DOM.statsContainer.innerHTML = '';
+        for (const key in stats) {
+            const stat = stats[key];
+            const statElement = document.createElement('div');
+            statElement.className = "bg-slate-100 p-2 sm:p-3 rounded-lg";
+            statElement.innerHTML = `
+                <div class="flex justify-between mb-1 items-center">
+                    <span class="font-semibold text-slate-600 text-xs sm:text-sm">${stat.name}</span>
+                    <span class="font-bold text-slate-800">${stat.value}/100</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="h-2.5 rounded-full progress-bar-fill ${stat.color}" style="width: ${stat.value}%"></div>
+                </div>`;
+            DOM.statsContainer.appendChild(statElement);
+        }
+    }
+
+    function showEvent(eventId) {
+        if (eventId === 'end') {
+            showEndingScreen();
+            return;
+        }
+
+        const event = events[eventId];
+        DOM.storyTitle.textContent = event.title;
+        DOM.storyText.textContent = event.story;
+        DOM.avatar.src = event.avatar;
+        DOM.choicesContainer.innerHTML = '';
+
+        if (event.choices) {
+            event.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = "choice-button w-full bg-sky-500 text-white p-3 sm:p-4 rounded-lg font-bold hover:bg-sky-600 text-left";
+                button.innerHTML = choice.text;
+                button.onclick = () => selectChoice(choice);
+                DOM.choicesContainer.appendChild(button);
+            });
+        }
+        updateStatsUI();
+    }
+    
+    function checkGameOver() {
+        for (const key in stats) {
+            if (stats[key].value <= 0) {
+                const gameOverEvent = events[`gameOver_${key}`];
+                DOM.modal.image.src = gameOverEvent.avatar;
+                DOM.modal.title.textContent = gameOverEvent.title;
+                DOM.modal.text.textContent = gameOverEvent.story;
+                DOM.modal.statsContainer.innerHTML = ''; // No stats on game over
+                DOM.modal.container.classList.remove('hidden');
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function showEndingScreen() {
+        let highestStat = { key: 'happiness', value: -1 };
+        for (const key in stats) {
+            if (stats[key].value > highestStat.value) {
+                highestStat = { key, value: stats[key].value };
+            }
+        }
+
+        let endingMessage = "";
+        let endingAvatar = "";
+        switch(highestStat.key) {
+            case 'happiness':
+                endingMessage = "당신은 행복을 가장 중요하게 생각하는군요! 웃음이 가득한 멋진 인생이었어요.";
+                endingAvatar = "https://placehold.co/80x80/fde047/333333?text=😄";
+                break;
+            case 'health':
+                endingMessage = "건강이 최고죠! 당신은 튼튼하고 활기찬 인생을 살았어요.";
+                endingAvatar = "https://placehold.co/80x80/86efac/333333?text=💪";
+                break;
+            case 'money':
+                endingMessage = "당신은 부자가 되었어요! 경제적 자유를 얻었네요.";
+                endingAvatar = "https://placehold.co/80x80/22d3ee/333333?text=😎";
+                break;
+            case 'career':
+                 endingMessage = "당신은 자기 분야에서 최고가 되었어요! 모두가 당신을 존경해요.";
+                 endingAvatar = "https://placehold.co/80x80/c084fc/333333?text=👑";
+                 break;
+        }
+
+        DOM.modal.image.src = endingAvatar;
+        DOM.modal.title.textContent = "나의 인생 결과";
+        DOM.modal.text.textContent = endingMessage;
+        DOM.modal.statsContainer.innerHTML = DOM.statsContainer.innerHTML; // Show final stats
+        DOM.modal.container.classList.remove('hidden');
+    }
+
+    function selectChoice(choice) {
+        if (choice.effect) {
+            for (const key in choice.effect) {
+                stats[key].value += choice.effect[key];
+                if (stats[key].value > 100) stats[key].value = 100;
+                if (stats[key].value < 0) stats[key].value = 0;
+            }
+        }
+        
+        updateStatsUI();
+        if (!checkGameOver()) {
+            showEvent(choice.next);
+        }
+    }
+
+    function restartGame() {
+        stats.happiness.value = 50;
+        stats.health.value = 70;
+        stats.money.value = 10;
+        stats.career.value = 0;
+        DOM.modal.container.classList.add('hidden');
+        showEvent('start');
+    }
+    
+    DOM.modal.restartButton.onclick = restartGame;
+    
+    window.onload = () => {
+        showEvent('start');
+    };
+</script>
+
+</body>
+</html>
+
