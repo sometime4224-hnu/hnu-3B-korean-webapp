@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>두근두근 웨딩 플래너</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .grammar-highlight {
+            color: #000000; /* Black color */
+            font-weight: 700;
+        }
+        .choice-button {
+            transition: all 0.2s ease-in-out;
+            border: 2px solid transparent;
+        }
+        .choice-button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+            border-color: #f9a8d4; /* Pink border */
+        }
+        .progress-bar-fill {
+            transition: width 0.5s ease-in-out;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+        /* Stat change indicator animation */
+        .stat-indicator {
+            position: absolute;
+            right: 10px;
+            top: 5px;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: white;
+            animation: fade-up-out 1.5s ease-in-out forwards;
+        }
+        @keyframes fade-up-out {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-pink-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- View Switcher Buttons -->
+    <div class="fixed top-4 right-4 z-50 flex gap-2">
+        <button id="mobile-view-btn" class="bg-white/80 backdrop-blur-sm text-sm px-4 py-2 rounded-full shadow-md font-semibold text-slate-700 transition-colors">
+            📱 모바일 보기
+        </button>
+        <button id="wide-view-btn" class="bg-white/80 backdrop-blur-sm text-sm px-4 py-2 rounded-full shadow-md font-semibold text-slate-700 transition-colors">
+            🖥️ 와이드 보기
+        </button>
+    </div>
+
+    <!-- The main container now uses flexbox to manage the layout for different screen sizes -->
+    <div id="game-container" class="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 max-w-6xl w-full mx-auto flex flex-col lg:flex-row gap-8">
+        
+        <!-- STATS UI: On the left for large screens (lg), stacked vertically -->
+        <div id="stats-container" class="w-full lg:w-1/4 order-2 lg:order-1 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+            <!-- Stats will be dynamically inserted here -->
+        </div>
+
+        <!-- MAIN CONTENT: In the center/right -->
+        <div id="main-content" class="w-full lg:w-3/4 order-1 lg:order-2 flex flex-col items-center">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-center text-pink-500 mb-2">두근두근 웨딩 플래너 💍</h1>
+            <p class="text-center text-slate-600 mb-6 md:text-lg">당신의 선택으로 결혼 준비를 완성하세요!</p>
+
+            <div class="bg-slate-50 rounded-lg p-4 sm:p-6 mb-6 w-full max-w-3xl flex flex-col justify-center min-h-[200px]">
+                <div class="flex items-center gap-4">
+                    <img id="avatar" src="https://placehold.co/80x80/fbcfe8/333333?text=🤵" alt="Avatar" class="rounded-full w-20 h-20 md:w-24 md:h-24 flex-shrink-0">
+                    <div>
+                        <h2 id="story-title" class="font-bold text-xl md:text-2xl text-slate-800 mb-1">친구 아키라의 축하</h2>
+                        <p id="story-text" class="text-slate-700 text-lg md:text-xl">게임이 곧 시작됩니다...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="choices-container" class="grid grid-cols-1 gap-4 w-full max-w-3xl">
+                <!-- Choices will be dynamically inserted here with larger text -->
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal for Endings (layout unchanged) -->
+    <div id="modal-container" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full mx-auto text-center">
+            <img id="modal-image" src="" class="w-24 h-24 mx-auto mb-4 rounded-full" alt="Result Image">
+            <h2 id="modal-title" class="text-2xl font-bold text-slate-800 mb-2"></h2>
+            <p id="modal-text" class="text-slate-700 mb-6"></p>
+            <div id="modal-stats-container" class="mb-6"></div>
+            <button id="restart-button" class="w-full bg-pink-500 text-white p-3 rounded-lg font-bold hover:bg-pink-600">다시 계획하기</button>
+        </div>
+    </div>
+
+<script>
+    const initialStats = {
+        progress: { name: '💖 준비', value: 0, color: 'bg-pink-400' },
+        love: { name: '🥰 사랑', value: 80, color: 'bg-red-500' },
+        budget: { name: '💰 예산', value: 70, color: 'bg-green-500' },
+        stress: { name: '🤯 스트레스', value: 10, color: 'bg-yellow-500' }
+    };
+
+    let stats = JSON.parse(JSON.stringify(initialStats));
+
+    const events = {
+        start: {
+            title: "친구 아키라의 축하",
+            story: "오랫동안 연애하더니 드디어 결혼하네요. 준비는 다 됐어요?",
+            avatar: "https://placehold.co/80x80/fbcfe8/333333?text=🤵",
+            choices: [
+                { text: "결혼 준비 다 하려면 아직 멀었어요. 할 일이 많아요.", effect: { stress: 5, progress: 10 }, next: 'ask_house' },
+            ]
+        },
+        ask_house: {
+            title: "신혼집 결정하기",
+            story: "할 일이 많네요. 가장 중요한 신혼집은 어디로 정했어요?",
+            avatar: "https://placehold.co/80x80/fbcfe8/333333?text=🏠",
+            choices: [
+                { text: "지금 사는 오피스텔에서 신혼살림을 <span class='grammar-highlight'>시작할 생각이에요</span>.", effect: { progress: 20, budget: 10, love: -10, stress: 10 }, next: 'house_reaction_officetel' },
+                { text: "여자친구를 위해 더 넓은 집으로 <span class='grammar-highlight'>갈 생각이에요</span>.", effect: { progress: 20, budget: -30, love: 15 }, next: 'house_reaction_large' },
+                { text: "부모님 댁에 들어가서 <span class='grammar-highlight'>살 생각이에요</span>.", effect: { progress: 20, budget: 30, love: -5, stress: 5 }, next: 'house_reaction_parents' }
+            ]
+        },
+        house_reaction_officetel: {
+            title: "여자친구의 반응",
+            story: "아, 그럼 회사에서 가깝고 좋네요. 그런데 여자친구는 더 넓은 집에서 살고 싶대요. 서로 마음이 잘 맞는다고 생각했는데... 결혼 준비가 쉽지 않군요.",
+            avatar: "https://placehold.co/80x80/fbcfe8/333333?text=😥",
+            choices: [
+                { text: "네, 정말 생각보다 쉽지 않네요...", effect: { stress: 10 }, next: 'next_task' }
+            ]
+        },
+        house_reaction_large: {
+            title: "여자친구의 반응",
+            story: "와, 정말요? 여자친구가 정말 좋아하겠어요! 역시 천생연분이네요.",
+            avatar: "https://placehold.co/80x80/fbcfe8/333333?text=😍",
+            choices: [
+                { text: "하하, 그런가요? 기분이 좋네요.", effect: { love: 10, stress: -5 }, next: 'next_task' }
+            ]
+        },
+        house_reaction_parents: {
+            title: "여자친구의 반응",
+            story: "부모님과 함께 사는군요. 돈은 아낄 수 있겠지만, 여자친구는 조금 불편할 수도 있겠어요.",
+            avatar: "https://placehold.co/80x80/fbcfe8/333333?text=🤔",
+            choices: [
+                { text: "괜찮을 거예요. 잘 이야기해 볼게요.", effect: { stress: 5 }, next: 'next_task' }
+            ]
+        },
+        next_task: {
+            title: "다음 준비는?",
+            story: "신혼집도 정했으니, 이제 다른 준비를 해야죠! 다음은 무엇을 할 거예요?",
+            avatar: "https://placehold.co/80x80/fbcfe8/333333?text=📋",
+            choices: [
+                { text: "이제 <span class='grammar-highlight'>청첩장을 보낼 생각이에요</span>.", effect: { progress: 20, budget: -5, stress: 5 }, next: 'buy_furniture' },
+                { text: "미리 <span class='grammar-highlight'>신혼여행을 예약할 생각이에요</span>.", effect: { progress: 20, budget: -20, stress: -5 }, next: 'buy_furniture' }
+            ]
+        },
+        buy_furniture: {
+            title: "가구 사기",
+            story: "집에 필요한 가구도 사야지요. 어떤 가구를 살 거예요?",
+            avatar: "https://placehold.co/80x80/fbcfe8/333333?text=🛋️",
+            choices: [
+                { text: "꼭 필요한 것만 저렴하게 <span class='grammar-highlight'>살 생각이에요</span>.", effect: { progress: 20, budget: 10, stress: 5 }, next: 'final_feeling' },
+                { text: "예쁜 디자인 가구로 집을 꾸밀 <span class='grammar-highlight'>예정이에요</span>.", effect: { progress: 20, budget: -20, love: 10 }, next: 'final_feeling' }
+            ]
+        },
+        final_feeling: {
+            title: "결혼을 앞둔 마음",
+            story: "이제 정말 결혼이 얼마 안 남았네요. 준비는 힘들었지만, 그래도 사랑하는 사람과 함께 살 생각을 하면 가슴이 두근거려요.",
+            avatar: "https://placehold.co/80x80/fbcfe8/333333?text=🥰",
+            choices: [
+                { text: "네, 정말 천생연분인가 봐요. (결과 확인하기)", next: 'end', effect: { progress: 30, love: 10 } }
+            ]
+        },
+        end: {} // Trigger
+    };
+
+    const DOM = {
+        gameContainer: document.getElementById('game-container'),
+        statsContainer: document.getElementById('stats-container'),
+        mainContent: document.getElementById('main-content'),
+        storyTitle: document.getElementById('story-title'),
+        storyText: document.getElementById('story-text'),
+        choicesContainer: document.getElementById('choices-container'),
+        avatar: document.getElementById('avatar'),
+        modal: {
+            container: document.getElementById('modal-container'),
+            image: document.getElementById('modal-image'),
+            title: document.getElementById('modal-title'),
+            text: document.getElementById('modal-text'),
+            statsContainer: document.getElementById('modal-stats-container'),
+            restartButton: document.getElementById('restart-button')
+        },
+        viewSwitcher: {
+            mobileBtn: document.getElementById('mobile-view-btn'),
+            wideBtn: document.getElementById('wide-view-btn')
+        }
+    };
+
+    function updateStatsUI() {
+        DOM.statsContainer.innerHTML = '';
+        for (const key in stats) {
+            const stat = stats[key];
+            const statElement = document.createElement('div');
+            statElement.className = "bg-slate-100 p-3 rounded-lg relative";
+            statElement.id = `stat-box-${key}`;
+            statElement.innerHTML = `
+                <div class="flex justify-between mb-1 items-center">
+                    <span class="font-semibold text-slate-700 text-sm md:text-base">${stat.name}</span>
+                    <span class="font-bold text-slate-800 md:text-base">${(key === 'stress' ? '' : stat.value + '/100')}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="h-2.5 rounded-full progress-bar-fill ${stat.color}" style="width: ${Math.min(stat.value, 100)}%"></div>
+                </div>`;
+            DOM.statsContainer.appendChild(statElement);
+        }
+    }
+
+    function showStatChange(key, change) {
+        const statBox = document.getElementById(`stat-box-${key}`);
+        if (!statBox) return;
+
+        const indicator = document.createElement('div');
+        indicator.textContent = `${change > 0 ? '+' : ''}${change}`;
+        indicator.className = `stat-indicator ${change > 0 ? 'bg-green-500' : 'bg-red-500'}`;
+        
+        statBox.appendChild(indicator);
+
+        setTimeout(() => indicator.remove(), 1500);
+    }
+
+    function showEvent(eventId) {
+        if (eventId === 'end') {
+            showEndingScreen();
+            return;
+        }
+
+        const event = events[eventId];
+        DOM.storyTitle.textContent = event.title;
+        DOM.storyText.textContent = event.story;
+        DOM.avatar.src = event.avatar;
+        DOM.choicesContainer.innerHTML = '';
+
+        if (event.choices) {
+            event.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = "choice-button w-full bg-pink-500 text-white p-4 md:p-5 rounded-lg font-bold hover:bg-pink-600 text-left text-lg md:text-xl";
+                button.innerHTML = choice.text;
+                button.onclick = () => selectChoice(choice);
+                DOM.choicesContainer.appendChild(button);
+            });
+        }
+        updateStatsUI();
+    }
+    
+    function showEndingScreen() {
+        let endingTitle = "우리의 결혼 준비 결과는?";
+        let endingMessage = "";
+        let endingAvatar = "";
+
+        const { progress, love, budget, stress } = stats;
+
+        if (progress >= 100 && love >= 90 && budget >= 50 && stress < 50) {
+            endingMessage = "완벽해요! 모든 것을 순조롭게 준비했고, 두 사람의 사랑은 더욱 깊어졌어요. 모두가 부러워하는 꿈의 결혼식이 될 거예요!";
+            endingAvatar = "https://placehold.co/80x80/fde047/333333?text=💖";
+        } else if (budget >= 80 && stress < 60) {
+            endingMessage = "정말 알뜰하게 준비했네요! 아낀 예산으로 더 행복한 신혼 생활을 시작할 수 있겠어요. 당신은 최고의 웨딩 플래너!";
+            endingAvatar = "https://placehold.co/80x80/86efac/333333?text=💰";
+        } else if (love >= 100 && budget < 40) {
+            endingMessage = "사랑만 있다면 무엇도 두렵지 않죠! 예산은 부족했지만, 서로를 향한 사랑으로 모든 어려움을 이겨냈어요.";
+            endingAvatar = "https://placehold.co/80x80/f9a8d4/333333?text=😍";
+        } else if (stress >= 60) {
+            endingMessage = "결혼 준비가 너무 힘들었군요. 스트레스는 많았지만, 힘든 과정을 함께 이겨냈으니 앞으로 더 행복할 거예요. 조금만 힘내요!";
+            endingAvatar = "https://placehold.co/80x80/fca5a5/333333?text=🤯";
+        } else {
+            endingMessage = "조금은 서툴렀지만, 사랑하는 사람과 함께였기에 행복한 준비 기간이었어요. 두 사람의 결혼을 축하합니다!";
+            endingAvatar = "https://placehold.co/80x80/c4b5fd/333333?text=😊";
+        }
+
+        DOM.modal.image.src = endingAvatar;
+        DOM.modal.title.textContent = endingTitle;
+        DOM.modal.text.textContent = endingMessage;
+        DOM.modal.statsContainer.innerHTML = DOM.statsContainer.innerHTML;
+        DOM.modal.container.classList.remove('hidden');
+    }
+
+    function selectChoice(choice) {
+        const buttons = DOM.choicesContainer.getElementsByTagName('button');
+        for (const button of buttons) {
+            button.disabled = true;
+            button.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+
+        if (choice.effect) {
+            for (const key in choice.effect) {
+                const change = choice.effect[key];
+                stats[key].value += change;
+                if (stats[key].value < 0) stats[key].value = 0;
+                if (key === 'stress' && stats[key].value > 100) stats[key].value = 100;
+                showStatChange(key, change);
+            }
+        }
+        
+        setTimeout(() => {
+            updateStatsUI();
+            showEvent(choice.next);
+        }, 1200);
+    }
+
+    function restartGame() {
+        stats = JSON.parse(JSON.stringify(initialStats));
+        DOM.modal.container.classList.add('hidden');
+        showEvent('start');
+    }
+
+    // --- View Switcher Logic ---
+    function setViewMode(mode) {
+        const { gameContainer, statsContainer, mainContent, viewSwitcher } = DOM;
+        
+        // Reset all layout classes first
+        gameContainer.classList.remove('flex-col', 'lg:flex-row', 'flex-row');
+        statsContainer.classList.remove('w-full', 'order-2', 'lg:w-1/4', 'lg:order-1', 'grid-cols-1', 'lg:grid-cols-1', 'w-1/4', 'order-1');
+        mainContent.classList.remove('w-full', 'order-1', 'lg:w-3/4', 'lg:order-2', 'w-3/4', 'order-2');
+
+        if (mode === 'mobile') {
+            gameContainer.classList.add('flex-col');
+            statsContainer.classList.add('w-full', 'order-2', 'grid-cols-2', 'sm:grid-cols-2');
+            mainContent.classList.add('w-full', 'order-1');
+            
+            viewSwitcher.mobileBtn.classList.add('bg-pink-500', 'text-white');
+            viewSwitcher.mobileBtn.classList.remove('bg-white/80', 'text-slate-700');
+            viewSwitcher.wideBtn.classList.remove('bg-pink-500', 'text-white');
+            viewSwitcher.wideBtn.classList.add('bg-white/80', 'text-slate-700');
+        } else { // wide mode
+            gameContainer.classList.add('flex-row');
+            statsContainer.classList.add('w-1/4', 'order-1', 'grid-cols-1');
+            mainContent.classList.add('w-3/4', 'order-2');
+
+            viewSwitcher.wideBtn.classList.add('bg-pink-500', 'text-white');
+            viewSwitcher.wideBtn.classList.remove('bg-white/80', 'text-slate-700');
+            viewSwitcher.mobileBtn.classList.remove('bg-pink-500', 'text-white');
+            viewSwitcher.mobileBtn.classList.add('bg-white/80', 'text-slate-700');
+        }
+    }
+
+    DOM.viewSwitcher.mobileBtn.onclick = () => setViewMode('mobile');
+    DOM.viewSwitcher.wideBtn.onclick = () => setViewMode('wide');
+    DOM.modal.restartButton.onclick = restartGame;
+    
+    window.onload = () => {
+        showEvent('start');
+        // Set initial view based on screen size, but allow override
+        if (window.innerWidth < 1024) {
+            setViewMode('mobile');
+        } else {
+            setViewMode('wide');
+        }
+    };
+</script>
+
+</body>
+</html>
+
