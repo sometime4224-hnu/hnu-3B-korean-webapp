@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>두근두근 유학 플래너</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .grammar-highlight {
+            color: #000000; /* Black color */
+            font-weight: 700;
+        }
+        .choice-button {
+            transition: all 0.2s ease-in-out;
+            border: 2px solid transparent;
+        }
+        .choice-button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+            border-color: #38bdf8; /* Sky blue border */
+        }
+        .progress-bar-fill {
+            transition: width 0.5s ease-in-out;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+        /* Stat change indicator animation */
+        .stat-indicator {
+            position: absolute;
+            right: 10px;
+            top: 5px;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: white;
+            animation: fade-up-out 1.5s ease-in-out forwards;
+        }
+        @keyframes fade-up-out {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-sky-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- View Switcher Buttons -->
+    <div class="fixed top-4 right-4 z-50 flex gap-2">
+        <button id="mobile-view-btn" class="bg-white/80 backdrop-blur-sm text-sm px-4 py-2 rounded-full shadow-md font-semibold text-slate-700 transition-colors">
+            📱 모바일 보기
+        </button>
+        <button id="wide-view-btn" class="bg-white/80 backdrop-blur-sm text-sm px-4 py-2 rounded-full shadow-md font-semibold text-slate-700 transition-colors">
+            🖥️ 와이드 보기
+        </button>
+    </div>
+
+    <!-- The main container now uses flexbox to manage the layout for different screen sizes -->
+    <div id="game-container" class="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 max-w-6xl w-full mx-auto flex flex-col lg:flex-row gap-8">
+        
+        <!-- STATS UI: On the left for large screens (lg), stacked vertically -->
+        <div id="stats-container" class="w-full lg:w-1/4 order-2 lg:order-1 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+            <!-- Stats will be dynamically inserted here -->
+        </div>
+
+        <!-- MAIN CONTENT: In the center/right -->
+        <div id="main-content" class="w-full lg:w-3/4 order-1 lg:order-2 flex flex-col items-center">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-center text-sky-500 mb-2">두근두근 유학 플래너 ✈️</h1>
+            <p class="text-center text-slate-600 mb-6 md:text-lg">당신의 선택으로 유학 준비를 완성하세요!</p>
+
+            <div class="bg-slate-50 rounded-lg p-4 sm:p-6 mb-6 w-full max-w-3xl flex flex-col justify-center min-h-[200px]">
+                <div class="flex items-center gap-4">
+                    <img id="avatar" src="https://placehold.co/80x80/bae6fd/333333?text=🧑‍🎓" alt="Avatar" class="rounded-full w-20 h-20 md:w-24 md:h-24 flex-shrink-0">
+                    <div>
+                        <h2 id="story-title" class="font-bold text-xl md:text-2xl text-slate-800 mb-1">유학 결심</h2>
+                        <p id="story-text" class="text-slate-700 text-lg md:text-xl">게임이 곧 시작됩니다...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="choices-container" class="grid grid-cols-1 gap-4 w-full max-w-3xl">
+                <!-- Choices will be dynamically inserted here with larger text -->
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal for Endings -->
+    <div id="modal-container" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full mx-auto text-center">
+            <img id="modal-image" src="" class="w-24 h-24 mx-auto mb-4 rounded-full" alt="Result Image">
+            <h2 id="modal-title" class="text-2xl font-bold text-slate-800 mb-2"></h2>
+            <p id="modal-text" class="text-slate-700 mb-6"></p>
+            <div id="modal-stats-container" class="mb-6"></div>
+            <button id="restart-button" class="w-full bg-sky-500 text-white p-3 rounded-lg font-bold hover:bg-sky-600">다시 계획하기</button>
+        </div>
+    </div>
+
+<script>
+    const initialStats = {
+        progress: { name: '🎓 준비', value: 0, color: 'bg-sky-400' },
+        language: { name: '🗣️ 언어', value: 20, color: 'bg-violet-500' },
+        budget: { name: '💰 예산', value: 50, color: 'bg-green-500' },
+        stress: { name: '😥 스트레스', value: 10, color: 'bg-amber-500' }
+    };
+
+    let stats = JSON.parse(JSON.stringify(initialStats));
+
+    const events = {
+        start: {
+            title: "유학 결심",
+            story: "와, 유학을 가기로 결심했군요! 가장 먼저 무엇을 할 거예요?",
+            avatar: "https://placehold.co/80x80/bae6fd/333333?text=🧑‍🎓",
+            choices: [
+                { text: "가고 싶은 나라와 학교부터 <span class='grammar-highlight'>알아볼 생각이에요</span>.", effect: { stress: 5, progress: 10 }, next: 'choose_country' },
+                { text: "필요한 서류가 무엇인지 <span class='grammar-highlight'>확인할 계획이에요</span>.", effect: { stress: 10, progress: 10 }, next: 'choose_country' },
+            ]
+        },
+        choose_country: {
+            title: "나라와 학교 정하기",
+            story: "좋은 생각이네요. 어느 나라, 어느 학교로 갈지 정했어요?",
+            avatar: "https://placehold.co/80x80/bae6fd/333333?text=🗺️",
+            choices: [
+                { text: "미국에 있는 명문 대학교에 <span class='grammar-highlight'>갈 생각이에요</span>.", effect: { progress: 15, budget: -20, language: 10, stress: 10 }, next: 'prepare_language' },
+                { text: "학비가 저렴한 유럽으로 <span class='grammar-highlight'>갈 예정이에요</span>.", effect: { progress: 15, budget: 10, stress: 5 }, next: 'prepare_language' },
+            ]
+        },
+        prepare_language: {
+            title: "언어 준비",
+            story: "유학 가려면 언어 점수가 필요하죠. 어떻게 준비할 거예요?",
+            avatar: "https://placehold.co/80x80/bae6fd/333333?text=📚",
+            choices: [
+                { text: "매일 도서관에서 혼자 <span class='grammar-highlight'>공부할 계획이에요</span>.", effect: { budget: 5, stress: 10, language: 20 }, next: 'prepare_budget' },
+                { text: "비싸지만, 학원에 다니면서 <span class='grammar-highlight'>준비할 생각이에요</span>.", effect: { budget: -15, stress: -5, language: 30 }, next: 'prepare_budget' }
+            ]
+        },
+        prepare_budget: {
+            title: "유학 비용 마련하기",
+            story: "유학 비용이 만만치 않은데, 돈은 어떻게 마련할 거예요?",
+            avatar: "https://placehold.co/80x80/bae6fd/333333?text=🏦",
+            choices: [
+                { text: "부모님께 도움을 <span class='grammar-highlight'>부탁드릴 예정이에요</span>.", effect: { budget: 30, stress: -10 }, next: 'prepare_housing' },
+                { text: "열심히 아르바이트를 해서 <span class='grammar-highlight'>모을 생각이에요</span>.", effect: { budget: 15, stress: 15, language: -5 }, next: 'prepare_housing' }
+            ]
+        },
+        prepare_housing: {
+            title: "살 곳 정하기",
+            story: "이제 외국에서 살 집을 구해야겠네요. 어디서 살 거예요?",
+            avatar: "https://placehold.co/80x80/bae6fd/333333?text=🏡",
+            choices: [
+                { text: "안전한 학교 기숙사에서 <span class='grammar-highlight'>살 계획이에요</span>.", effect: { progress: 20, budget: -15, stress: -10 }, next: 'final_step' },
+                { text: "현지 친구들과 집을 빌려서 <span class='grammar-highlight'>살 생각이에요</span>.", effect: { progress: 20, budget: 5, stress: 10, language: 10 }, next: 'final_step' }
+            ]
+        },
+        final_step: {
+            title: "마지막 준비",
+            story: "거의 다 준비됐네요! 떠나기 전에 마지막으로 무엇을 하고 싶어요?",
+            avatar: "https://placehold.co/80x80/bae6fd/333333?text=짐",
+            choices: [
+                { text: "가족, 친구들과 시간을 <span class='grammar-highlight'>보낼 예정이에요</span>.", effect: { stress: -15, progress: 10 }, next: 'end' },
+                { text: "한국 음식을 마음껏 <span class='grammar-highlight'>먹어 둘 생각이에요</span>.", effect: { stress: -10, progress: 10 }, next: 'end' }
+            ]
+        },
+        end: {} // Trigger
+    };
+
+    const DOM = {
+        gameContainer: document.getElementById('game-container'),
+        statsContainer: document.getElementById('stats-container'),
+        mainContent: document.getElementById('main-content'),
+        storyTitle: document.getElementById('story-title'),
+        storyText: document.getElementById('story-text'),
+        choicesContainer: document.getElementById('choices-container'),
+        avatar: document.getElementById('avatar'),
+        modal: {
+            container: document.getElementById('modal-container'),
+            image: document.getElementById('modal-image'),
+            title: document.getElementById('modal-title'),
+            text: document.getElementById('modal-text'),
+            statsContainer: document.getElementById('modal-stats-container'),
+            restartButton: document.getElementById('restart-button')
+        },
+        viewSwitcher: {
+            mobileBtn: document.getElementById('mobile-view-btn'),
+            wideBtn: document.getElementById('wide-view-btn')
+        }
+    };
+
+    function updateStatsUI() {
+        DOM.statsContainer.innerHTML = '';
+        for (const key in stats) {
+            const stat = stats[key];
+            const statElement = document.createElement('div');
+            statElement.className = "bg-slate-100 p-3 rounded-lg relative";
+            statElement.id = `stat-box-${key}`;
+            statElement.innerHTML = `
+                <div class="flex justify-between mb-1 items-center">
+                    <span class="font-semibold text-slate-700 text-sm md:text-base">${stat.name}</span>
+                    <span class="font-bold text-slate-800 md:text-base">${stat.value}/100</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="h-2.5 rounded-full progress-bar-fill ${stat.color}" style="width: ${Math.min(stat.value, 100)}%"></div>
+                </div>`;
+            DOM.statsContainer.appendChild(statElement);
+        }
+    }
+
+    function showStatChange(key, change) {
+        const statBox = document.getElementById(`stat-box-${key}`);
+        if (!statBox) return;
+
+        const indicator = document.createElement('div');
+        indicator.textContent = `${change > 0 ? '+' : ''}${change}`;
+        indicator.className = `stat-indicator ${change > 0 ? 'bg-green-500' : 'bg-red-500'}`;
+        
+        statBox.appendChild(indicator);
+
+        setTimeout(() => indicator.remove(), 1500);
+    }
+
+    function showEvent(eventId) {
+        if (eventId === 'end') {
+            showEndingScreen();
+            return;
+        }
+
+        const event = events[eventId];
+        DOM.storyTitle.textContent = event.title;
+        DOM.storyText.textContent = event.story;
+        DOM.avatar.src = event.avatar;
+        DOM.choicesContainer.innerHTML = '';
+
+        if (event.choices) {
+            event.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = "choice-button w-full bg-sky-500 text-white p-4 md:p-5 rounded-lg font-bold hover:bg-sky-600 text-left text-lg md:text-xl";
+                button.innerHTML = choice.text;
+                button.onclick = () => selectChoice(choice);
+                DOM.choicesContainer.appendChild(button);
+            });
+        }
+        updateStatsUI();
+    }
+    
+    function showEndingScreen() {
+        let endingTitle = "나의 유학 준비 결과는?";
+        let endingMessage = "";
+        let endingAvatar = "";
+
+        const { progress, language, budget, stress } = stats;
+
+        if (progress >= 80 && language >= 80 && budget >= 50 && stress < 50) {
+            endingMessage = "완벽해요! 모든 것을 순조롭게 준비했어요. 당신의 유학 생활은 성공적일 거예요. 자신감을 갖고 떠나세요!";
+            endingAvatar = "https://placehold.co/80x80/fde047/333333?text=👍";
+        } else if (budget >= 80 && stress < 60) {
+            endingMessage = "알뜰살뜰 준비 완료! 아낀 돈으로 더 많은 것을 경험할 수 있겠어요. 현명한 유학생이네요!";
+            endingAvatar = "https://placehold.co/80x80/86efac/333333?text=💰";
+        } else if (language >= 90) {
+            endingMessage = "언어는 완벽 마스터! 현지인들과 자유롭게 소통하며 깊이 있는 유학 생활을 즐기세요!";
+            endingAvatar = "https://placehold.co/80x80/c084fc/333333?text=💯";
+        } else if (stress >= 60) {
+            endingMessage = "준비 과정이 조금 힘들었지만, 당신은 해냈어요! 힘든 만큼 더 많이 배우고 성장할 거예요.";
+            endingAvatar = "https://placehold.co/80x80/fca5a5/333333?text=😥";
+        } else {
+            endingMessage = "이제 떠날 시간이에요! 부족한 부분은 현지에서 부딪히며 배우면 돼요. 용감한 도전을 응원합니다!";
+            endingAvatar = "https://placehold.co/80x80/67e8f9/333333?text=😊";
+        }
+
+        DOM.modal.image.src = endingAvatar;
+        DOM.modal.title.textContent = endingTitle;
+        DOM.modal.text.textContent = endingMessage;
+        DOM.modal.statsContainer.innerHTML = DOM.statsContainer.innerHTML;
+        DOM.modal.container.classList.remove('hidden');
+    }
+
+    function selectChoice(choice) {
+        const buttons = DOM.choicesContainer.getElementsByTagName('button');
+        for (const button of buttons) {
+            button.disabled = true;
+            button.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+
+        if (choice.effect) {
+            for (const key in choice.effect) {
+                const change = choice.effect[key];
+                stats[key].value += change;
+                if (stats[key].value < 0) stats[key].value = 0;
+                if (stats[key].value > 100) stats[key].value = 100;
+                showStatChange(key, change);
+            }
+        }
+        
+        setTimeout(() => {
+            updateStatsUI();
+            showEvent(choice.next);
+        }, 1200);
+    }
+
+    function restartGame() {
+        stats = JSON.parse(JSON.stringify(initialStats));
+        DOM.modal.container.classList.add('hidden');
+        showEvent('start');
+    }
+
+    // --- View Switcher Logic ---
+    function setViewMode(mode) {
+        const { gameContainer, statsContainer, mainContent, viewSwitcher } = DOM;
+        
+        // Reset all layout classes first
+        gameContainer.classList.remove('flex-col', 'lg:flex-row', 'flex-row');
+        statsContainer.classList.remove('w-full', 'order-2', 'lg:w-1/4', 'lg:order-1', 'grid-cols-1', 'lg:grid-cols-1', 'w-1/4', 'order-1');
+        mainContent.classList.remove('w-full', 'order-1', 'lg:w-3/4', 'lg:order-2', 'w-3/4', 'order-2');
+
+        if (mode === 'mobile') {
+            gameContainer.classList.add('flex-col');
+            statsContainer.classList.add('w-full', 'order-2', 'grid-cols-2', 'sm:grid-cols-2');
+            mainContent.classList.add('w-full', 'order-1');
+            
+            viewSwitcher.mobileBtn.classList.add('bg-sky-500', 'text-white');
+            viewSwitcher.mobileBtn.classList.remove('bg-white/80', 'text-slate-700');
+            viewSwitcher.wideBtn.classList.remove('bg-sky-500', 'text-white');
+            viewSwitcher.wideBtn.classList.add('bg-white/80', 'text-slate-700');
+        } else { // wide mode
+            gameContainer.classList.add('flex-row');
+            statsContainer.classList.add('w-1/4', 'order-1', 'grid-cols-1');
+            mainContent.classList.add('w-3/4', 'order-2');
+
+            viewSwitcher.wideBtn.classList.add('bg-sky-500', 'text-white');
+            viewSwitcher.wideBtn.classList.remove('bg-white/80', 'text-slate-700');
+            viewSwitcher.mobileBtn.classList.remove('bg-sky-500', 'text-white');
+            viewSwitcher.mobileBtn.classList.add('bg-white/80', 'text-slate-700');
+        }
+    }
+
+    DOM.viewSwitcher.mobileBtn.onclick = () => setViewMode('mobile');
+    DOM.viewSwitcher.wideBtn.onclick = () => setViewMode('wide');
+    DOM.modal.restartButton.onclick = restartGame;
+    
+    window.onload = () => {
+        showEvent('start');
+        // Set initial view based on screen size, but allow override
+        if (window.innerWidth < 1024) {
+            setViewMode('mobile');
+        } else {
+            setViewMode('wide');
+        }
+    };
+</script>
+
+</body>
+</html>
