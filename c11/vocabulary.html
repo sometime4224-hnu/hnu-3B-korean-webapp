@@ -68,6 +68,19 @@
         .wrong-answer {
             background-color: #fee2e2; /* red-100 */
         }
+        .answer-feedback {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 1rem;
+            height: 30px;
+        }
+        .correct {
+            color: #15803d; /* green-700 */
+        }
+        .wrong {
+            color: #b91c1c; /* red-700 */
+        }
     </style>
 </head>
 <body class="bg-indigo-50 min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-500">
@@ -105,6 +118,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <h3 id="quiz-question" class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6"></h3>
             </div>
             <div id="quiz-options" class="w-full grid gap-4"></div>
+            <div id="quiz-feedback" class="answer-feedback"></div>
+            <div id="quiz-combo" class="mt-4 text-gray-500 text-lg font-semibold"></div>
         </div>
     </div>
 
@@ -119,6 +134,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <th class="p-3 border-b-2">문제</th>
                         <th class="p-3 border-b-2">정답</th>
                         <th class="p-3 border-b-2">결과</th>
+                        <th class="p-3 border-b-2 text-right">점수</th>
                     </tr>
                 </thead>
                 <tbody id="result-table-body">
@@ -274,6 +290,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             const quizQuestionEl = document.getElementById('quiz-question');
             const quizQuestionNumberEl = document.getElementById('quiz-question-number');
             const quizOptionsEl = document.getElementById('quiz-options');
+            const quizFeedbackEl = document.getElementById('quiz-feedback');
+            const quizComboEl = document.getElementById('quiz-combo');
             const resultTitleEl = document.getElementById('result-title');
             const resultScoreEl = document.getElementById('result-score');
             const resultTableBodyEl = document.getElementById('result-table-body');
@@ -282,7 +300,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             let currentLang = 'korean';
             let currentQuizData = [];
             let currentQuestionIndex = 0;
-            let score = 0;
+            let totalScore = 0;
+            let combo = 0;
             let quizResults = [];
 
             const colorMap = {
@@ -304,8 +323,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             function saveQuizResult() {
                 try {
                     const resultData = {
-                        score: score,
-                        total: allVocabulary[currentLang].data.length,
+                        score: totalScore,
+                        totalQuestions: allVocabulary[currentLang].data.length,
                         date: new Date().toLocaleDateString('ko-KR')
                     };
                     localStorage.setItem(`quizResult_${currentLang}`, JSON.stringify(resultData));
@@ -321,7 +340,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     const savedData = localStorage.getItem(`quizResult_${currentLang}`);
                     if (savedData) {
                         const result = JSON.parse(savedData);
-                        lastScoreDisplayEl.textContent = `최근 점수: ${result.score} / ${result.total}`;
+                        lastScoreDisplayEl.textContent = `최근 점수: ${result.score}점 (총 ${result.totalQuestions}문제)`;
                         lastScoreDisplayEl.classList.remove('hidden');
                     } else {
                         lastScoreDisplayEl.classList.add('hidden');
@@ -406,59 +425,71 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 quizQuestionNumberEl.textContent = `${currentQuestionIndex + 1} / ${totalQuestions}`;
                 quizQuestionEl.textContent = currentItem.korean;
                 quizOptionsEl.innerHTML = '';
+                quizFeedbackEl.textContent = ''; // Clear feedback
+                quizComboEl.textContent = (combo > 0) ? `✨ ${combo} 콤보! ✨` : '';
 
                 options.forEach(option => {
                     const optionBtn = document.createElement('button');
                     optionBtn.className = `w-full px-4 py-4 text-lg font-semibold rounded-lg shadow-md transition-all duration-300 text-gray-800 bg-gray-100 hover:bg-gray-200`;
                     optionBtn.textContent = option;
-                    optionBtn.addEventListener('click', () => handleAnswer(option, currentItem.foreign));
+                    optionBtn.addEventListener('click', () => handleAnswer(option, currentItem.foreign, optionBtn));
                     quizOptionsEl.appendChild(optionBtn);
                 });
             }
 
             // Handles user's answer
-            function handleAnswer(selectedAnswer, correctAnswer) {
+            function handleAnswer(selectedAnswer, correctAnswer, selectedBtn) {
                 const isCorrect = selectedAnswer === correctAnswer;
                 const colors = colorMap[allVocabulary[currentLang].themeColor];
-                let userChoiceBtn = null;
                 
-                // Find the selected button and highlight
-                Array.from(quizOptionsEl.children).forEach(btn => {
-                    if (btn.textContent === selectedAnswer) {
-                        userChoiceBtn = btn;
-                        if (isCorrect) {
-                            btn.classList.add('bg-green-300', 'hover:bg-green-300', 'text-white');
-                        } else {
-                            btn.classList.add('bg-red-300', 'hover:bg-red-300', 'text-white');
+                // Disable all buttons after selection
+                Array.from(quizOptionsEl.children).forEach(btn => btn.disabled = true);
+
+                let pointsGained = 0;
+                if (isCorrect) {
+                    combo++;
+                    pointsGained = 10 + combo; // Basic point + combo bonus
+                    totalScore += pointsGained;
+                    selectedBtn.classList.add('bg-green-300', 'text-white');
+                    quizFeedbackEl.textContent = '정답입니다! 🎉';
+                    quizFeedbackEl.classList.add('correct');
+                } else {
+                    combo = 0;
+                    pointsGained = 0;
+                    selectedBtn.classList.add('bg-red-300', 'text-white');
+                    quizFeedbackEl.textContent = `아쉽네요. 정답은 '${correctAnswer}' 입니다.`;
+                    quizFeedbackEl.classList.add('wrong');
+                    
+                    // Highlight the correct answer
+                    Array.from(quizOptionsEl.children).forEach(btn => {
+                        if (btn.textContent === correctAnswer) {
+                            btn.classList.add('bg-green-300', 'text-white');
                         }
-                    }
-                    // Disable all buttons after selection
-                    btn.disabled = true;
-                });
+                    });
+                }
                 
                 // Track result
                 quizResults.push({
                     question: currentQuizData[currentQuestionIndex].korean,
                     userAnswer: selectedAnswer,
                     correctAnswer: correctAnswer,
-                    isCorrect: isCorrect
+                    isCorrect: isCorrect,
+                    points: pointsGained
                 });
-                if (isCorrect) {
-                    score++;
-                }
                 
                 // Move to the next question after a short delay
                 setTimeout(() => {
                     currentQuestionIndex++;
+                    quizFeedbackEl.classList.remove('correct', 'wrong');
                     showQuizQuestion();
-                }, 1000);
+                }, 1500);
             }
 
             // Shows the quiz results page
             function showQuizResult() {
                 showView('result-view');
                 resultTitleEl.textContent = `퀴즈 완료!`;
-                resultScoreEl.textContent = `${allVocabulary[currentLang].data.length}문제 중 ${score}개를 맞혔어요!`;
+                resultScoreEl.textContent = `총 점수: ${totalScore}점`;
                 resultTableBodyEl.innerHTML = '';
                 
                 quizResults.forEach(result => {
@@ -470,6 +501,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <td class="p-3 border-b-2 font-medium">${result.question}</td>
                         <td class="p-3 border-b-2 text-gray-700">${result.correctAnswer}</td>
                         <td class="p-3 border-b-2 font-bold">${result.isCorrect ? 'O' : 'X'}</td>
+                        <td class="p-3 border-b-2 text-right">${result.points}점</td>
                     `;
                     resultTableBodyEl.appendChild(row);
                 });
@@ -493,7 +525,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 currentQuizData = [...allVocabulary[currentLang].data];
                 shuffleArray(currentQuizData);
                 currentQuestionIndex = 0;
-                score = 0;
+                totalScore = 0;
+                combo = 0;
                 quizResults = [];
                 showView('quiz-view');
                 showQuizQuestion();
