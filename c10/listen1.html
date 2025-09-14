@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>듣기 평가 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e0f2fe;
+        }
+        .correct-bg {
+            background-color: #d1fae5; /* Tailwind's green-100 */
+        }
+        .correct-border {
+            border-color: #34d399; /* Tailwind's green-500 */
+        }
+        .incorrect-bg {
+            background-color: #fee2e2; /* Tailwind's red-100 */
+        }
+        .incorrect-border {
+            border-color: #ef4444; /* Tailwind's red-500 */
+        }
+    </style>
+</head>
+<body class="bg-blue-50 min-h-screen flex items-center justify-center p-4">
+    <div id="quiz-container" class="w-full max-w-md bg-white rounded-xl shadow-2xl p-6 space-y-6">
+        <h1 class="text-3xl font-bold text-center text-blue-800 mb-6">듣기 평가 퀴즈</h1>
+
+        <div id="quiz-questions" class="space-y-6"></div>
+
+        <button id="submit-btn" class="w-full py-3 px-6 rounded-full text-white font-bold text-xl bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg mt-8 hidden" disabled>
+            제출하기
+        </button>
+
+        <div id="results-container" class="mt-8 text-center hidden">
+            <h2 class="text-2xl font-bold text-gray-800">결과</h2>
+            <div id="score" class="text-3xl font-extrabold mt-2 text-blue-600"></div>
+            <p id="total-questions" class="text-gray-600 mt-1"></p>
+            <button id="retry-btn" class="mt-6 w-full py-3 px-6 rounded-full text-white font-bold text-xl bg-gray-500 hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 shadow-md">
+                다시 풀기
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = {
+            "questions": [
+                {
+                    "questionNumber": 1,
+                    "question": "박민호 씨는 올해의 선수상을 받았습니다.",
+                    "answerOptions": [
+                        {"text": "O", "isCorrect": true, "rationale": "인터뷰 시작 부분에 기자가 박민호 씨에게 '올해의 선수상'을 받은 것을 축하하는 내용이 나옵니다."},
+                        {"text": "X", "isCorrect": false, "rationale": "박민호 씨는 '올해의 선수상'을 받았습니다."}
+                    ]
+                },
+                {
+                    "questionNumber": 2,
+                    "question": "박민호 씨는 내년 1월에 결혼할 예정입니다.",
+                    "answerOptions": [
+                        {"text": "O", "isCorrect": true, "rationale": "박민호 씨가 '네, 내년 1월에 결혼식을 할 예정입니다'라고 말했습니다."},
+                        {"text": "X", "isCorrect": false, "rationale": "박민호 씨는 내년 1월에 결혼할 예정입니다."}
+                    ]
+                },
+                {
+                    "questionNumber": 3,
+                    "question": "박민호 씨의 예비 신부는 연예인입니다.",
+                    "answerOptions": [
+                        {"text": "O", "isCorrect": false, "rationale": "박민호 씨의 예비 신부는 연예인이 아니라 그냥 보통 여자입니다."},
+                        {"text": "X", "isCorrect": true, "rationale": "박민호 씨는 '저와 결혼할 사람은 그냥 보통 여자예요'라고 말했습니다."}
+                    ]
+                },
+                {
+                    "questionNumber": 4,
+                    "question": "박민호 씨는 예비 신부와 비밀 연애를 오랫동안 했습니다.",
+                    "answerOptions": [
+                        {"text": "O", "isCorrect": false, "rationale": "박민호 씨는 운동 때문에 바빠서 연애를 못했고, 소개팅을 통해 만났다고 말했습니다."},
+                        {"text": "X", "isCorrect": true, "rationale": "박민호 씨는 '운동하느라 바빠서 연애는 못했고요. 저희는 선 봐서 만났어요'라고 말했습니다."}
+                    ]
+                },
+                {
+                    "questionNumber": 5,
+                    "question": "박민호 씨의 예비 신부는 박민호 씨가 허리를 다쳤을 때 치료해준 의사 선생님의 조카입니다.",
+                    "answerOptions": [
+                        {"text": "O", "isCorrect": true, "rationale": "인터뷰어는 '제가 허리를 다쳤을 때 치료를 해 주시던 의사 선생님의 조카입니다'라고 말했습니다."},
+                        {"text": "X", "isCorrect": false, "rationale": "예비 신부는 박민호 씨의 허리 치료를 해 주던 의사 선생님의 조카입니다."}
+                    ]
+                },
+                {
+                    "questionNumber": 6,
+                    "question": "박민호 씨의 예비 신부의 오빠는 운동선수입니다.",
+                    "answerOptions": [
+                        {"text": "O", "isCorrect": true, "rationale": "박민호 씨는 '그 사람의 오빠도 운동선수라서'라고 말하는 부분이 있습니다."},
+                        {"text": "X", "isCorrect": false, "rationale": "박민호 씨의 예비 신부의 오빠는 운동선수입니다."}
+                    ]
+                },
+                {
+                    "questionNumber": 7,
+                    "question": "박민호 씨는 예비 신부의 마음씨가 가장 마음에 들었습니다.",
+                    "answerOptions": [
+                        {"text": "O", "isCorrect": true, "rationale": "박민호 씨는 외모나 조건보다 성격이 더 중요하다고 말하며, 예비 신부가 조용하고 마음씨가 착한 사람이라고 언급했습니다."},
+                        {"text": "X", "isCorrect": false, "rationale": "박민호 씨는 예비 신부의 마음씨가 좋아서 결혼을 결심했다고 말했습니다."}
+                    ]
+                },
+                {
+                    "questionNumber": 8,
+                    "question": "박민호 씨의 예비 신부는 초등학교 후배입니다.",
+                    "answerOptions": [
+                        {"text": "O", "isCorrect": true, "rationale": "인터뷰어가 '알고 보니 초등학교 후배여서'라고 말했습니다."},
+                        {"text": "X", "isCorrect": false, "rationale": "예비 신부는 박민호 씨의 초등학교 후배입니다."}
+                    ]
+                }
+            ]
+        };
+
+        const quizQuestionsContainer = document.getElementById('quiz-questions');
+        const submitBtn = document.getElementById('submit-btn');
+        const resultsContainer = document.getElementById('results-container');
+        const retryBtn = document.getElementById('retry-btn');
+        
+        let userAnswers = {}; // 사용자의 답변을 저장하는 객체
+        const questionsToDisplay = quizData.questions;
+
+        function createQuiz() {
+            quizQuestionsContainer.innerHTML = '';
+            userAnswers = {};
+            questionsToDisplay.forEach((q, index) => {
+                const questionCard = document.createElement('div');
+                questionCard.className = 'bg-white p-4 rounded-xl shadow-lg border-2 border-transparent transition-colors duration-300';
+                questionCard.innerHTML = `
+                    <p class="text-lg font-semibold text-gray-700 mb-4">
+                        <span class="question-number">${index + 1}.</span> ${q.question}
+                    </p>
+                    <div class="flex space-x-4 justify-center">
+                        ${q.answerOptions.map(option => `
+                            <button
+                                class="option-btn w-1/2 py-2 px-4 rounded-full text-white font-bold transition-colors duration-300 bg-blue-500 hover:bg-blue-600"
+                                data-question-index="${index}"
+                                data-correct="${option.isCorrect}"
+                            >
+                                ${option.text}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                quizQuestionsContainer.appendChild(questionCard);
+            });
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            document.querySelectorAll('.option-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const selectedBtn = e.target;
+                    const questionIndex = selectedBtn.dataset.questionIndex;
+                    const isCorrect = selectedBtn.dataset.correct === 'true';
+                    
+                    userAnswers[questionIndex] = isCorrect;
+                    
+                    const parentCard = selectedBtn.closest('div.bg-white');
+                    parentCard.querySelectorAll('.option-btn').forEach(btn => {
+                        btn.classList.remove('bg-blue-200', 'text-blue-900', 'border-4', 'border-blue-500');
+                        btn.classList.add('bg-blue-500', 'text-white');
+                    });
+                    
+                    selectedBtn.classList.remove('bg-blue-500', 'text-white');
+                    selectedBtn.classList.add('bg-blue-200', 'text-blue-900', 'border-4', 'border-blue-500');
+                    
+                    if (Object.keys(userAnswers).length === questionsToDisplay.length) {
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('hidden');
+                        submitBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+                        submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    }
+                });
+            });
+        }
+
+        function displayResults() {
+            let score = 0;
+            questionsToDisplay.forEach((q, index) => {
+                const questionCard = quizQuestionsContainer.children[index];
+                const rationaleBox = document.createElement('div');
+                rationaleBox.className = 'rationale-box mt-4 p-3 rounded-lg text-sm text-gray-700 bg-gray-100 border border-gray-200';
+                
+                const isUserCorrect = userAnswers[index];
+                const correctOption = q.answerOptions.find(option => option.isCorrect);
+
+                const questionNumberSpan = questionCard.querySelector('.question-number');
+                
+                if (isUserCorrect) {
+                    score++;
+                    questionCard.classList.add('correct-bg', 'correct-border');
+                    questionNumberSpan.innerHTML = `✅ ${index + 1}.`;
+                } else {
+                    questionCard.classList.add('incorrect-bg', 'incorrect-border');
+                    questionNumberSpan.innerHTML = `❌ ${index + 1}.`;
+                }
+
+                questionCard.querySelectorAll('.option-btn').forEach(btn => {
+                    const btnIsCorrect = btn.dataset.correct === 'true';
+                    const isSelected = btn.classList.contains('bg-blue-200');
+                    
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50');
+                    btn.classList.remove('hover:bg-blue-600', 'hover:scale-105');
+                    
+                    if (isSelected && isUserCorrect) {
+                        btn.classList.remove('bg-blue-200', 'text-blue-900', 'border-4', 'border-blue-500');
+                        btn.classList.add('bg-green-500');
+                    } else if (isSelected && !isUserCorrect) {
+                        btn.classList.remove('bg-blue-200', 'text-blue-900', 'border-4', 'border-blue-500');
+                        btn.classList.add('bg-red-500');
+                    } else if (btnIsCorrect) {
+                        btn.classList.add('bg-green-500', 'text-white');
+                    }
+                });
+                
+                rationaleBox.textContent = correctOption.rationale;
+                questionCard.appendChild(rationaleBox);
+            });
+
+            const scoreElement = document.getElementById('score');
+            const totalQuestionsElement = document.getElementById('total-questions');
+            scoreElement.textContent = `${score} / ${questionsToDisplay.length}`;
+            totalQuestionsElement.textContent = `총 ${questionsToDisplay.length} 문제 중 ${score} 문제를 맞혔습니다.`;
+            resultsContainer.classList.remove('hidden');
+            submitBtn.classList.add('hidden');
+        }
+
+        function resetQuiz() {
+            resultsContainer.classList.add('hidden');
+            userAnswers = {};
+            createQuiz();
+        }
+
+        submitBtn.addEventListener('click', displayResults);
+        retryBtn.addEventListener('click', resetQuiz);
+
+        window.onload = () => {
+            createQuiz();
+        };
+    </script>
+</body>
+</html>
