@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국어 문법 학습: 얼마나 -(으)ㄴ/는지 모르다</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .slide {
+            display: none;
+        }
+        .slide.active {
+            display: block;
+        }
+        .slide-content {
+            min-height: 400px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-lg p-6 md:p-8">
+        
+        <!-- Header: Language and Save Buttons -->
+        <header class="flex flex-wrap justify-between items-center mb-6 gap-4">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800" data-translate-key="main_title">얼마나 -(으)ㄴ/는지 모르다</h1>
+            <div class="flex items-center gap-2">
+                <select id="language-selector" class="rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <option value="ko">한국어</option>
+                    <option value="vi">Tiếng Việt</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh">中文</option>
+                </select>
+                <button id="save-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    <span data-translate-key="save_image">이미지 저장</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Slide Container -->
+        <main id="slide-container" class="bg-sky-50 border-2 border-sky-200 rounded-xl p-6 md:p-8 relative">
+            
+            <!-- Slide 1: Grammar Explanation -->
+            <div id="slide-1" class="slide active">
+                <div class="slide-content">
+                    <h2 class="text-xl md:text-2xl font-bold text-sky-800 mb-4" data-translate-key="slide1_title">문법 설명</h2>
+                    <p class="text-lg md:text-xl text-gray-700 mb-4" data-translate-key="slide1_exp1">
+                        어떤 것을 아주 아주 아주 많이 강조하고 싶을 때 사용해요. '정말 ~해요' 라는 뜻이에요.
+                    </p>
+                    <p class="text-gray-600 mb-6" data-translate-key="slide1_exp2">
+                        보통 놀랐을 때나, 감동했을 때의 기분을 표현할 때 자주 써요.
+                    </p>
+                    <div class="space-y-3 text-lg">
+                        <p class="font-semibold" data-translate-key="example">예시</p>
+                        <p class="p-3 bg-white rounded-lg shadow-sm">🗣️ "요가가 자세 교정에 <span class="font-bold text-blue-600">얼마나 좋은지 몰라요</span>."</p>
+                        <p class="p-3 bg-white rounded-lg shadow-sm">🗣️ "어제 이사해서 몸이 <span class="font-bold text-blue-600">얼마나 피곤한지 몰라요</span>."</p>
+                        <p class="p-3 bg-white rounded-lg shadow-sm">🗣️ "김치가 우리 몸에 <span class="font-bold text-blue-600">얼마나 좋은지 몰라요</span>."</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2: In-depth Explanation -->
+            <div id="slide-2" class="slide">
+                 <div class="slide-content">
+                    <h2 class="text-xl md:text-2xl font-bold text-sky-800 mb-4" data-translate-key="slide2_title">자세히 알아보기 (형태)</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800" data-translate-key="adjective">형용사 (Adjective)</h3>
+                            <ul class="list-disc list-inside text-gray-700 space-y-2 pl-4 mt-2">
+                                <li data-translate-key="adj_rule1">받침이 없거나 'ㄹ' 받침: <strong>-ㄴ지 모르다</strong> (예: 예쁘다 → 얼마나 예쁜지 몰라요)</li>
+                                <li data-translate-key="adj_rule2">받침이 있을 때: <strong>-은지 모르다</strong> (예: 좋다 → 얼마나 좋은지 몰라요)</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800" data-translate-key="verb">동사 (Verb)</h3>
+                             <ul class="list-disc list-inside text-gray-700 space-y-2 pl-4 mt-2">
+                                <li data-translate-key="verb_rule1">항상: <strong>-는지 모르다</strong> (예: 먹다 → 얼마나 먹는지 몰라요)</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800" data-translate-key="past_tense">과거 (Past Tense)</h3>
+                             <ul class="list-disc list-inside text-gray-700 space-y-2 pl-4 mt-2">
+                                <li data-translate-key="past_rule1"><strong>-았/었는지 모르다</strong> (예: 힘들었다 → 얼마나 힘들었는지 몰라요)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: Activity 1 -->
+            <div id="slide-3" class="slide">
+                <div class="slide-content">
+                    <h2 class="text-xl md:text-2xl font-bold text-teal-800 mb-4" data-translate-key="activity1_title">활동 1: 문장 완성하기 (초급)</h2>
+                    <p class="text-gray-700 mb-6" data-translate-key="activity1_desc">괄호 안의 단어를 사용해서 문장을 완성해 보세요.</p>
+                    <div class="space-y-4 text-lg">
+                        <p>1. 이 케이크가 <span class="font-mono text-blue-600">(맛있다)</span>. → 이 케이크가 얼마나 맛있는지 몰라요.</p>
+                        <p>2. 어제 본 영화가 <span class="font-mono text-blue-600">(재미있다)</span>. → 어제 본 영화가 얼마나 재미있는지 몰라요.</p>
+                        <div class="flex items-center gap-2 flex-wrap">
+                           <span class="whitespace-nowrap">3. 한국어 공부가 <span class="font-mono text-blue-600">(어렵다)</span>. →</span>
+                           <input type="text" class="w-full flex-grow p-2 border rounded-lg focus:ring-2 focus:ring-blue-300" data-translate-key-placeholder="placeholder_type">
+                        </div>
+                         <div class="flex items-center gap-2 flex-wrap">
+                           <span class="whitespace-nowrap">4. 친구가 선물을 받고 <span class="font-mono text-blue-600">(좋아하다)</span>. →</span>
+                           <input type="text" class="w-full flex-grow p-2 border rounded-lg focus:ring-2 focus:ring-blue-300" data-translate-key-placeholder="placeholder_type">
+                        </div>
+                    </div>
+                    <button id="show-answers-btn-1" class="mt-6 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold py-2 px-4 rounded-lg transition duration-300">
+                        <span data-translate-key="show_answer">정답 보기</span>
+                    </button>
+                     <div id="activity1-answers" class="hidden mt-4 p-3 bg-yellow-100 border-l-4 border-yellow-400 rounded-r-lg">
+                        <p class="font-bold text-yellow-800" data-translate-key="answer">정답</p>
+                        <p class="text-yellow-700">3. 한국어 공부가 얼마나 어려운지 몰라요.</p>
+                        <p class="text-yellow-700">4. 친구가 선물을 받고 얼마나 좋아하는지 몰라요.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4: Activity 2 -->
+            <div id="slide-4" class="slide">
+                <div class="slide-content">
+                    <h2 class="text-xl md:text-2xl font-bold text-teal-800 mb-4" data-translate-key="activity2_title">활동 2: 친구에게 추천하기 (응용)</h2>
+                    <p class="text-gray-700 mb-6" data-translate-key="activity2_desc">'얼마나 -(으)ㄴ/는지 모르다'를 사용해서 친구에게 여러분이 좋아하는 것을 추천해 보세요.</p>
+                    <div class="p-4 border rounded-lg bg-white">
+                        <p class="font-semibold" data-translate-key="example">보기</p>
+                        <p>A: <span data-translate-key="a2_q1">요즘 무슨 노래 들어요?</span></p>
+                        <p>B: <span data-translate-key="a2_a1">BTS 노래를 들어요. 그 노래가 얼마나 좋은지 몰라요.</span></p>
+                    </div>
+                    <div class="mt-4">
+                        <p class="font-semibold mb-2" data-translate-key="try_it">이제 여러분이 직접 해보세요!</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <button class="activity2-prompt-btn bg-sky-200 hover:bg-sky-300 text-sky-800 font-medium py-2 px-3 rounded-lg text-sm transition-transform transform hover:scale-105" data-prompt="food"><span data-translate-key="a2_p1">좋아하는 음식 추천하기</span></button>
+                            <button class="activity2-prompt-btn bg-sky-200 hover:bg-sky-300 text-sky-800 font-medium py-2 px-3 rounded-lg text-sm transition-transform transform hover:scale-105" data-prompt="media"><span data-translate-key="a2_p2">재미있는 영화/드라마 추천하기</span></button>
+                            <button class="activity2-prompt-btn bg-sky-200 hover:bg-sky-300 text-sky-800 font-medium py-2 px-3 rounded-lg text-sm transition-transform transform hover:scale-105" data-prompt="place"><span data-translate-key="a2_p3">자주 가는 장소 추천하기</span></button>
+                        </div>
+                        <textarea id="activity2-input" rows="4" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-300" data-translate-key-placeholder="placeholder_type_long"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: Activity 3 -->
+            <div id="slide-5" class="slide">
+                <div class="slide-content">
+                    <h2 class="text-xl md:text-2xl font-bold text-teal-800 mb-4" data-translate-key="activity3_title">활동 3: 경험 이야기하기 (복습)</h2>
+                    <p class="text-gray-700 mb-6" data-translate-key="activity3_desc">최근에 아주 놀랐거나, 아주 좋았거나, 아주 힘들었던 경험에 대해 이야기해 보세요.</p>
+                     <div class="p-4 border rounded-lg bg-white mb-4">
+                        <p class="font-semibold" data-translate-key="example">보기</p>
+                        <p data-translate-key="a3_ex1">"지난 주말에 제주도에 갔어요. 바다가 <span class="font-bold text-blue-600">얼마나 아름다웠는지 몰라요</span>."</p>
+                        <p data-translate-key="a3_ex2">"어제 시험공부를 했어요. <span class="font-bold text-blue-600">얼마나 피곤했는지 몰라요</span>. 그래서 오늘 늦게 일어났어요."</p>
+                    </div>
+                     <div class="mt-4">
+                        <p class="font-semibold mb-2" data-translate-key="your_turn">여러분의 경험은?</p>
+                        <textarea id="activity3-input" rows="4" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-300" data-translate-key-placeholder="placeholder_type_exp"></textarea>
+                        <p class="mt-2 text-gray-600 text-sm" data-translate-key="a3_topic_ideas">아래 주제로 글을 써봐도 좋아요:</p>
+                        <ul class="list-disc list-inside text-gray-600 mt-1 pl-2">
+                            <li><span data-translate-key="a3_p1">최근에 재미있게 본 영화/책</span></li>
+                            <li><span data-translate-key="a3_p2">최근에 갔던 여행</span></li>
+                            <li><span data-translate-key="a3_p3">가장 기억에 남는 식사</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Navigation -->
+        <footer class="flex justify-between items-center mt-6">
+            <button id="prev-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition duration-300 disabled:opacity-50" disabled>
+                <span data-translate-key="prev_btn">이전</span>
+            </button>
+            <div id="slide-indicator" class="text-gray-600 font-medium">1 / 5</div>
+            <button id="next-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                <span data-translate-key="next_btn">다음</span>
+            </button>
+        </footer>
+    </div>
+
+    <script>
+        // --- TRANSLATION DATA ---
+        const translations = {
+            ko: {
+                main_title: "얼마나 -(으)ㄴ/는지 모르다",
+                save_image: "이미지 저장",
+                slide1_title: "문법 설명",
+                slide1_exp1: "어떤 것을 아주 아주 아주 많이 강조하고 싶을 때 사용해요. '정말 ~해요' 라는 뜻이에요.",
+                slide1_exp2: "보통 놀랐을 때나, 감동했을 때의 기분을 표현할 때 자주 써요.",
+                example: "예시",
+                slide2_title: "자세히 알아보기 (형태)",
+                adjective: "형용사 (Adjective)",
+                adj_rule1: "받침이 없거나 'ㄹ' 받침: -ㄴ지 모르다 (예: 예쁘다 → 얼마나 예쁜지 몰라요)",
+                adj_rule2: "받침이 있을 때: -은지 모르다 (예: 좋다 → 얼마나 좋은지 몰라요)",
+                verb: "동사 (Verb)",
+                verb_rule1: "항상: -는지 모르다 (예: 먹다 → 얼마나 먹는지 몰라요)",
+                past_tense: "과거 (Past Tense)",
+                past_rule1: "-았/었는지 모르다 (예: 힘들었다 → 얼마나 힘들었는지 몰라요)",
+                activity1_title: "활동 1: 문장 완성하기 (초급)",
+                activity1_desc: "괄호 안의 단어를 사용해서 문장을 완성해 보세요.",
+                answer: "정답",
+                show_answer: "정답 보기",
+                placeholder_type: "직접 입력해보세요",
+                activity2_title: "활동 2: 친구에게 추천하기 (응용)",
+                activity2_desc: "'얼마나 -(으)ㄴ/는지 모르다'를 사용해서 친구에게 여러분이 좋아하는 것을 추천해 보세요.",
+                a2_q1: "요즘 무슨 노래 들어요?",
+                a2_a1: "BTS 노래를 들어요. 그 노래가 얼마나 좋은지 몰라요.",
+                try_it: "이제 여러분이 직접 해보세요!",
+                a2_p1: "좋아하는 음식 추천하기",
+                a2_p2: "재미있는 영화/드라마 추천하기",
+                a2_p3: "자주 가는 장소 추천하기",
+                placeholder_type_long: "버튼을 누르거나 직접 추천하는 글을 써보세요.",
+                activity3_title: "활동 3: 경험 이야기하기 (복습)",
+                activity3_desc: "최근에 아주 놀랐거나, 아주 좋았거나, 아주 힘들었던 경험에 대해 이야기해 보세요.",
+                a3_ex1: "\"지난 주말에 제주도에 갔어요. 바다가 얼마나 아름다웠는지 몰라요.\"",
+                a3_ex2: "\"어제 시험공부를 했어요. 얼마나 피곤했는지 몰라요. 그래서 오늘 늦게 일어났어요.\"",
+                your_turn: "여러분의 경험은?",
+                placeholder_type_exp: "여기에 여러분의 경험을 자유롭게 써보세요.",
+                a3_topic_ideas: "아래 주제로 글을 써봐도 좋아요:",
+                a3_p1: "최근에 재미있게 본 영화/책",
+                a3_p2: "최근에 갔던 여행",
+                a3_p3: "가장 기억에 남는 식사",
+                prev_btn: "이전",
+                next_btn: "다음"
+            },
+            vi: {
+                main_title: "Ngữ pháp 얼마나 -(으)ㄴ/는지 모르다",
+                save_image: "Lưu ảnh",
+                slide1_title: "Giải thích ngữ pháp",
+                slide1_exp1: "Sử dụng khi bạn muốn nhấn mạnh điều gì đó rất rất nhiều. Có nghĩa là 'thực sự ~'.",
+                slide1_exp2: "Thường được sử dụng để thể hiện cảm xúc khi ngạc nhiên hoặc cảm động.",
+                example: "Ví dụ",
+                slide2_title: "Tìm hiểu chi tiết (Dạng)",
+                adjective: "Tính từ (Adjective)",
+                adj_rule1: "Không có patchim hoặc patchim 'ㄹ': -ㄴ지 모르다 (Ví dụ: 예쁘다 → 얼마나 예쁜지 몰라요)",
+                adj_rule2: "Có patchim: -은지 모르다 (Ví dụ: 좋다 → 얼마나 좋은지 몰라요)",
+                verb: "Động từ (Verb)",
+                verb_rule1: "Luôn luôn: -는지 모르다 (Ví dụ: 먹다 → 얼마나 먹는지 몰라요)",
+                past_tense: "Thì quá khứ (Past Tense)",
+                past_rule1: "-았/었는지 모르다 (Ví dụ: 힘들었다 → 얼마나 힘들었는지 몰라요)",
+                activity1_title: "Hoạt động 1: Hoàn thành câu (Sơ cấp)",
+                activity1_desc: "Hoàn thành câu bằng cách sử dụng từ trong ngoặc.",
+                answer: "Đáp án",
+                show_answer: "Xem đáp án",
+                placeholder_type: "Hãy tự nhập vào",
+                activity2_title: "Hoạt động 2: Giới thiệu cho bạn bè (Ứng dụng)",
+                activity2_desc: "Sử dụng '얼마나 -(으)ㄴ/는지 모르다' để giới thiệu những gì bạn thích cho bạn bè.",
+                a2_q1: "Dạo này bạn nghe nhạc gì?",
+                a2_a1: "Tôi nghe nhạc BTS. Bạn không biết bài hát đó hay thế nào đâu.",
+                try_it: "Bây giờ hãy tự mình thử!",
+                a2_p1: "Giới thiệu món ăn yêu thích",
+                a2_p2: "Giới thiệu phim/drama thú vị",
+                a2_p3: "Giới thiệu nơi thường đến",
+                placeholder_type_long: "Nhấn nút hoặc tự viết bài giới thiệu.",
+                activity3_title: "Hoạt động 3: Kể chuyện kinh nghiệm (Ôn tập)",
+                activity3_desc: "Hãy nói về một trải nghiệm gần đây khiến bạn rất ngạc nhiên, rất vui hoặc rất vất vả.",
+                a3_ex1: "\"Cuối tuần trước tôi đã đến đảo Jeju. Bạn không biết biển đẹp đến nhường nào đâu.\"",
+                a3_ex2: "\"Hôm qua tôi đã học bài thi. Bạn không biết tôi đã mệt thế nào đâu. Vì vậy, hôm nay tôi đã dậy muộn.\"",
+                your_turn: "Kinh nghiệm của bạn?",
+                placeholder_type_exp: "Hãy tự do viết kinh nghiệm của bạn ở đây.",
+                a3_topic_ideas: "Bạn cũng có thể viết về các chủ đề dưới đây:",
+                a3_p1: "Phim/sách bạn xem gần đây",
+                a3_p2: "Chuyến du lịch gần đây",
+                a3_p3: "Bữa ăn đáng nhớ nhất",
+                prev_btn: "Trước",
+                next_btn: "Tiếp theo"
+            },
+            ja: {
+                main_title: "文法 얼마나 -(으)ㄴ/는지 모르다",
+                save_image: "画像保存",
+                slide1_title: "文法説明",
+                slide1_exp1: "何かを非常に強調したいときに使います。「本当に〜です」という意味です。",
+                slide1_exp2: "驚いた時や感動した時の気持ちを表現する時によく使われます。",
+                example: "例",
+                slide2_title: "詳細（形態）",
+                adjective: "形容詞 (Adjective)",
+                adj_rule1: "パッチムがない、または'ㄹ'パッチム: -ㄴ지 모르다 (例: 예쁘다 → 얼마나 예쁜지 몰라요)",
+                adj_rule2: "パッチムがある場合: -은지 모르다 (例: 좋다 → 얼마나 좋은지 몰라요)",
+                verb: "動詞 (Verb)",
+                verb_rule1: "常に: -는지 모르다 (例: 먹다 → 얼마나 먹는지 몰라요)",
+                past_tense: "過去形 (Past Tense)",
+                past_rule1: "-았/었는지 모르다 (例: 힘들었다 → 얼마나 힘들었는지 몰라요)",
+                activity1_title: "活動1：文章完成（初級）",
+                activity1_desc: "括弧内の単語を使って文章を完成させてください。",
+                answer: "正解",
+                show_answer: "正解を見る",
+                placeholder_type: "直接入力してみてください",
+                activity2_title: "活動2：友達に勧める（応用）",
+                activity2_desc: "「얼마나 -(으)ㄴ/는지 모르다」を使って、友達に好きなものを勧めてみましょう。",
+                a2_q1: "最近、どんな歌を聴きますか？",
+                a2_a1: "BTSの歌を聴きます。その歌がどれほど良いか分かりませんよ。",
+                try_it: "さあ、やってみましょう！",
+                a2_p1: "好きな食べ物を勧める",
+                a2_p2: "面白い映画/ドラマを勧める",
+                a2_p3: "よく行く場所を勧める",
+                placeholder_type_long: "ボタンを押すか、直接推薦文を書いてみてください。",
+                activity3_title: "活動3：経験を話す（復習）",
+                activity3_desc: "最近、とても驚いたこと、とても良かったこと、とても大変だった経験について話してみてください。",
+                a3_ex1: "「先週末、済州島に行きました。海がどれほど美しかったか分かりません。」",
+                a3_ex2: "「昨日、試験の勉強をしました。どれほど疲れたか分かりません。だから今日遅く起きました。」",
+                your_turn: "あなたの経験は？",
+                placeholder_type_exp: "ここにあなたの経験を自由に書いてみてください。",
+                a3_topic_ideas: "以下のトピックで書いてもいいですよ：",
+                a3_p1: "最近面白かった映画/本",
+                a3_p2: "最近行った旅行",
+                a3_p3: "最も記憶に残る食事",
+                prev_btn: "前へ",
+                next_btn: "次へ"
+            },
+            zh: {
+                main_title: "语法 얼마나 -(으)ㄴ/는지 모르다",
+                save_image: "保存图片",
+                slide1_title: "语法说明",
+                slide1_exp1: "当你想非常非常强调某事时使用。意思是‘真的~’。",
+                slide1_exp2: "通常在表达惊讶或感动的心情时经常使用。",
+                example: "例子",
+                slide2_title: "详细了解（形态）",
+                adjective: "形容词 (Adjective)",
+                adj_rule1: "没有收音或'ㄹ'收音: -ㄴ지 모르다 (例如: 예쁘다 → 얼마나 예쁜지 몰라요)",
+                adj_rule2: "有收音时: -은지 모르다 (例如: 좋다 → 얼마나 좋은지 몰라요)",
+                verb: "动词 (Verb)",
+                verb_rule1: "总是: -는지 모르다 (例如: 먹다 → 얼마나 먹는지 몰라요)",
+                past_tense: "过去式 (Past Tense)",
+                past_rule1: "-았/었는지 모르다 (例如: 힘들었다 → 얼마나 힘들었는지 몰라요)",
+                activity1_title: "活动1：完成句子（初级）",
+                activity1_desc: "请使用括号中的单词完成句子。",
+                answer: "正确答案",
+                show_answer: "查看答案",
+                placeholder_type: "请直接输入",
+                activity2_title: "活动2：向朋友推荐（应用）",
+                activity2_desc: "使用 '얼마나 -(으)ㄴ/는지 모르다' 向朋友推荐你喜欢的东西吧。",
+                a2_q1: "最近听什么歌？",
+                a2_a1: "我听BTS的歌。你不知道那首歌有多好听。",
+                try_it: "现在你自己试试吧！",
+                a2_p1: "推荐喜欢的食物",
+                a2_p2: "推荐有趣的电影/电视剧",
+                a2_p3: "推荐常去的地方",
+                placeholder_type_long: "可以按按钮，也可以直接写推荐文。",
+                activity3_title: "活动3：讲述经历（复习）",
+                activity3_desc: "请谈谈最近让你非常惊讶、非常高兴或非常辛苦的经历。",
+                a3_ex1: "“上周末我去了济州岛。你不知道大海有多美。”",
+                a3_ex2: "“昨天我为了考试学习了。你不知道我有多累。所以今天起晚了。”",
+                your_turn: "你的经历是？",
+                placeholder_type_exp: "请在这里自由地写下你的经历。",
+                a3_topic_ideas: "也可以用以下主题写文章：",
+                a3_p1: "最近看过的有趣的电影/书",
+                a3_p2: "最近去的旅行",
+                a3_p3: "最难忘的一餐",
+                prev_btn: "上一个",
+                next_btn: "下一个"
+            }
+        };
+
+
+        // --- SCRIPT LOGIC ---
+        let currentSlide = 1;
+        const totalSlides = 5;
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const slideIndicator = document.getElementById('slide-indicator');
+        const langSelector = document.getElementById('language-selector');
+        const saveBtn = document.getElementById('save-btn');
+
+        function updateSlideView() {
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', (index + 1) === currentSlide);
+            });
+            slideIndicator.textContent = `${currentSlide} / ${totalSlides}`;
+            prevBtn.disabled = currentSlide === 1;
+            nextBtn.disabled = currentSlide === totalSlides;
+        }
+
+        function changeLanguage(lang) {
+            const langData = translations[lang];
+            document.querySelectorAll('[data-translate-key]').forEach(el => {
+                const key = el.dataset.translateKey;
+                if (langData[key]) {
+                    el.innerHTML = langData[key];
+                }
+            });
+            document.querySelectorAll('[data-translate-key-placeholder]').forEach(el => {
+                const key = el.dataset.translateKeyPlaceholder;
+                if (langData[key]) {
+                    el.placeholder = langData[key];
+                }
+            });
+        }
+        
+        // Event Listeners
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateSlideView();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 1) {
+                currentSlide--;
+                updateSlideView();
+            }
+        });
+
+        langSelector.addEventListener('change', (e) => {
+            const selectedLang = e.target.value;
+            changeLanguage(selectedLang);
+            // Manually set placeholder for the first time
+            const inputs = document.querySelectorAll('input[type="text"], textarea');
+            inputs.forEach(input => {
+                const key = input.dataset.translateKeyPlaceholder;
+                if(key && translations[selectedLang][key]) {
+                    input.placeholder = translations[selectedLang][key];
+                }
+            });
+        });
+
+        saveBtn.addEventListener('click', () => {
+            const slideContainer = document.getElementById('slide-container');
+            const activeSlide = slideContainer.querySelector('.slide.active .slide-content');
+            
+            const originalBg = slideContainer.style.backgroundColor;
+            slideContainer.style.backgroundColor = 'white';
+
+
+            html2canvas(activeSlide, {
+                 scale: 2, 
+                 backgroundColor: '#f0f9ff'
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `korean-grammar-slide-${currentSlide}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                slideContainer.style.backgroundColor = originalBg;
+            });
+        });
+        
+        // --- Activity Specific Listeners ---
+
+        // Activity 1: Show Answers
+        const showAnswersBtn1 = document.getElementById('show-answers-btn-1');
+        const activity1Answers = document.getElementById('activity1-answers');
+        if(showAnswersBtn1) {
+            showAnswersBtn1.addEventListener('click', () => {
+                activity1Answers.classList.toggle('hidden');
+                const btnTextKey = activity1Answers.classList.contains('hidden') ? 'show_answer' : 'hide_answer';
+                const currentLang = langSelector.value;
+                // Add 'hide_answer' to translations if needed, for now it just toggles
+                // showAnswersBtn1.querySelector('span').textContent = translations[currentLang][btnTextKey];
+            });
+        }
+        
+        // Activity 2: Prompt Buttons
+        const activity2PromptBtns = document.querySelectorAll('.activity2-prompt-btn');
+        const activity2Input = document.getElementById('activity2-input');
+        if(activity2PromptBtns.length > 0) {
+            const promptTemplates = {
+                food: "제가 제일 좋아하는 음식은 ...이에요/예요. 그 음식이 얼마나 맛있는지 몰라요.",
+                media: "저는 요즘 '...'라는 드라마를 봐요. 그 드라마가 얼마나 재미있는지 몰라요.",
+                place: "저는 ...에 자주 가요. 그곳이 얼마나 아름다운지/편안한지 몰라요."
+            };
+            activity2PromptBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const promptType = btn.dataset.prompt;
+                    if (promptTemplates[promptType]) {
+                        activity2Input.value = promptTemplates[promptType];
+                        activity2Input.focus();
+                    }
+                });
+            });
+        }
+
+
+        // Initial setup
+        updateSlideView();
+        // Set initial placeholders
+        changeLanguage(langSelector.value);
+
+    </script>
+</body>
+</html>
+
