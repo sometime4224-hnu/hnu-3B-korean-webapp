@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국어 말하기 연습: 친구에게 권유하기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .card {
+            transition: all 0.3s ease-in-out;
+            transform-style: preserve-3d;
+        }
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+    <div class="w-full max-w-md mx-auto p-4">
+        <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
+            
+            <div id="app-content">
+                <!-- 이모지 및 힌트 -->
+                <div class="mb-6 min-h-[120px] flex flex-col items-center justify-center">
+                    <p id="emoji" class="text-6xl mb-3"></p>
+                    <p id="hint" class="text-lg text-gray-700 font-medium"></p>
+                </div>
+
+                <!-- 질문 및 권유 힌트 -->
+                <div class="bg-sky-50 rounded-lg p-6 min-h-[150px] flex flex-col justify-center">
+                    <h2 id="question" class="text-xl font-bold text-sky-800 mb-3"></h2>
+                    <p id="suggestion" class="text-gray-600 text-base font-medium h-0 opacity-0 transition-all duration-500"></p>
+                </div>
+            </div>
+
+            <!-- 완료 메시지 -->
+            <div id="completion-message" class="hidden text-center">
+                 <p class="text-6xl mb-4">🎉</p>
+                 <h2 class="text-2xl font-bold text-gray-800 mb-2">참 잘했어요!</h2>
+                 <p class="text-gray-600">모든 말하기 연습을 완료했습니다.</p>
+            </div>
+
+
+            <!-- 네비게이션 버튼 -->
+            <div class="mt-8">
+                <button id="next-btn" class="w-full bg-sky-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-600 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50">
+                    다음
+                </button>
+            </div>
+            
+            <!-- 진행 상태 바 -->
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mt-6">
+              <div id="progress-bar" class="bg-sky-400 h-2.5 rounded-full" style="width: 0%"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const scenarios = [
+            {
+                emoji: '😩',
+                hint: '기운이 없고 몸이 무거워요.',
+                question1: '친구의 상태가 어떤가요?',
+                question2: '어떻게 하는 것이 좋아요? 권유해봅시다.',
+                suggestion: '예시) 가볍게 스트레칭을 하는 게 어때요?'
+            },
+            {
+                emoji: '🤧',
+                hint: '재채기가 나고 콧물이 흘러요.',
+                question1: '친구의 상태가 어떤가요?',
+                question2: '어떻게 하는 것이 좋아요? 권유해봅시다.',
+                suggestion: '예시) 감기에 걸린 것 같네요. 따뜻한 물을 많이 드세요.'
+            },
+            {
+                emoji: '🤯',
+                hint: '시험 때문에 스트레스를 많이 받아요.',
+                question1: '친구의 상태가 어떤가요?',
+                question2: '어떻게 하는 것이 좋아요? 권유해봅시다.',
+                suggestion: '예시) 너무 걱정하지 마세요. 잠깐 쉬는 게 좋겠어요.'
+            },
+            {
+                emoji: '🤕',
+                hint: '머리가 너무 아파요.',
+                question1: '친구의 상태가 어떤가요?',
+                question2: '어떻게 하는 것이 좋아요? 권유해봅시다.',
+                suggestion: '예시) 약을 먹고 좀 쉬세요. 계속 아프면 병원에 가보세요.'
+            },
+            {
+                emoji: '☕️😵',
+                hint: '커피를 많이 마셔서 잠을 못 잤어요.',
+                question1: '친구의 상태가 어떤가요?',
+                question2: '어떻게 하는 것이 좋아요? 권유해봅시다.',
+                suggestion: '예시) 오늘은 커피를 마시지 말고 일찍 자는 게 어때요?'
+            }
+        ];
+
+        let currentScenarioIndex = 0;
+        let currentStep = 1; // 1: question1, 2: question2
+
+        const emojiEl = document.getElementById('emoji');
+        const hintEl = document.getElementById('hint');
+        const questionEl = document.getElementById('question');
+        const suggestionEl = document.getElementById('suggestion');
+        const nextBtn = document.getElementById('next-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const appContentEl = document.getElementById('app-content');
+        const completionMessageEl = document.getElementById('completion-message');
+
+        function displayScenario() {
+            if (currentScenarioIndex >= scenarios.length) {
+                showCompletion();
+                return;
+            }
+
+            const scenario = scenarios[currentScenarioIndex];
+            
+            emojiEl.textContent = scenario.emoji;
+            hintEl.textContent = scenario.hint;
+            suggestionEl.textContent = scenario.suggestion;
+
+            if (currentStep === 1) {
+                questionEl.textContent = scenario.question1;
+                suggestionEl.classList.add('h-0', 'opacity-0');
+                suggestionEl.classList.remove('mt-2');
+                nextBtn.textContent = '다음';
+            } else { // currentStep === 2
+                questionEl.textContent = scenario.question2;
+                suggestionEl.classList.remove('h-0', 'opacity-0');
+                suggestionEl.classList.add('mt-2');
+                nextBtn.textContent = '다음 상태 보기';
+            }
+            
+            updateProgressBar();
+        }
+
+        function updateProgressBar() {
+            const progress = ((currentScenarioIndex) / scenarios.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        function showCompletion() {
+            appContentEl.classList.add('hidden');
+            completionMessageEl.classList.remove('hidden');
+            progressBar.style.width = '100%';
+            progressBar.classList.add('bg-green-500');
+            nextBtn.textContent = '다시 시작하기';
+            nextBtn.classList.remove('bg-sky-500', 'hover:bg-sky-600');
+            nextBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+            currentScenarioIndex = scenarios.length; // Lock index
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (currentScenarioIndex >= scenarios.length) {
+                // Restart logic
+                currentScenarioIndex = 0;
+                currentStep = 1;
+                appContentEl.classList.remove('hidden');
+                completionMessageEl.classList.add('hidden');
+                progressBar.classList.remove('bg-green-500');
+                nextBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                nextBtn.classList.add('bg-sky-500', 'hover:bg-sky-600');
+                displayScenario();
+                return;
+            }
+
+            if (currentStep === 1) {
+                currentStep = 2;
+            } else {
+                currentStep = 1;
+                currentScenarioIndex++;
+            }
+            displayScenario();
+        });
+
+        // 초기 화면 표시
+        displayScenario();
+    </script>
+</body>
+</html>
