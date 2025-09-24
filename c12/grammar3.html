@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국어 문법 학습: -(으)ㄴ/는 모양이다</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .slide {
+            display: none;
+        }
+        .slide.active {
+            display: block;
+        }
+        .lang-btn.active {
+            background-color: #1d4ed8;
+            color: white;
+        }
+        .tab-btn.active {
+            border-bottom: 2px solid #1d4ed8;
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div id="app" class="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6 md:p-8 m-4">
+        
+        <!-- Header: Title and Language Switcher -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-6 pb-4 border-b">
+            <h1 id="app-title" class="text-2xl font-bold text-gray-800 mb-4 md:mb-0"></h1>
+            <div class="flex space-x-2">
+                <button data-lang="ko" class="lang-btn px-3 py-1 text-sm rounded-md transition-colors duration-200">한국어</button>
+                <button data-lang="vi" class="lang-btn px-3 py-1 text-sm rounded-md transition-colors duration-200">베트남어</button>
+                <button data-lang="ja" class="lang-btn px-3 py-1 text-sm rounded-md transition-colors duration-200">일본어</button>
+                <button data-lang="zh" class="lang-btn px-3 py-1 text-sm rounded-md transition-colors duration-200">중국어</button>
+            </div>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="flex justify-center border-b mb-6">
+            <button data-slide="explanation" id="explanation-tab" class="tab-btn text-lg px-6 py-2 text-gray-600"></button>
+            <button data-slide="practice" id="practice-tab" class="tab-btn text-lg px-6 py-2 text-gray-600"></button>
+        </nav>
+
+        <!-- Main Content: Slides -->
+        <main>
+            <!-- Explanation Slide -->
+            <div id="explanation-slide" class="slide space-y-6">
+                <div class="p-5 bg-blue-50 rounded-lg">
+                    <h2 id="exp-title" class="text-xl font-bold text-blue-800 mb-2"></h2>
+                    <p id="exp-intro" class="text-gray-700"></p>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <h3 id="exp-adjective-title" class="text-lg font-semibold text-gray-800 mb-2"></h3>
+                        <ul class="list-disc list-inside space-y-1 text-gray-600 bg-gray-50 p-4 rounded-md">
+                            <li id="exp-adjective-rule1"></li>
+                            <li id="exp-adjective-rule2"></li>
+                            <li id="exp-adjective-rule3" class="font-semibold text-red-600"></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 id="exp-verb-title" class="text-lg font-semibold text-gray-800 mb-2"></h3>
+                         <ul class="list-disc list-inside space-y-1 text-gray-600 bg-gray-50 p-4 rounded-md">
+                            <li id="exp-verb-rule"></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 id="exp-noun-title" class="text-lg font-semibold text-gray-800 mb-2"></h3>
+                         <ul class="list-disc list-inside space-y-1 text-gray-600 bg-gray-50 p-4 rounded-md">
+                            <li id="exp-noun-rule"></li>
+                        </ul>
+                    </div>
+                     <div>
+                        <h3 id="exp-tense-title" class="text-lg font-semibold text-gray-800 mb-2"></h3>
+                         <ul class="list-disc list-inside space-y-1 text-gray-600 bg-gray-50 p-4 rounded-md">
+                            <li id="exp-past"></li>
+                            <li id="exp-future"></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Practice Slide -->
+            <div id="practice-slide" class="slide">
+                <div class="p-5 bg-green-50 rounded-lg mb-6">
+                    <h2 id="quiz-title" class="text-xl font-bold text-green-800 mb-2"></h2>
+                    <p id="quiz-instruction" class="text-gray-700"></p>
+                </div>
+
+                <div id="quiz-container" class="space-y-6">
+                    <!-- Quiz questions will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const translations = {
+            ko: {
+                title: "문법 학습: -(으)ㄴ/는 모양이다",
+                explanationTab: "문법 설명",
+                practiceTab: "연습 문제",
+                expTitle: "A/V-(으)ㄴ/는 모양이다, N인 모양이다",
+                expIntro: "어떤 상황을 보고 그 이유나 상태를 추측할 때 사용해요. '...것 같다'와 비슷한 의미예요.",
+                expAdjectiveTitle: "1. 형용사 (Adjective)",
+                expAdjectiveRule1: "받침이 없거나 'ㄹ' 받침: -ㄴ 모양이다 (예: 바쁘다 → 바쁜 모양이다, 멀다 → 먼 모양이다)",
+                expAdjectiveRule2: "받침이 있을 때: -은 모양이다 (예: 좋다 → 좋은 모양이다, 작다 → 작은 모양이다)",
+                expAdjectiveRule3: "예외: '있다/없다'로 끝나면 '-는'을 써요. (예: 맛있다 → 맛있는 모양이다, 재미없다 → 재미없는 모양이다)",
+                expVerbTitle: "2. 동사 (Verb)",
+                expVerbRule: "받침과 상관없이: -는 모양이다 (예: 가다 → 가는 모양이다, 먹다 → 먹는 모양이다)",
+                expNounTitle: "3. 명사 (Noun)",
+                expNounRule: "받침과 상관없이: -인 모양이다 (예: 학생 → 학생인 모양이다, 의사 → 의사인 모양이다)",
+                expTenseTitle: "💡 시제 (Tense) 알아보기",
+                expPast: "과거 (Past): -았/었던 모양이다 (예: 어젯밤에 비가 많이 왔던 모양이에요.)",
+                expFuture: "미래 (Future): -(으)ㄹ 모양이다 (예: 하늘이 흐려요. 곧 비가 올 모양이에요.)",
+                quizTitle: "연습 문제",
+                quizInstruction: "상황을 보고 빈칸에 알맞은 말을 고르세요.",
+                q1_situation: "1. (밖에서 즐거운 웃음소리가 들려요) 재미있는 TV 프로그램을 ____ 모양이에요.",
+                q2_situation: "2. (친구가 하품을 계속해요) 어젯밤에 잠을 잘 ____ 모양이에요.",
+                q3_situation: "3. (식당 앞에 사람들이 줄을 서 있어요) 저 식당은 음식이 아주 ____ 모양이에요.",
+                q4_situation: "4. (친구가 갑자기 뛰기 시작해요) 약속 시간에 ____ 모양이에요.",
+                correct: "정답입니다! молодец!",
+                incorrect: "다시 시도해보세요.",
+            },
+            vi: {
+                title: "Học ngữ pháp: -(으)ㄴ/는 모양이다",
+                explanationTab: "Giải thích",
+                practiceTab: "Luyện tập",
+                expTitle: "A/V-(으)ㄴ/는 모양이다, N인 모양이다",
+                expIntro: "Sử dụng khi bạn đoán một lý do hoặc tình trạng sau khi quan sát một tình huống. Tương tự như 'có vẻ là...', 'hình như là...'.",
+                expAdjectiveTitle: "1. Tính từ (Adjective)",
+                expAdjectiveRule1: "Không có patchim hoặc patchim 'ㄹ': -ㄴ 모양이다 (VD: 바쁘다 → 바쁜 모양이다)",
+                expAdjectiveRule2: "Có patchim: -은 모양이다 (VD: 좋다 → 좋은 모양이다)",
+                expAdjectiveRule3: "Ngoại lệ: kết thúc bằng '있다/없다' thì dùng '-는'. (VD: 맛있다 → 맛있는 모양이다)",
+                expVerbTitle: "2. Động từ (Verb)",
+                expVerbRule: "Không phân biệt patchim: -는 모양이다 (VD: 가다 → 가는 모양이다)",
+                expNounTitle: "3. Danh từ (Noun)",
+                expNounRule: "Không phân biệt patchim: -인 모양이다 (VD: 학생 → 학생인 모양이다)",
+                expTenseTitle: "💡 Tìm hiểu về thì (Tense)",
+                expPast: "Quá khứ (Past): -았/었던 모양이다 (VD: Hình như tối qua trời đã mưa to.)",
+                expFuture: "Tương lai (Future): -(으)ㄹ 모양이다 (VD: Trời nhiều mây. Có vẻ như sắp mưa.)",
+                quizTitle: "Bài tập luyện tập",
+                quizInstruction: "Hãy xem tình huống và chọn từ đúng điền vào chỗ trống.",
+                q1_situation: "1. (Nghe thấy tiếng cười vui vẻ từ bên ngoài) Hình như họ đang xem một chương trình TV thú vị.",
+                q2_situation: "2. (Bạn tôi cứ ngáp liên tục) Có vẻ như tối qua bạn ấy không ngủ ngon.",
+                q3_situation: "3. (Mọi người đang xếp hàng trước nhà hàng) Có vẻ như đồ ăn ở nhà hàng đó rất ngon.",
+                q4_situation: "4. (Bạn tôi đột nhiên bắt đầu chạy) Có vẻ như bạn ấy sắp muộn giờ hẹn.",
+                correct: "Chính xác!",
+                incorrect: "Hãy thử lại.",
+            },
+            ja: {
+                title: "文法学習: -(으)ㄴ/는 모양이다",
+                explanationTab: "文法説明",
+                practiceTab: "練習問題",
+                expTitle: "A/V-(으)ㄴ/는 모양이다, N인 모양이다",
+                expIntro: "ある状況を見て、その理由や状態を推測する時に使います。「〜みたいだ」「〜ようだ」と似た意味です。",
+                expAdjectiveTitle: "1. 形容詞 (Adjective)",
+                expAdjectiveRule1: "パッチムがない、または 'ㄹ' パッチム: -ㄴ 모양이다 (例: 바쁘다 → 바쁜 모양이다)",
+                expAdjectiveRule2: "パッチムがある場合: -은 모양이다 (例: 좋다 → 좋은 모양이다)",
+                expAdjectiveRule3: "例外: '있다/없다'で終わる形容詞は '-는' を使います。(例: 맛있다 → 맛있는 모양이다)",
+                expVerbTitle: "2. 動詞 (Verb)",
+                expVerbRule: "パッチムに関係なく: -는 모양이다 (例: 가다 → 가는 모양이다)",
+                expNounTitle: "3. 名詞 (Noun)",
+                expNounRule: "パッチムに関係なく: -인 모양이다 (例: 학생 → 학생인 모양이다)",
+                expTenseTitle: "💡 時制 (Tense) について",
+                expPast: "過去 (Past): -았/었던 모양이다 (例: 昨夜、雨がたくさん降ったようです。)",
+                expFuture: "未来 (Future): -(으)ㄹ 모양이다 (例: 空が曇っています。もうすぐ雨が降るようです。)",
+                quizTitle: "練習問題",
+                quizInstruction: "状況を見て、空欄に最も適切なものを選んでください。",
+                q1_situation: "1. (外から楽しそうな笑い声が聞こえます) 面白いテレビ番組を ____ ようです。",
+                q2_situation: "2. (友達がずっとあくびをしています) 昨夜、よく眠れなかったようです。",
+                q3_situation: "3. (レストランの前に人が並んでいます) あの食堂は料理がとても ____ ようです。",
+                q4_situation: "4. (友達が急に走り出しました) 約束の時間に ____ ようです。",
+                correct: "正解です！",
+                incorrect: "もう一度試してください。",
+            },
+            zh: {
+                title: "语法学习: -(으)ㄴ/는 모양이다",
+                explanationTab: "语法说明",
+                practiceTab: "练习题",
+                expTitle: "A/V-(으)ㄴ/는 모양이다, N인 모양이다",
+                expIntro: "用于根据观察到的情况推测原因或状态。与 “...것 같다 (好像...)” 意思相似。",
+                expAdjectiveTitle: "1. 形容词 (Adjective)",
+                expAdjectiveRule1: "没有收音或以 'ㄹ' 收音结尾: -ㄴ 모양이다 (例: 바쁘다 → 바쁜 모양이다)",
+                expAdjectiveRule2: "有收音时: -은 모양이다 (例: 좋다 → 좋은 모양이다)",
+                expAdjectiveRule3: "例外: 以 '있다/없다' 结尾时，使用 '-는'。(例: 맛있다 → 맛있는 모양이다)",
+                expVerbTitle: "2. 动词 (Verb)",
+                expVerbRule: "不论是否有收音: -는 모양이다 (例: 가다 → 가는 모양이다)",
+                expNounTitle: "3. 名词 (Noun)",
+                expNounRule: "不论是否有收音: -인 모양이다 (例: 학생 → 학생인 모양이다)",
+                expTenseTitle: "💡 了解时态 (Tense)",
+                expPast: "过去 (Past): -았/었던 모양이다 (例: 看来昨天晚上下了很大的雨。)",
+                expFuture: "未来 (Future): -(으)ㄹ 모양이다 (例: 天阴了，看样子马上要下雨了。)",
+                quizTitle: "练习题",
+                quizInstruction: "请根据情况，在空格处选择最恰当的选项。",
+                q1_situation: "1. (外面传来愉快的笑声) 他们好像在看有趣的电视节目。",
+                q2_situation: "2. (朋友一直在打哈欠) 他昨天晚上好像没睡好觉。",
+                q3_situation: "3. (餐厅前人们在排队) 那家餐厅的菜好像非常好吃。",
+                q4_situation: "4. (朋友突然跑了起来) 他好像约会要迟到了。",
+                correct: "回答正确！",
+                incorrect: "请再试一次。",
+            }
+        };
+
+        const quizData = [
+            { id: 'q1', situation: 'q1_situation', options: ['보는', '본', '볼'], answer: '보는' },
+            { id: 'q2', situation: 'q2_situation', options: ['못 자는', '못 잔', '못 잘'], answer: '못 잔' },
+            { id: 'q3', situation: 'q3_situation', options: ['맛있는', '맛있고', '맛있은'], answer: '맛있는' },
+            { id: 'q4', situation: 'q4_situation', options: ['늦는', '늦은', '늦을'], answer: '늦는' }
+        ];
+
+        let currentLanguage = 'ko';
+        let currentSlide = 'explanation';
+
+        const render = () => {
+            // Update text based on language
+            const t = translations[currentLanguage];
+            document.getElementById('app-title').textContent = t.title;
+            document.getElementById('explanation-tab').textContent = t.explanationTab;
+            document.getElementById('practice-tab').textContent = t.practiceTab;
+            
+            // Explanation slide
+            document.getElementById('exp-title').textContent = t.expTitle;
+            document.getElementById('exp-intro').textContent = t.expIntro;
+            document.getElementById('exp-adjective-title').textContent = t.expAdjectiveTitle;
+            document.getElementById('exp-adjective-rule1').textContent = t.expAdjectiveRule1;
+            document.getElementById('exp-adjective-rule2').textContent = t.expAdjectiveRule2;
+            document.getElementById('exp-adjective-rule3').textContent = t.expAdjectiveRule3;
+            document.getElementById('exp-verb-title').textContent = t.expVerbTitle;
+            document.getElementById('exp-verb-rule').textContent = t.expVerbRule;
+            document.getElementById('exp-noun-title').textContent = t.expNounTitle;
+            document.getElementById('exp-noun-rule').textContent = t.expNounRule;
+            document.getElementById('exp-tense-title').textContent = t.expTenseTitle;
+            document.getElementById('exp-past').textContent = t.expPast;
+            document.getElementById('exp-future').textContent = t.expFuture;
+
+            // Practice slide
+            document.getElementById('quiz-title').textContent = t.quizTitle;
+            document.getElementById('quiz-instruction').textContent = t.quizInstruction;
+            
+            // Render Quiz Questions
+            const quizContainer = document.getElementById('quiz-container');
+            quizContainer.innerHTML = ''; // Clear previous questions
+            quizData.forEach(q => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'p-4 border rounded-lg';
+                questionDiv.innerHTML = `
+                    <p class="text-gray-700 mb-4">${t[q.situation]}</p>
+                    <div class="flex flex-wrap gap-2" id="options-${q.id}">
+                        ${q.options.map(opt => `<button data-question="${q.id}" data-answer="${opt}" class="quiz-option-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors">${opt}</button>`).join('')}
+                    </div>
+                    <p id="feedback-${q.id}" class="mt-3 text-sm font-semibold"></p>
+                `;
+                quizContainer.appendChild(questionDiv);
+            });
+
+            // Update active states
+            updateActiveButtons();
+            showSlide(currentSlide);
+        };
+        
+        const updateActiveButtons = () => {
+             // Language buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === currentLanguage);
+            });
+             // Tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.slide === currentSlide);
+            });
+        }
+
+        const showSlide = (slideId) => {
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            document.getElementById(`${slideId}-slide`).classList.add('active');
+        };
+
+        // Event Listeners
+        document.querySelector('.flex.space-x-2').addEventListener('click', (e) => {
+            if (e.target.matches('.lang-btn')) {
+                currentLanguage = e.target.dataset.lang;
+                render();
+            }
+        });
+
+        document.querySelector('nav').addEventListener('click', (e) => {
+            if (e.target.matches('.tab-btn')) {
+                currentSlide = e.target.dataset.slide;
+                render();
+            }
+        });
+
+        document.getElementById('quiz-container').addEventListener('click', (e) => {
+            if (e.target.matches('.quiz-option-btn')) {
+                const qId = e.target.dataset.question;
+                const selectedAnswer = e.target.dataset.answer;
+                const correctAnswer = quizData.find(q => q.id === qId).answer;
+
+                const feedbackEl = document.getElementById(`feedback-${qId}`);
+                const optionsContainer = document.getElementById(`options-${qId}`);
+                
+                // Reset styles
+                optionsContainer.querySelectorAll('.quiz-option-btn').forEach(btn => {
+                    btn.className = 'quiz-option-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors';
+                });
+
+                if (selectedAnswer === correctAnswer) {
+                    feedbackEl.textContent = translations[currentLanguage].correct;
+                    feedbackEl.className = 'mt-3 text-sm font-semibold text-green-600';
+                    e.target.classList.remove('bg-gray-200', 'hover:bg-gray-300');
+                    e.target.classList.add('bg-green-500', 'text-white');
+                } else {
+                    feedbackEl.textContent = translations[currentLanguage].incorrect;
+                    feedbackEl.className = 'mt-3 text-sm font-semibold text-red-600';
+                    e.target.classList.remove('bg-gray-200', 'hover:bg-gray-300');
+                    e.target.classList.add('bg-red-500', 'text-white');
+                }
+            }
+        });
+
+        // Initial Render
+        render();
+    </script>
+
+</body>
+</html>
