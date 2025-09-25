@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학생 출석 체크 앱</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .student-item {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .student-item:active {
+            transform: scale(0.98);
+        }
+        .checked {
+            background-color: #6ee7b7; /* green-300 */
+        }
+        .checked .check-icon {
+            display: inline-block;
+        }
+        .check-icon {
+            display: none;
+        }
+        .button {
+            transition: transform 0.1s ease;
+        }
+        .button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div id="app-container" class="w-full max-w-md bg-white rounded-xl shadow-lg p-6 space-y-6">
+        <h1 class="text-3xl font-bold text-center text-gray-800">학생 출석 체크</h1>
+
+        <!-- 학생 명단 -->
+        <div id="student-list" class="space-y-4">
+            <!-- 학생 목록이 여기에 동적으로 추가됩니다 -->
+        </div>
+
+        <!-- 버튼 그룹 -->
+        <div class="pt-4 flex flex-col space-y-4">
+            <button id="capture-button" class="button w-full py-3 px-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-full shadow-lg">
+                결과 캡처
+            </button>
+            <button id="reset-button" class="button w-full py-3 px-6 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-full shadow-lg">
+                초기화
+            </button>
+        </div>
+    </div>
+
+    <!-- 캡처 이미지 표시 모달 -->
+    <div id="capture-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg p-6 shadow-xl w-full max-w-sm relative">
+            <h2 class="text-xl font-bold mb-4 text-center">캡처 이미지</h2>
+            <img id="captured-image" src="" alt="Captured image" class="w-full h-auto rounded-md shadow-md mb-4">
+            <div class="flex flex-col space-y-2">
+                <button id="close-modal-button" class="py-2 px-4 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium rounded-full">
+                    닫기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 학생 명단 (수정됨)
+        const students = [
+            '하 후 당', '두 캉 두안 안', '황 티 튀 드엉', '응웬 응억 마이', '풍 티 귄 응아',
+            '레 시 디엔', '응우엔 뜩 만', '쯔엉 티 투이 린', '츠엉 밍 황', '팜 티 응옥 후옌',
+            '짠 두이 풍', '팜 티 투 니', '양진룽', '테우 티 부 홍', '당 반 도안',
+            '응웬 티 후엔 린', '찬 티 미 흐엉', '마이 티 짱', '또 자 하오', '부 레 뒤엔',
+            '유미동', '도쿠나가 코우미'
+        ];
+
+        const STORAGE_KEY = 'attendance_status';
+        const studentList = document.getElementById('student-list');
+        const captureButton = document.getElementById('capture-button');
+        const resetButton = document.getElementById('reset-button');
+        const captureModal = document.getElementById('capture-modal');
+        const closeButton = document.getElementById('close-modal-button');
+        const capturedImage = document.getElementById('captured-image');
+
+        // 로컬 저장소에서 데이터 불러오기
+        const savedStatus = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+        // 학생 명단 UI 생성 및 상태 적용
+        students.forEach(name => {
+            const studentItem = document.createElement('div');
+            studentItem.classList.add('student-item', 'p-4', 'bg-gray-50', 'rounded-lg', 'shadow-sm', 'cursor-pointer', 'select-none', 'flex', 'items-center', 'justify-between');
+            studentItem.dataset.name = name;
+            studentItem.innerHTML = `
+                <span class="font-medium text-lg text-gray-700">${name}</span>
+                <span class="check-icon ml-2 text-green-500 font-bold text-xl">&#x2714;</span>
+            `;
+
+            // 저장된 상태를 적용
+            if (savedStatus[name]) {
+                studentItem.classList.add('checked');
+            }
+
+            studentItem.addEventListener('click', () => {
+                studentItem.classList.toggle('checked');
+                // 상태 변경 시 로컬 저장소에 저장
+                updateStatus(name, studentItem.classList.contains('checked'));
+            });
+            studentList.appendChild(studentItem);
+        });
+
+        // 상태를 로컬 저장소에 업데이트
+        function updateStatus(name, isChecked) {
+            savedStatus[name] = isChecked;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedStatus));
+        }
+
+        // 캡처 버튼 클릭 이벤트
+        captureButton.addEventListener('click', () => {
+            const appContainer = document.getElementById('app-container');
+            const originalBackground = document.body.style.backgroundColor;
+            document.body.style.backgroundColor = 'white';
+            captureButton.style.display = 'none';
+            resetButton.style.display = 'none';
+
+            html2canvas(appContainer, { scale: 2 }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                capturedImage.src = imgData;
+                captureModal.style.display = 'flex';
+
+                captureButton.style.display = 'block';
+                resetButton.style.display = 'block';
+                document.body.style.backgroundColor = originalBackground;
+            });
+        });
+
+        // 초기화 버튼 클릭 이벤트
+        resetButton.addEventListener('click', () => {
+            // 경고창 대신 모달 사용
+            const confirmationModal = document.createElement('div');
+            confirmationModal.innerHTML = `
+                <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+                    <div class="bg-white rounded-lg p-6 shadow-xl w-full max-w-xs text-center">
+                        <p class="mb-4 text-lg font-semibold">출석 체크를 초기화하시겠습니까?</p>
+                        <div class="flex justify-center space-x-4">
+                            <button id="confirm-yes" class="py-2 px-4 bg-red-500 text-white rounded-full hover:bg-red-600">예</button>
+                            <button id="confirm-no" class="py-2 px-4 bg-gray-300 text-gray-800 rounded-full hover:bg-gray-400">아니오</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmationModal);
+
+            document.getElementById('confirm-yes').addEventListener('click', () => {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            });
+
+            document.getElementById('confirm-no').addEventListener('click', () => {
+                confirmationModal.remove();
+            });
+        });
+
+        // 모달 닫기 버튼 클릭 이벤트
+        closeButton.addEventListener('click', () => {
+            captureModal.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
+
