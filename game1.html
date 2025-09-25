@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학생 추첨기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .lottery-box {
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lottery-text {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        .button {
+            transition: transform 0.1s ease;
+        }
+        .button:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-sm bg-gray-800 rounded-xl shadow-lg p-6 space-y-6 text-center">
+        <h1 class="text-3xl font-bold text-gray-100">발표자 추첨기</h1>
+
+        <!-- 추첨 결과 표시 상자 -->
+        <div id="lottery-box" class="lottery-box bg-gray-700 rounded-xl shadow-inner flex items-center justify-center p-4">
+            <span id="result-display" class="lottery-text text-3xl md:text-4xl font-extrabold text-blue-400">
+                추첨 버튼을 눌러주세요!
+            </span>
+        </div>
+
+        <!-- 추첨 버튼 -->
+        <button id="lottery-button" class="button w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-full shadow-lg">
+            무작위 추첨
+        </button>
+
+        <!-- 추첨된 학생 명단 -->
+        <div class="pt-4 text-left">
+            <h2 class="text-xl font-semibold mb-2 text-gray-300">추첨된 학생들</h2>
+            <ul id="drawn-students-list" class="space-y-2 text-gray-400">
+                <!-- 추첨된 학생 목록이 여기에 표시됩니다 -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 학생 명단
+        const students = [
+            '하 후 당', '두 캉 두안 안', '황 티 튀 드엉', '응웬 응억 마이', '풍 티 귄 응아',
+            '레 시 디엔', '응우엔 뜩 만', '쯔엉 티 투이 린', '츠엉 밍 황', '팜 티 응옥 후옌',
+            '짠 두이 풍', '팜 티 투 니', '부 투이 짱', '테우 티 부 홍', '당 반 도안',
+            '응웬 티 후엔 린', '찬 티 미 흐엉', '마이 티 짱', '또 자 하오', '부 레 뒤엔',
+            '유미동', '도쿠나가 코우미'
+        ];
+
+        let availableStudents = [...students];
+        const lotteryButton = document.getElementById('lottery-button');
+        const resultDisplay = document.getElementById('result-display');
+        const drawnList = document.getElementById('drawn-students-list');
+
+        lotteryButton.addEventListener('click', () => {
+            // 남은 학생이 있는지 확인
+            if (availableStudents.length === 0) {
+                resultDisplay.textContent = '모든 학생이 추첨되었습니다!';
+                lotteryButton.disabled = true; // 버튼 비활성화
+                lotteryButton.classList.add('opacity-50', 'cursor-not-allowed');
+                return;
+            }
+
+            // 무작위로 학생 선택
+            const randomIndex = Math.floor(Math.random() * availableStudents.length);
+            const selectedStudent = availableStudents[randomIndex];
+
+            // 추첨 결과 표시
+            resultDisplay.textContent = selectedStudent;
+
+            // 추첨된 학생 명단에 추가
+            const drawnItem = document.createElement('li');
+            drawnItem.textContent = selectedStudent;
+            drawnList.appendChild(drawnItem);
+
+            // 추첨된 학생을 남은 명단에서 제거
+            availableStudents.splice(randomIndex, 1);
+        });
+    </script>
+</body>
+</html>
+
