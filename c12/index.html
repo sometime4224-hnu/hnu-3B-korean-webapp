@@ -62,6 +62,11 @@
             gap: 15px;
         }
 
+        /* 문법 섹션을 위한 2x2 그리드 레이아웃 */
+        .grammar-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
         .activity-button {
             display: flex;
             align-items: center;
@@ -107,7 +112,7 @@
             h1 {
                 font-size: 1.8em;
             }
-            .section-buttons {
+            .section-buttons, .grammar-grid { /* 작은 화면에서는 모두 1열로 변경 */
                 grid-template-columns: 1fr;
             }
         }
@@ -126,10 +131,12 @@
 
         <div class="activity-section">
             <h2 class="section-title">문법</h2>
-            <div class="section-buttons">
+            <!-- 문법 버튼들을 2x2 그리드로 만들기 위해 'grammar-grid' 클래스 추가 -->
+            <div class="section-buttons grammar-grid">
                 <a href="grammar1.html" class="activity-button btn-grammar" data-target="grammar1.html">문법 1</a>
                 <a href="grammar2.html" class="activity-button btn-grammar" data-target="grammar2.html">문법 2</a>
                 <a href="grammar3.html" class="activity-button btn-grammar" data-target="grammar3.html">문법 3</a>
+                <a href="grammar4.html" class="activity-button btn-grammar" data-target="grammar4.html">문법 4</a>
             </div>
         </div>
 
@@ -174,4 +181,3 @@
     </script>
 </body>
 </html>
-
