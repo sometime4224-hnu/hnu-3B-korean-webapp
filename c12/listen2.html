@@ -43,6 +43,25 @@
             transform-origin: center;
             transition: stroke-dashoffset 0.1s linear;
         }
+
+        /* Floating Script Button Styles */
+        #floating-script-btn {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        #floating-script-btn.hidden {
+            transform: scale(0.8) translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Script Modal Styles */
+        #script-modal {
+            transition: opacity 0.3s ease-in-out;
+        }
+        #script-modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="bg-gray-100 p-4 flex items-center justify-center min-h-screen">
@@ -114,6 +133,23 @@
         </div>
     </div>
 
+    <!-- Floating Script Button -->
+    <button id="floating-script-btn" class="hidden fixed bottom-4 right-4 bg-indigo-600 text-white p-3 rounded-full shadow-lg z-50 flex items-center justify-center w-12 h-12">
+        <i class="fas fa-file-alt text-lg"></i>
+    </button>
+
+    <!-- Script Modal -->
+    <div id="script-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto relative">
+            <button id="close-modal-btn" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+            <h3 class="text-xl font-bold mb-4 text-gray-800">스크립트</h3>
+            <div id="modal-script-content" class="text-sm space-y-2">
+                <!-- Script content will be copied here -->
+            </div>
+        </div>
+    </div>
+
+
 <script>
     const quizData = [
         {
@@ -128,22 +164,12 @@
         },
         {
             question: "남자가 음식 조절이 어렵다고 말한 이유는 무엇입니까?",
-            options: [
-                "단 음식을 너무 좋아해서",
-                "요리할 시간이 없어서",
-                "회사를 다녀서",
-                "회식을 자주 해야 해서"
-            ],
+            options: ["단 음식을 너무 좋아해서", "요리할 시간이 없어서", "회사를 다녀서", "회식을 자주 해야 해서"],
             answer: "회식을 자주 해야 해서"
         },
         {
             question: "들은 내용과 다른 것을 고르십시오.",
-            options: [
-                "남자는 운동 후 회사에서 인기가 많아졌다.",
-                "여자는 윗몸 일으키기만으로는 복근을 만들 수 없다고 했다.",
-                "남자는 하루도 빠짐없이 운동을 했다.",
-                "여자는 남자에게 회식 때 술을 절대 마시지 말라고 했다."
-            ],
+            options: ["남자는 운동 후 회사에서 인기가 많아졌다.", "여자는 윗몸 일으키기만으로는 복근을 만들 수 없다고 했다.", "남자는 하루도 빠짐없이 운동을 했다.", "여자는 남자에게 회식 때 술을 절대 마시지 말라고 했다."],
             answer: "여자는 남자에게 회식 때 술을 절대 마시지 말라고 했다."
         }
     ];
@@ -169,6 +195,12 @@
     const progressCircumference = 2 * Math.PI * progressCircleRadius;
     miniPlayerProgress.style.strokeDasharray = `${progressCircumference} ${progressCircumference}`;
     miniPlayerProgress.style.strokeDashoffset = progressCircumference;
+
+    // Script Modal & Floating Button Elements
+    const floatingScriptBtn = document.getElementById('floating-script-btn');
+    const scriptModal = document.getElementById('script-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const modalScriptContent = document.getElementById('modal-script-content');
 
     function loadAllQuizzes() {
         quizContainer.innerHTML = '';
@@ -239,40 +271,32 @@
     });
     
     // --- MINI PLAYER LOGIC ---
-
-    miniPlayerPlayPauseBtn.addEventListener('click', () => {
-        if (audio.paused) {
-            audio.play();
-        } else {
-            audio.pause();
-        }
-    });
-
-    audio.addEventListener('play', () => {
-        miniPlayerPlayPauseBtn.innerHTML = '<i class="fas fa-pause text-base"></i>';
-    });
-
-    audio.addEventListener('pause', () => {
-        miniPlayerPlayPauseBtn.innerHTML = '<i class="fas fa-play text-base"></i>';
-    });
-
+    miniPlayerPlayPauseBtn.addEventListener('click', () => audio.paused ? audio.play() : audio.pause());
+    audio.addEventListener('play', () => miniPlayerPlayPauseBtn.innerHTML = '<i class="fas fa-pause text-base"></i>');
+    audio.addEventListener('pause', () => miniPlayerPlayPauseBtn.innerHTML = '<i class="fas fa-play text-base"></i>');
     audio.addEventListener('timeupdate', () => {
         const progressPercent = (audio.currentTime / audio.duration) || 0;
         const offset = progressCircumference - progressPercent * progressCircumference;
         miniPlayerProgress.style.strokeDashoffset = offset;
     });
 
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                miniPlayer.classList.add('hidden');
-            } else {
-                miniPlayer.classList.remove('hidden');
-            }
-        });
+    const playerObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => miniPlayer.classList.toggle('hidden', entry.isIntersecting));
     }, { threshold: 0.1 }); 
+    playerObserver.observe(mainAudioPlayer);
 
-    observer.observe(mainAudioPlayer);
+    // --- SCRIPT MODAL & FLOATING BUTTON LOGIC ---
+    modalScriptContent.innerHTML = scriptContent.innerHTML;
+    floatingScriptBtn.addEventListener('click', () => scriptModal.classList.remove('hidden'));
+    closeModalBtn.addEventListener('click', () => scriptModal.classList.add('hidden'));
+    scriptModal.addEventListener('click', (e) => {
+        if (e.target === scriptModal) scriptModal.classList.add('hidden');
+    });
+
+    const scriptButtonObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => floatingScriptBtn.classList.toggle('hidden', entry.isIntersecting));
+    }, { threshold: 0.1 });
+    scriptButtonObserver.observe(toggleScriptBtn);
 
     loadAllQuizzes();
 </script>
