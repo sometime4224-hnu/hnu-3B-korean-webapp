@@ -1,1 +1,290 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국어 문법 학습: A/V-아야/어야</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .slide {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .slide.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .lang-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .lang-btn.active {
+            background-color: #3B82F6;
+            color: white;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-2xl bg-white rounded-2xl shadow-lg overflow-hidden">
+        
+        <!-- Slide 1: 설명 (Explanation) -->
+        <div id="explanation-slide" class="slide active p-6 md:p-8">
+            <header class="mb-6">
+                <h1 class="text-2xl md:text-3xl font-bold text-blue-600">문법 배우기 📚</h1>
+                <p class="text-gray-500 mt-1">A/V-아야/어야, N-(이)어야/여야</p>
+            </header>
+            
+            <!-- Language Selection Buttons -->
+            <div class="flex flex-wrap gap-2 mb-6 border-b pb-4">
+                <button onclick="changeLanguage('ko')" class="lang-btn active text-sm md:text-base px-4 py-2 bg-gray-200 text-gray-700 rounded-full">한국어</button>
+                <button onclick="changeLanguage('en')" class="lang-btn text-sm md:text-base px-4 py-2 bg-gray-200 text-gray-700 rounded-full">English</button>
+                <button onclick="changeLanguage('jp')" class="lang-btn text-sm md:text-base px-4 py-2 bg-gray-200 text-gray-700 rounded-full">日本語</button>
+                <button onclick="changeLanguage('cn')" class="lang-btn text-sm md:text-base px-4 py-2 bg-gray-200 text-gray-700 rounded-full">中文</button>
+                <button onclick="changeLanguage('vi')" class="lang-btn text-sm md:text-base px-4 py-2 bg-gray-200 text-gray-700 rounded-full">Tiếng Việt</button>
+            </div>
+            
+            <!-- Explanation Content -->
+            <div id="explanation-content" class="space-y-4 text-gray-800">
+                <!-- Content will be injected by JavaScript -->
+            </div>
+
+            <footer class="mt-8 text-right">
+                <button onclick="showPractice()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-transform transform hover:scale-105">
+                    연습 문제 풀기 &rarr;
+                </button>
+            </footer>
+        </div>
+
+        <!-- Slide 2: 연습 (Practice) -->
+        <div id="practice-slide" class="slide p-6 md:p-8">
+            <header class="mb-6">
+                <h1 class="text-2xl md:text-3xl font-bold text-green-600">연습 문제 ✍️</h1>
+                <p class="text-gray-500 mt-1">'-아야/어야'를 사용해서 문장을 완성해 보세요.</p>
+            </header>
+
+            <div class="space-y-6">
+                <!-- Question 1 -->
+                <div class="practice-item">
+                    <p class="font-semibold text-gray-700">1. 외국어를 잘하려면 어떻게 해야 해요?</p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <input id="q1" type="text" class="w-full border-2 border-gray-200 rounded-lg p-2 focus:outline-none focus:border-green-500" placeholder="예: 꾸준히 공부해야 해요.">
+                        <span id="feedback1" class="text-xl"></span>
+                    </div>
+                </div>
+                <!-- Question 2 -->
+                <div class="practice-item">
+                    <p class="font-semibold text-gray-700">2. 면접을 잘 보려면 어떻게 해야 해요?</p>
+                     <div class="flex items-center gap-2 mt-2">
+                        <input id="q2" type="text" class="w-full border-2 border-gray-200 rounded-lg p-2 focus:outline-none focus:border-green-500" placeholder="자신감을 가져야 해요.">
+                        <span id="feedback2" class="text-xl"></span>
+                    </div>
+                </div>
+                <!-- Question 3 -->
+                <div class="practice-item">
+                    <p class="font-semibold text-gray-700">3. 건강하게 살려면 어떻게 해야 해요?</p>
+                     <div class="flex items-center gap-2 mt-2">
+                        <input id="q3" type="text" class="w-full border-2 border-gray-200 rounded-lg p-2 focus:outline-none focus:border-green-500" placeholder="운동을 열심히 해야 해요.">
+                         <span id="feedback3" class="text-xl"></span>
+                    </div>
+                </div>
+                <!-- Question 4 -->
+                <div class="practice-item">
+                     <p class="font-semibold text-gray-700">4. 라면을 맛있게 끓이려면 어떻게 해야 해요?</p>
+                     <div class="flex items-center gap-2 mt-2">
+                        <input id="q4" type="text" class="w-full border-2 border-gray-200 rounded-lg p-2 focus:outline-none focus:border-green-500" placeholder="물을 잘 맞춰야 해요.">
+                        <span id="feedback4" class="text-xl"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <footer class="mt-8 flex justify-between items-center">
+                <button onclick="showExplanation()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg transition-transform transform hover:scale-105">
+                    &larr; 설명 보기
+                </button>
+                <button onclick="checkAnswers()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg transition-transform transform hover:scale-105">
+                    정답 확인
+                </button>
+            </footer>
+        </div>
+
+    </div>
+
+    <script>
+        const explanations = {
+            ko: {
+                title: "의미",
+                content: "'A/V-아야/어야, N-(이)어야/여야'는 어떤 일이 일어나기 위해 꼭 필요한 조건을 말할 때 사용해요. 'A 해야 B 할 수 있다' 와 같은 형태로 많이 써요.",
+                conjugationTitle: "결합 정보",
+                conjugation: [
+                    "<strong>동사/형용사:</strong> 어간의 마지막 모음이 '아, 오'이면 <strong>-아야</strong> (예: 좋다 → 좋아야)",
+                    "그 외 모음이면 <strong>-어야</strong> (예: 먹다 → 먹어야)",
+                    "'하다' 동사는 <strong>해야</strong> 가 돼요 (예: 공부하다 → 공부해야)",
+                    "<strong>명사:</strong> 받침이 있으면 <strong>-이어야</strong> (예: 학생 → 학생이어야)",
+                    "받침이 없으면 <strong>-여야</strong> (예: 의사 → 의사여야)"
+                ],
+                examplesTitle: "예문",
+                examples: [
+                    "학생증이 <strong>있어야</strong> 도서관에 들어갈 수 있어요.",
+                    "운동을 꾸준히 <strong>해야</strong> 건강을 지킬 수 있어요.",
+                    "스무 살 이상<strong>이어야</strong> 이 영화를 볼 수 있어요."
+                ]
+            },
+            en: {
+                title: "Meaning",
+                content: "The pattern 'A/V-아야/어야, N-(이)어야/여야' expresses a necessary condition for the following action or state to occur. It's similar to saying 'You must do A in order to do B'.",
+                conjugationTitle: "Conjugation",
+                conjugation: [
+                    "<strong>Verbs/Adjectives:</strong> If the last vowel of the stem is '아' or '오', use <strong>-아야</strong> (e.g., 좋다 → 좋아야).",
+                    "For other vowels, use <strong>-어야</strong> (e.g., 먹다 → 먹어야).",
+                    "Verbs ending in '하다' become <strong>해야</strong> (e.g., 공부하다 → 공부해야).",
+                     "<strong>Nouns:</strong> If the noun ends in a consonant, use <strong>-이어야</strong> (e.g., 학생 → 학생이어야).",
+                    "If it ends in a vowel, use <strong>-여야</strong> (e.g., 의사 → 의사여야)."
+                ],
+                examplesTitle: "Examples",
+                examples: [
+                    "You <strong>must have</strong> a student ID to enter the library.",
+                    "You <strong>must exercise</strong> consistently to maintain your health.",
+                    "You <strong>must be</strong> 20 years or older to watch this movie."
+                ]
+            },
+            jp: {
+                title: "意味",
+                content: "「A/V-아야/어야, N-(이)어야/여야」は、後のことが成立するための必須条件を表すときに使います。「AしてこそBできる」という意味合いが近いです。",
+                conjugationTitle: "活用",
+                conjugation: [
+                    "<strong>動詞/形容詞:</strong> 語幹の最後の母音が「아, 오」の場合は<strong>-아야</strong> (例: 좋다 → 좋아야)",
+                    "その他の母音の場合は<strong>-어야</strong> (例: 먹다 → 먹어야)",
+                    "「하다」動詞は<strong>해야</strong>になります (例: 공부하다 → 공부해야)",
+                    "<strong>名詞:</strong> パッチムがあれば<strong>-이어야</strong> (例: 학생 → 학생이어야)",
+                    "パッチムがなければ<strong>-여야</strong> (例: 의사 → 의사여야)"
+                ],
+                examplesTitle: "例文",
+                examples: [
+                    "学生証が<strong>なければ</strong>図書館に入れません。",
+                    "着実に運動を<strong>してこそ</strong>健康を守ることができます。",
+                    "二十歳以上で<strong>なければ</strong>この映画を見ることはできません。"
+                ]
+            },
+            cn: {
+                title: "意思",
+                content: "这个语法 ‘A/V-아야/어야, N-(이)어야/여야’ 表示为了实现后面的内容，前面必须具备的条件。类似于 “必须/得 A 才能 B”。",
+                conjugationTitle: "结合规则",
+                conjugation: [
+                    "<strong>动词/形容词:</strong> 词干的最后一个元音是'아, 오'时，用<strong>-아야</strong> (例如: 좋다 → 좋아야)",
+                    "其他元音时，用<strong>-어야</strong> (例如: 먹다 → 먹어야)",
+                    "以'하다'结尾的动词变成<strong>해야</strong> (例如: 공부하다 → 공부해야)",
+                    "<strong>名词:</strong> 有收音时用<strong>-이어야</strong> (例如: 학생 → 학생이어야)",
+                    "没有收音时用<strong>-여야</strong> (例如: 의사 → 의사여야)"
+                ],
+                examplesTitle: "例句",
+                examples: [
+                    "<strong>必须有</strong>学生证才能进图书馆。",
+                    "<strong>要</strong>坚持运动才能保持健康。",
+                    "<strong>必须</strong>是20岁以上才能看这部电影。"
+                ]
+            },
+            vi: {
+                title: "Ý nghĩa",
+                content: "Cấu trúc 'A/V-아야/어야, N-(이)어야/여야' diễn tả một điều kiện cần thiết hoặc bắt buộc để hành động hoặc trạng thái ở vế sau có thể xảy ra. Tương đương với 'phải... thì mới...'.",
+                conjugationTitle: "Cách kết hợp",
+                conjugation: [
+                    "<strong>Động từ/Tính từ:</strong> Nếu nguyên âm cuối của gốc từ là '아' hoặc '오', dùng <strong>-아야</strong> (VD: 좋다 → 좋아야).",
+                    "Với các nguyên âm khác, dùng <strong>-어야</strong> (VD: 먹다 → 먹어야).",
+                    "Động từ có '하다' trở thành <strong>해야</strong> (VD: 공부하다 → 공부해야).",
+                    "<strong>Danh từ:</strong> Nếu kết thúc bằng phụ âm, dùng <strong>-이어야</strong> (VD: 학생 → 학생이어야).",
+                    "Nếu kết thúc bằng nguyên âm, dùng <strong>-여야</strong> (VD: 의사 → 의사여야)."
+                ],
+                examplesTitle: "Ví dụ",
+                examples: [
+                    "<strong>Phải có</strong> thẻ sinh viên thì mới có thể vào thư viện.",
+                    "<strong>Phải</strong> tập thể dục đều đặn thì mới giữ gìn được sức khỏe.",
+                    "<strong>Phải</strong> trên 20 tuổi thì mới được xem bộ phim này."
+                ]
+            }
+        };
+
+        const explanationContent = document.getElementById('explanation-content');
+        const langButtons = document.querySelectorAll('.lang-btn');
+
+        function changeLanguage(lang) {
+            const data = explanations[lang];
+            let html = `
+                <div>
+                    <h2 class="text-xl font-bold text-gray-700 mb-2">${data.title}</h2>
+                    <p class="text-base leading-relaxed">${data.content}</p>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-700 mb-2">${data.conjugationTitle}</h2>
+                    <ul class="list-disc list-inside space-y-1 text-base leading-relaxed">
+                        ${data.conjugation.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-700 mb-2">${data.examplesTitle}</h2>
+                    <ul class="space-y-2 text-base leading-relaxed">
+                        ${data.examples.map(item => `<li class="p-3 bg-blue-50 rounded-lg">${item}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+            explanationContent.innerHTML = html;
+
+            langButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(lang) || (lang === 'jp' && btn.textContent === '日本語') || (lang === 'cn' && btn.textContent === '中文') || (lang === 'vi' && btn.textContent.toLowerCase().includes('việt'))) {
+                   if(btn.onclick.toString().includes(`changeLanguage('${lang}')`)) {
+                        btn.classList.add('active');
+                   }
+                }
+            });
+        }
+
+        function showExplanation() {
+            document.getElementById('explanation-slide').classList.add('active');
+            document.getElementById('practice-slide').classList.remove('active');
+        }
+
+        function showPractice() {
+            document.getElementById('practice-slide').classList.add('active');
+            document.getElementById('explanation-slide').classList.remove('active');
+        }
+        
+        function checkAnswers() {
+            const answers = [
+                document.getElementById('q1').value,
+                document.getElementById('q2').value,
+                document.getElementById('q3').value,
+                document.getElementById('q4').value,
+            ];
+
+            answers.forEach((answer, i) => {
+                const feedbackEl = document.getElementById(`feedback${i+1}`);
+                if (answer.includes('야')) { // Simple check for the grammar point
+                    feedbackEl.textContent = '👍';
+                } else if(answer.trim() === '') {
+                    feedbackEl.textContent = '';
+                } 
+                else {
+                    feedbackEl.textContent = '🤔';
+                }
+            });
+        }
+
+        // Initial load
+        window.onload = () => {
+            changeLanguage('ko');
+        };
+    </script>
+
+</body>
+</html>
 
