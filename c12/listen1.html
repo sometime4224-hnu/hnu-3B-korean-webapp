@@ -28,18 +28,33 @@
             cursor: not-allowed;
             opacity: 0.8;
         }
+        
+        /* Mini Player Styles */
+        #mini-player {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        #mini-player.hidden {
+            transform: scale(0.8) translateY(-20px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        #mini-player-progress {
+            transform: rotate(-90deg);
+            transform-origin: center;
+            transition: stroke-dashoffset 0.1s linear;
+        }
     </style>
 </head>
 <body class="bg-gray-100 p-4 flex items-center justify-center min-h-screen">
 
     <div class="w-full max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6 sm:p-8">
         <div class="text-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">🎧 한국어 듣기 퀴즈</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">🎧 한국어 듣기 퀴즈</h1>
             <p class="text-gray-600">듣기 내용을 잘 듣고 질문에 답해 보세요.</p>
         </div>
 
-        <!-- 오디오 플레이어 -->
-        <div class="audio-player bg-gray-50 p-4 rounded-lg mb-4">
+        <!-- Main Audio Player -->
+        <div id="main-audio-player" class="audio-player bg-gray-50 p-4 rounded-lg mb-4">
              <label for="audio-file" class="text-sm font-medium text-gray-700">Track 30 (음원)</label>
              <audio id="audio-file" controls class="w-full mt-2">
                  <source src="./track30.mp3" type="audio/mpeg">
@@ -47,7 +62,7 @@
              </audio>
         </div>
 
-        <!-- 스크립트 보기 -->
+        <!-- Script Toggle Button -->
         <div class="mb-6">
             <button id="toggle-script-btn" class="w-full text-left text-indigo-600 font-semibold py-2 px-3 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition">
                 <i class="fas fa-file-alt mr-2"></i>스크립트 보기
@@ -64,12 +79,12 @@
             </div>
         </div>
 
-        <!-- 퀴즈 컨테이너 -->
+        <!-- Quiz Container -->
         <div id="quiz-container" class="space-y-8 border-t pt-6">
-            <!-- 퀴즈가 여기에 동적으로 생성됩니다. -->
+            <!-- Quizzes are dynamically generated here -->
         </div>
         
-        <!-- 결과 및 버튼 컨테이너 -->
+        <!-- Result and Action Buttons -->
         <div class="border-t pt-6 text-center mt-6">
              <div id="result-container" class="hidden mb-4">
                  <h2 class="text-2xl font-bold text-green-600">퀴즈 완료!</h2>
@@ -78,7 +93,24 @@
              <button id="submit-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-indigo-700 transition duration-300 w-full sm:w-auto">결과 보기</button>
              <button id="retry-btn" class="hidden bg-gray-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-gray-700 transition duration-300 w-full sm:w-auto">다시 풀기</button>
         </div>
+    </div>
 
+    <!-- Mini Audio Player (Sticky) -->
+    <div id="mini-player" class="hidden fixed top-4 right-4 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-lg z-50">
+        <div class="relative w-12 h-12">
+            <svg class="absolute top-0 left-0 w-full h-full" viewBox="0 0 36 36">
+                <circle class="text-gray-200" cx="18" cy="18" r="16" fill="none" stroke-width="3"></circle>
+                <circle id="mini-player-progress" class="text-indigo-600"
+                    cx="18" cy="18" r="16"
+                    fill="none"
+                    stroke-width="3"
+                    stroke-dasharray="100.5"
+                    stroke-dashoffset="100.5" />
+            </svg>
+            <button id="mini-player-play-pause-btn" class="absolute top-0 left-0 w-full h-full flex items-center justify-center text-indigo-600">
+                <i class="fas fa-play text-base"></i>
+            </button>
+        </div>
     </div>
 
 <script>
@@ -95,22 +127,12 @@
         },
         {
             question: "남자가 제안한 방법이 아닌 것은 무엇입니까?",
-            options: [
-                "자기 전에 스트레칭하기",
-                "뜨거운 수건으로 마사지하기",
-                "굽이 아주 낮은 구두 신기",
-                "평소에 발목을 자주 움직이기"
-            ],
+            options: ["자기 전에 스트레칭하기", "뜨거운 수건으로 마사지하기", "굽이 아주 낮은 구두 신기", "평소에 발목을 자주 움직이기"],
             answer: "굽이 아주 낮은 구두 신기"
         },
         {
             question: "들은 내용과 같은 것을 고르십시오.",
-            options: [
-                "여자는 운동할 시간이 충분합니다.",
-                "남자는 굽이 5cm인 구두를 추천했습니다.",
-                "여자는 아침마다 다리가 붓습니다.",
-                "남자는 여자에게 매일 운동하라고 말했습니다."
-            ],
+            options: ["여자는 운동할 시간이 충분합니다.", "남자는 굽이 5cm인 구두를 추천했습니다.", "여자는 아침마다 다리가 붓습니다.", "남자는 여자에게 매일 운동하라고 말했습니다."],
             answer: "여자는 아침마다 다리가 붓습니다."
         }
     ];
@@ -125,20 +147,29 @@
     const retryBtn = document.getElementById('retry-btn');
     const toggleScriptBtn = document.getElementById('toggle-script-btn');
     const scriptContent = document.getElementById('script-content');
+    
+    // Audio Player Elements
+    const audio = document.getElementById('audio-file');
+    const mainAudioPlayer = document.getElementById('main-audio-player');
+    const miniPlayer = document.getElementById('mini-player');
+    const miniPlayerPlayPauseBtn = document.getElementById('mini-player-play-pause-btn');
+    const miniPlayerProgress = document.getElementById('mini-player-progress');
+    const progressCircleRadius = miniPlayerProgress.r.baseVal.value;
+    const progressCircumference = 2 * Math.PI * progressCircleRadius;
+    miniPlayerProgress.style.strokeDasharray = `${progressCircumference} ${progressCircumference}`;
+    miniPlayerProgress.style.strokeDashoffset = progressCircumference;
 
     function loadAllQuizzes() {
+        // ... (quiz loading logic remains the same)
         quizContainer.innerHTML = '';
         quizData.forEach((quiz, index) => {
             const questionBlock = document.createElement('div');
             questionBlock.id = `question-${index}`;
-            
             const questionEl = document.createElement('h2');
             questionEl.className = 'text-xl font-bold text-gray-800 mb-4';
             questionEl.innerText = `Q${index + 1}. ${quiz.question}`;
-            
             const optionsEl = document.createElement('div');
             optionsEl.className = 'grid grid-cols-1 sm:grid-cols-2 gap-3';
-            
             quiz.options.forEach(optionText => {
                 const button = document.createElement('button');
                 button.innerText = optionText;
@@ -146,7 +177,6 @@
                 button.addEventListener('click', () => checkAnswer(index, button, optionText, quiz.answer));
                 optionsEl.appendChild(button);
             });
-
             questionBlock.appendChild(questionEl);
             questionBlock.appendChild(optionsEl);
             quizContainer.appendChild(questionBlock);
@@ -154,22 +184,18 @@
     }
 
     function checkAnswer(questionIndex, button, selected, correct) {
+        // ... (answer checking logic remains the same)
         const questionBlock = document.getElementById(`question-${questionIndex}`);
-        const optionButtons = questionBlock.querySelectorAll('.option-btn');
-        
-        // Prevent re-answering
         if (questionBlock.dataset.answered) return;
         questionBlock.dataset.answered = 'true';
-
         questionsAnswered++;
-
+        const optionButtons = questionBlock.querySelectorAll('.option-btn');
         optionButtons.forEach(btn => {
             btn.disabled = true;
             if (btn.innerText === correct) {
                 btn.classList.add('correct');
             }
         });
-
         if (selected === correct) {
             score++;
         } else {
@@ -177,6 +203,7 @@
         }
     }
 
+    // Event Listeners for buttons
     submitBtn.addEventListener('click', () => {
         if (questionsAnswered < quizData.length) {
             alert('모든 문제를 풀어주세요.');
@@ -202,9 +229,51 @@
         const isHidden = scriptContent.classList.contains('hidden');
         toggleScriptBtn.innerHTML = isHidden ? '<i class="fas fa-file-alt mr-2"></i>스크립트 보기' : '<i class="fas fa-eye-slash mr-2"></i>스크립트 숨기기';
     });
+    
+    // --- MINI PLAYER LOGIC ---
 
+    // Toggle play/pause on mini player click
+    miniPlayerPlayPauseBtn.addEventListener('click', () => {
+        if (audio.paused) {
+            audio.play();
+        } else {
+            audio.pause();
+        }
+    });
+
+    // Sync mini player icon with audio state
+    audio.addEventListener('play', () => {
+        miniPlayerPlayPauseBtn.innerHTML = '<i class="fas fa-pause text-base"></i>';
+    });
+
+    audio.addEventListener('pause', () => {
+        miniPlayerPlayPauseBtn.innerHTML = '<i class="fas fa-play text-base"></i>';
+    });
+
+    // Update mini player progress circle
+    audio.addEventListener('timeupdate', () => {
+        const progressPercent = (audio.currentTime / audio.duration) || 0;
+        const offset = progressCircumference - progressPercent * progressCircumference;
+        miniPlayerProgress.style.strokeDashoffset = offset;
+    });
+
+    // Show/hide mini player based on main player visibility
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                miniPlayer.classList.add('hidden');
+            } else {
+                miniPlayer.classList.remove('hidden');
+            }
+        });
+    }, { threshold: 0.1 }); // Trigger when 10% of the player is visible/hidden
+
+    observer.observe(mainAudioPlayer);
+
+    // Initial load
     loadAllQuizzes();
 </script>
 
 </body>
 </html>
+
