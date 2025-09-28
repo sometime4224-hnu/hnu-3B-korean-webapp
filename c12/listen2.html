@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국어 듣기 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .option-btn {
+            transition: all 0.2s;
+        }
+        .option-btn.correct {
+            background-color: #10b981; /* green-500 */
+            color: white;
+            border-color: #10b981;
+        }
+        .option-btn.incorrect {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            border-color: #ef4444;
+        }
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        
+        /* Mini Player Styles */
+        #mini-player {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        #mini-player.hidden {
+            transform: scale(0.8) translateY(-20px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        #mini-player-progress {
+            transform: rotate(-90deg);
+            transform-origin: center;
+            transition: stroke-dashoffset 0.1s linear;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 flex items-center justify-center min-h-screen">
+
+    <div class="w-full max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6 sm:p-8">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">🎧 한국어 듣기 퀴즈</h1>
+            <p class="text-gray-600">듣기 내용을 잘 듣고 질문에 답해 보세요.</p>
+        </div>
+
+        <!-- Main Audio Player -->
+        <div id="main-audio-player" class="audio-player bg-gray-50 p-4 rounded-lg mb-4">
+             <label for="audio-file" class="text-sm font-medium text-gray-700">Track 31 (음원)</label>
+             <audio id="audio-file" controls class="w-full mt-2">
+                 <source src="./track31.mp3" type="audio/mpeg">
+                 Your browser does not support the audio element.
+             </audio>
+        </div>
+
+        <!-- Script Toggle Button -->
+        <div class="mb-6">
+            <button id="toggle-script-btn" class="w-full text-left text-indigo-600 font-semibold py-2 px-3 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition">
+                <i class="fas fa-file-alt mr-2"></i>스크립트 보기
+            </button>
+            <div id="script-content" class="hidden mt-3 bg-gray-50 p-4 rounded-lg text-sm space-y-2 border">
+                <p><strong>남:</strong> 선생님이 가르쳐 주신 대로 운동했더니 요즘 몸이 많이 좋아졌어요.</p>
+                <p><strong>여:</strong> 정말 많이 좋아지셨네요. 그동안 운동을 열심히 하신 모양이네요.</p>
+                <p><strong>남:</strong> 네, 하루도 빠짐없이 달리기도 하고 근육 운동도 했더니 배도 많이 들어갔어요. 그래서 이번에는 더 열심히 해서 복근도 만들어 보려고요.</p>
+                <p><strong>여:</strong> 네, 지금까지 하던 대로 열심히 하시면 가능해요.</p>
+                <p><strong>남:</strong> 복근을 만들려면 역시 윗몸 일으키기를 많이 하는 게 좋겠죠?</p>
+                <p><strong>여:</strong> 보통 그렇게 생각하기 쉬운데 윗몸 일으키기만 하면 복근을 만들 수 없어요. 줄넘기나 옆구리 운동을 함께해야 돼요. 그리고 중요한 건 음식이에요. 술이나 단 음식은 절대 먹으면 안 돼요.</p>
+                <p><strong>남:</strong> 그건 정말 곤란한데요. 제가 다니는 회사는 회식을 자주 해서요.</p>
+                <p><strong>여:</strong> 회식 때는 어쩔 수 없겠지만 그래도 한번 노력은 해 보세요. 몸이 좋아졌을 때 하면 효과를 더 빨리 얻을 수 있으니까요. 배에 복근이 생기면 얼마나 멋있는지 몰라요.</p>
+                <p><strong>남:</strong> 그건 그래요. 운동을 시작하고 나서 회사에서 인기도 많아졌어요. 그리고 몸도 가볍고 기분이 상쾌해져서 일도 더 잘하게 되었어요. 계속 많이 도와주세요.</p>
+            </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quiz-container" class="space-y-8 border-t pt-6">
+            <!-- Quizzes are dynamically generated here -->
+        </div>
+        
+        <!-- Result and Action Buttons -->
+        <div class="border-t pt-6 text-center mt-6">
+             <div id="result-container" class="hidden mb-4">
+                 <h2 class="text-2xl font-bold text-green-600">퀴즈 완료!</h2>
+                 <p id="score-text" class="text-gray-700 text-lg mt-2"></p>
+             </div>
+             <button id="submit-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-indigo-700 transition duration-300 w-full sm:w-auto">결과 보기</button>
+             <button id="retry-btn" class="hidden bg-gray-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-gray-700 transition duration-300 w-full sm:w-auto">다시 풀기</button>
+        </div>
+    </div>
+
+    <!-- Mini Audio Player (Sticky) -->
+    <div id="mini-player" class="hidden fixed top-4 right-4 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-lg z-50">
+        <div class="relative w-12 h-12">
+            <svg class="absolute top-0 left-0 w-full h-full" viewBox="0 0 36 36">
+                <circle class="text-gray-200" cx="18" cy="18" r="16" fill="none" stroke-width="3"></circle>
+                <circle id="mini-player-progress" class="text-indigo-600"
+                    cx="18" cy="18" r="16"
+                    fill="none"
+                    stroke-width="3"
+                    stroke-dasharray="100.5"
+                    stroke-dashoffset="100.5" />
+            </svg>
+            <button id="mini-player-play-pause-btn" class="absolute top-0 left-0 w-full h-full flex items-center justify-center text-indigo-600">
+                <i class="fas fa-play text-base"></i>
+            </button>
+        </div>
+    </div>
+
+<script>
+    const quizData = [
+        {
+            question: "남자의 새로운 운동 목표는 무엇입니까?",
+            options: ["달리기 잘하기", "복근 만들기", "옆구리 운동하기", "살 빼기"],
+            answer: "복근 만들기"
+        },
+        {
+            question: "여자가 복근을 만드는 방법으로 언급하지 않은 것은 무엇입니까?",
+            options: ["윗몸 일으키기만 하기", "줄넘기 운동하기", "단 음식 피하기", "옆구리 운동하기"],
+            answer: "윗몸 일으키기만 하기"
+        },
+        {
+            question: "남자가 음식 조절이 어렵다고 말한 이유는 무엇입니까?",
+            options: [
+                "단 음식을 너무 좋아해서",
+                "요리할 시간이 없어서",
+                "회사를 다녀서",
+                "회식을 자주 해야 해서"
+            ],
+            answer: "회식을 자주 해야 해서"
+        },
+        {
+            question: "들은 내용과 다른 것을 고르십시오.",
+            options: [
+                "남자는 운동 후 회사에서 인기가 많아졌다.",
+                "여자는 윗몸 일으키기만으로는 복근을 만들 수 없다고 했다.",
+                "남자는 하루도 빠짐없이 운동을 했다.",
+                "여자는 남자에게 회식 때 술을 절대 마시지 말라고 했다."
+            ],
+            answer: "여자는 남자에게 회식 때 술을 절대 마시지 말라고 했다."
+        }
+    ];
+
+    let score = 0;
+    let questionsAnswered = 0;
+
+    const quizContainer = document.getElementById('quiz-container');
+    const resultContainer = document.getElementById('result-container');
+    const scoreText = document.getElementById('score-text');
+    const submitBtn = document.getElementById('submit-btn');
+    const retryBtn = document.getElementById('retry-btn');
+    const toggleScriptBtn = document.getElementById('toggle-script-btn');
+    const scriptContent = document.getElementById('script-content');
+    
+    // Audio Player Elements
+    const audio = document.getElementById('audio-file');
+    const mainAudioPlayer = document.getElementById('main-audio-player');
+    const miniPlayer = document.getElementById('mini-player');
+    const miniPlayerPlayPauseBtn = document.getElementById('mini-player-play-pause-btn');
+    const miniPlayerProgress = document.getElementById('mini-player-progress');
+    const progressCircleRadius = miniPlayerProgress.r.baseVal.value;
+    const progressCircumference = 2 * Math.PI * progressCircleRadius;
+    miniPlayerProgress.style.strokeDasharray = `${progressCircumference} ${progressCircumference}`;
+    miniPlayerProgress.style.strokeDashoffset = progressCircumference;
+
+    function loadAllQuizzes() {
+        quizContainer.innerHTML = '';
+        quizData.forEach((quiz, index) => {
+            const questionBlock = document.createElement('div');
+            questionBlock.id = `question-${index}`;
+            const questionEl = document.createElement('h2');
+            questionEl.className = 'text-xl font-bold text-gray-800 mb-4';
+            questionEl.innerText = `Q${index + 1}. ${quiz.question}`;
+            const optionsEl = document.createElement('div');
+            optionsEl.className = 'grid grid-cols-1 sm:grid-cols-2 gap-3';
+            quiz.options.forEach(optionText => {
+                const button = document.createElement('button');
+                button.innerText = optionText;
+                button.classList.add('option-btn', 'w-full', 'p-3', 'text-left', 'border-2', 'rounded-lg', 'hover:bg-gray-100');
+                button.addEventListener('click', () => checkAnswer(index, button, optionText, quiz.answer));
+                optionsEl.appendChild(button);
+            });
+            questionBlock.appendChild(questionEl);
+            questionBlock.appendChild(optionsEl);
+            quizContainer.appendChild(questionBlock);
+        });
+    }
+
+    function checkAnswer(questionIndex, button, selected, correct) {
+        const questionBlock = document.getElementById(`question-${questionIndex}`);
+        if (questionBlock.dataset.answered) return;
+        questionBlock.dataset.answered = 'true';
+        questionsAnswered++;
+        const optionButtons = questionBlock.querySelectorAll('.option-btn');
+        optionButtons.forEach(btn => {
+            btn.disabled = true;
+            if (btn.innerText === correct) {
+                btn.classList.add('correct');
+            }
+        });
+        if (selected === correct) {
+            score++;
+        } else {
+            button.classList.add('incorrect');
+        }
+    }
+
+    submitBtn.addEventListener('click', () => {
+        if (questionsAnswered < quizData.length) {
+            alert('모든 문제를 풀어주세요.');
+            return;
+        }
+        resultContainer.classList.remove('hidden');
+        scoreText.innerText = `총 ${quizData.length}문제 중 ${score}문제를 맞혔습니다!`;
+        submitBtn.classList.add('hidden');
+        retryBtn.classList.remove('hidden');
+    });
+
+    retryBtn.addEventListener('click', () => {
+        score = 0;
+        questionsAnswered = 0;
+        resultContainer.classList.add('hidden');
+        submitBtn.classList.remove('hidden');
+        retryBtn.classList.add('hidden');
+        loadAllQuizzes();
+    });
+
+    toggleScriptBtn.addEventListener('click', () => {
+        scriptContent.classList.toggle('hidden');
+        const isHidden = scriptContent.classList.contains('hidden');
+        toggleScriptBtn.innerHTML = isHidden ? '<i class="fas fa-file-alt mr-2"></i>스크립트 보기' : '<i class="fas fa-eye-slash mr-2"></i>스크립트 숨기기';
+    });
+    
+    // --- MINI PLAYER LOGIC ---
+
+    miniPlayerPlayPauseBtn.addEventListener('click', () => {
+        if (audio.paused) {
+            audio.play();
+        } else {
+            audio.pause();
+        }
+    });
+
+    audio.addEventListener('play', () => {
+        miniPlayerPlayPauseBtn.innerHTML = '<i class="fas fa-pause text-base"></i>';
+    });
+
+    audio.addEventListener('pause', () => {
+        miniPlayerPlayPauseBtn.innerHTML = '<i class="fas fa-play text-base"></i>';
+    });
+
+    audio.addEventListener('timeupdate', () => {
+        const progressPercent = (audio.currentTime / audio.duration) || 0;
+        const offset = progressCircumference - progressPercent * progressCircumference;
+        miniPlayerProgress.style.strokeDashoffset = offset;
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                miniPlayer.classList.add('hidden');
+            } else {
+                miniPlayer.classList.remove('hidden');
+            }
+        });
+    }, { threshold: 0.1 }); 
+
+    observer.observe(mainAudioPlayer);
+
+    loadAllQuizzes();
+</script>
+
+</body>
+</html>
+
