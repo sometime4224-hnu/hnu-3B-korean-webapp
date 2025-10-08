@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국어 문법 학습: -았/었어야 했는데</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+        }
+        .lang-btn {
+            transition: all 0.3s ease;
+        }
+        .lang-btn.active {
+            background-color: #4f46e5;
+            color: white;
+            font-weight: bold;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .practice-input {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            /* margin-top: 0.5rem; <-- This line is removed */
+            transition: border-color 0.3s ease;
+        }
+        .practice-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <!-- Header and Language Selector -->
+        <header class="text-center mb-8">
+            <h1 id="app-title" class="text-3xl md:text-4xl font-bold text-indigo-700 mb-4">쉽게 배우는 한국어 문법</h1>
+            <div id="lang-selector" class="flex justify-center space-x-2 bg-gray-200 p-1 rounded-full max-w-sm mx-auto">
+                <button class="lang-btn active w-full py-2 px-4 rounded-full" data-lang="ko">한국어</button>
+                <button class="lang-btn w-full py-2 px-4 rounded-full" data-lang="en">English</button>
+                <button class="lang-btn w-full py-2 px-4 rounded-full" data-lang="vi">Tiếng Việt</button>
+                <button class="lang-btn w-full py-2 px-4 rounded-full" data-lang="zh">中文</button>
+            </div>
+        </header>
+
+        <main>
+            <!-- Grammar Point Card -->
+            <div class="card">
+                <h2 class="text-2xl font-bold text-indigo-600 mb-4" data-key="grammar_title">A/V-았/었어야 했는데</h2>
+                <div id="grammar-explanation">
+                    <p class="text-lg font-semibold mb-2" data-key="explanation_title">무슨 뜻일까요?</p>
+                    <p data-key="explanation_content" class="text-gray-700 leading-relaxed">
+                        과거에 어떤 일을 했어야 했지만 하지 않아서 아쉬울 때, 또는 하지 말았어야 했는데 해서 후회될 때 사용하는 표현이에요.<br>
+                        영어의 'should have' 또는 'ought to have'와 비슷한 의미를 가져요.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Dialogue Card -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4" data-key="dialogue_title">대화 예시</h3>
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="bg-blue-100 text-blue-800 font-bold rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">A</div>
+                        <div class="bg-gray-100 p-3 rounded-lg flex-1">
+                            <p data-key="dialogue_a">어제 회식에 올 줄 알았는데 안 보이던데요.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="bg-pink-100 text-pink-800 font-bold rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">B</div>
+                        <div class="bg-gray-100 p-3 rounded-lg flex-1">
+                            <p data-key="dialogue_b">제가 꼭 갔어야 했는데 사정이 있었어요.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Example Sentences Card -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4" data-key="examples_title">문장 예시</h3>
+                <ul class="space-y-3 list-disc list-inside text-gray-700">
+                    <li data-key="example_1">꼭 사야 하는 책이 다 팔리고 없다. 미리 샀어야 했는데…….</li>
+                    <li data-key="example_2">어제 보고서를 다 쓰고 퇴근했어야 했는데, 죄송합니다.</li>
+                    <li data-key="example_3">위험한 곳에 간 게 내 실수다. 가지 말았어야 했는데…….</li>
+                </ul>
+            </div>
+
+            <!-- Practice Card -->
+            <div class="card bg-indigo-50 border border-indigo-200">
+                <h3 class="text-xl font-bold mb-2" data-key="practice_title">연습</h3>
+                <p class="text-gray-600 mb-6" data-key="practice_instruction">하지 못해서 후회되는 일에 대해 이야기해 보세요.</p>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label class="font-semibold" data-key="prompt_1">1. 어렸을 때</label>
+                        <div class="flex flex-col sm:flex-row sm:items-center mt-2">
+                            <input type="text" class="practice-input" placeholder="...">
+                            <span class="mt-2 sm:mt-0 sm:ml-2 font-bold text-gray-600">...았/었어야 했는데.</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="font-semibold" data-key="prompt_2">2. 고등학교 때</label>
+                         <div class="flex flex-col sm:flex-row sm:items-center mt-2">
+                            <input type="text" class="practice-input" placeholder="...">
+                            <span class="mt-2 sm:mt-0 sm:ml-2 font-bold text-gray-600">...았/었어야 했는데.</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="font-semibold" data-key="prompt_3">3. 작년</label>
+                        <div class="flex flex-col sm:flex-row sm:items-center mt-2">
+                            <input type="text" class="practice-input" placeholder="...">
+                           <span class="mt-2 sm:mt-0 sm:ml-2 font-bold text-gray-600">...았/었어야 했는데.</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="font-semibold" data-key="prompt_4">4. 직접 만들어 보세요:</label>
+                        <div class="flex flex-col sm:flex-row sm:items-center mt-2">
+                             <input type="text" class="practice-input" placeholder="...">
+                            <span class="mt-2 sm:mt-0 sm:ml-2 font-bold text-gray-600">...았/었어야 했는데.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        const translations = {
+            ko: {
+                "app-title": "쉽게 배우는 한국어 문법",
+                "grammar_title": "A/V-았/었어야 했는데",
+                "explanation_title": "무슨 뜻일까요?",
+                "explanation_content": "과거에 어떤 일을 했어야 했지만 하지 않아서 아쉬울 때, 또는 하지 말았어야 했는데 해서 후회될 때 사용하는 표현이에요.<br>영어의 'should have' 또는 'ought to have'와 비슷한 의미를 가져요.",
+                "dialogue_title": "대화 예시",
+                "dialogue_a": "어제 회식에 올 줄 알았는데 안 보이던데요.",
+                "dialogue_b": "제가 꼭 갔어야 했는데 사정이 있었어요.",
+                "examples_title": "문장 예시",
+                "example_1": "꼭 사야 하는 책이 다 팔리고 없다. 미리 샀어야 했는데…….",
+                "example_2": "어제 보고서를 다 쓰고 퇴근했어야 했는데, 죄송합니다.",
+                "example_3": "위험한 곳에 간 게 내 실수다. 가지 말았어야 했는데…….",
+                "practice_title": "연습",
+                "practice_instruction": "하지 못해서 후회되는 일에 대해 이야기해 보세요.",
+                "prompt_1": "1. 어렸을 때",
+                "prompt_2": "2. 고등학교 때",
+                "prompt_3": "3. 작년",
+                "prompt_4": "4. 직접 만들어 보세요:",
+            },
+            en: {
+                "app-title": "Easy Korean Grammar",
+                "grammar_title": "A/V-았/었어야 했는데",
+                "explanation_title": "What does it mean?",
+                "explanation_content": "This expression is used to express regret about something that should have been done in the past but wasn't, or something that shouldn't have been done but was.<br>It is similar in meaning to 'should have' or 'ought to have'.",
+                "dialogue_title": "Example Dialogue",
+                "dialogue_a": "I thought you were coming to the company dinner yesterday, but I didn't see you.",
+                "dialogue_b": "I really should have gone, but something came up.",
+                "examples_title": "Example Sentences",
+                "example_1": "The book I had to buy is sold out. I should have bought it earlier.",
+                "example_2": "I should have finished the report and left work yesterday, I'm sorry.",
+                "example_3": "It was my mistake to go to a dangerous place. I shouldn't have gone.",
+                "practice_title": "Practice",
+                "practice_instruction": "Talk about something you regret not having done.",
+                "prompt_1": "1. When I was young",
+                "prompt_2": "2. In high school",
+                "prompt_3": "3. Last year",
+                "prompt_4": "4. Make your own:",
+            },
+            vi: {
+                "app-title": "Ngữ pháp tiếng Hàn dễ dàng",
+                "grammar_title": "A/V-았/었어야 했는데",
+                "explanation_title": "Ý nghĩa là gì?",
+                "explanation_content": "Cấu trúc này được sử dụng để diễn tả sự hối tiếc về một việc gì đó lẽ ra nên làm trong quá khứ nhưng đã không làm, hoặc một việc gì đó lẽ ra không nên làm nhưng đã làm.<br>Nó có ý nghĩa tương tự như 'should have' hoặc 'ought to have' trong tiếng Anh.",
+                "dialogue_title": "Ví dụ hội thoại",
+                "dialogue_a": "Tôi nghĩ hôm qua bạn sẽ đến bữa tiệc công ty nhưng không thấy bạn đâu.",
+                "dialogue_b": "Tôi thực sự lẽ ra phải đi nhưng có việc đột xuất.",
+                "examples_title": "Ví dụ câu",
+                "example_1": "Cuốn sách tôi phải mua đã bán hết rồi. Lẽ ra tôi nên mua nó sớm hơn.",
+                "example_2": "Lẽ ra hôm qua tôi phải viết xong báo cáo rồi mới về, tôi xin lỗi.",
+                "example_3": "Đi đến nơi nguy hiểm là lỗi của tôi. Lẽ ra tôi không nên đến đó.",
+                "practice_title": "Luyện tập",
+                "practice_instruction": "Hãy nói về những điều bạn hối tiếc vì đã không làm.",
+                "prompt_1": "1. Khi còn nhỏ",
+                "prompt_2": "2. Khi học cấp ba",
+                "prompt_3": "3. Năm ngoái",
+                "prompt_4": "4. Tự đặt câu:",
+            },
+            zh: {
+                "app-title": "轻松学韩语语法",
+                "grammar_title": "A/V-았/었어야 했는데",
+                "explanation_title": "这是什么意思？",
+                "explanation_content": "这个语法用于表示对过去应该做但没做的事情感到惋惜，或者对不该做但做了的事情感到后悔时使用。<br>与英语的 'should have' 或 'ought to have' 意思相似。",
+                "dialogue_title": "对话示例",
+                "dialogue_a": "我以为你昨天会来公司聚餐，但是没看到你。",
+                "dialogue_b": "我真应该去的，但是临时有事。",
+                "examples_title": "例句",
+                "example_1": "我必须买的书都卖完了。我应该早点买的……",
+                "example_2": "我昨天应该写完报告再下班的，对不起。",
+                "example_3": "去了危险的地方是我的错。我不应该去的……",
+                "practice_title": "练习",
+                "practice_instruction": "谈谈你因为没做某事而后悔的事情吧。",
+                "prompt_1": "1. 小时候",
+                "prompt_2": "2. 高中时",
+                "prompt_3": "3. 去年",
+                "prompt_4": "4. 自己造句：",
+            }
+        };
+
+        const langSelector = document.getElementById('lang-selector');
+        let currentLang = 'ko';
+
+        function changeLanguage(lang) {
+            if (!translations[lang]) return;
+            currentLang = lang;
+            
+            // Update all elements with data-key attribute
+            document.querySelectorAll('[data-key]').forEach(element => {
+                const key = element.getAttribute('data-key');
+                if (translations[lang][key]) {
+                    element.innerHTML = translations[lang][key];
+                }
+            });
+
+            // Update language buttons active state
+            langSelector.querySelectorAll('.lang-btn').forEach(btn => {
+                if (btn.dataset.lang === lang) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Set html lang attribute
+            document.documentElement.lang = lang;
+        }
+
+        langSelector.addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON') {
+                const selectedLang = event.target.dataset.lang;
+                if (selectedLang) {
+                    changeLanguage(selectedLang);
+                }
+            }
+        });
+
+        // Initialize with default language
+        document.addEventListener('DOMContentLoaded', () => {
+            changeLanguage('ko');
+        });
+
+    </script>
+
+</body>
+</html>
+
