@@ -25,6 +25,31 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        /* Styles for the capture overlay */
+        #capture-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.75);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            z-index: 9999;
+            text-align: center;
+            padding: 1rem;
+        }
+        /* Style for highlighting the element being captured */
+        .capturing-highlight {
+            outline: 3px solid #3b82f6; /* Blue outline */
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.8);
+            transition: outline 0.3s ease, box-shadow 0.3s ease;
+            transform: scale(1.01);
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -52,19 +77,19 @@
         <main id="main-content">
             <!-- Sections will be dynamically generated here -->
         </main>
+    </div>
 
-        <!-- Floating Action Buttons -->
-        <div class="fixed bottom-6 right-6 flex flex-col space-y-3">
-            <button id="save-button" class="bg-blue-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 transition-transform transform hover:scale-110">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 3v6h10V3" />
-                </svg>
-            </button>
-            <button id="capture-button" class="bg-green-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-green-700 transition-transform transform hover:scale-110">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            </button>
-        </div>
+    <!-- Floating Action Buttons -->
+    <div id="fab-container" class="fixed bottom-6 right-6 flex flex-col space-y-3">
+        <button id="save-button" class="bg-blue-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 transition-transform transform hover:scale-110" title="Save progress">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 3v6h10V3" />
+            </svg>
+        </button>
+        <button id="capture-button" class="bg-green-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-green-700 transition-transform transform hover:scale-110" title="Capture as image">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+        </button>
     </div>
 
     <!-- Custom Alert Modal -->
@@ -487,16 +512,16 @@
         function changeLanguage(lang) {
             document.querySelectorAll('[data-lang-key]').forEach(el => {
                 const key = el.getAttribute('data-lang-key');
-                // 예문 키(q1_ex1, q2_ex2 등)인지 확인합니다.
+                // Check if the key is for an example sentence (e.g., q1_ex1, q2_ex2)
                 const isExampleSentence = /^q\d+_ex\d+$/.test(key);
 
                 if (isExampleSentence) {
-                    // 예문인 경우, 항상 한국어 텍스트를 표시합니다.
+                    // Always display example sentences in Korean for learning purposes
                     if (translations['ko'] && translations['ko'][key]) {
                         el.innerHTML = translations['ko'][key];
                     }
                 } else {
-                    // 그 외 다른 모든 요소는 선택된 언어로 번역합니다.
+                    // Translate all other elements to the selected language
                     if (translations[lang] && translations[lang][key]) {
                         el.innerHTML = translations[lang][key];
                     }
@@ -520,11 +545,6 @@
             });
             localStorage.setItem('koreanSpeakingPracticeData', JSON.stringify(data));
             
-            const savedLang = localStorage.getItem('selectedLanguage') || 'ko';
-            const msg = translations[savedLang]?.saved_message || translations['ko'].saved_message;
-            const notice = document.querySelector('#save-notification p');
-            if (notice) notice.textContent = msg;
-
             saveNotification.classList.remove('hidden');
             setTimeout(() => {
                 saveNotification.classList.add('hidden');
@@ -544,48 +564,64 @@
             }
         }
 
-        // ==============================
-        // 스크린샷 기능 (이 부분만 수정)
-        // ==============================
+        // --- MODIFIED SECTION: Capture cards individually ---
         async function captureScreen() {
-            const captureElement = document.getElementById('app-container');
+            const fabContainer = document.getElementById('fab-container');
+            const grammarCards = document.querySelectorAll('.grammar-card');
 
-            try {
-                // 웹폰트가 로드되지 않아 흐릿해지는 문제 방지
-                if (document.fonts && document.fonts.ready) {
-                    await document.fonts.ready;
+            // 1. Create and show a loading overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'capture-overlay';
+            const overlayText = document.createElement('p');
+            overlayText.textContent = 'Preparing for capture...';
+            overlay.appendChild(overlayText);
+            document.body.appendChild(overlay);
+
+            if (fabContainer) fabContainer.style.visibility = 'hidden';
+            
+            // Helper function for a short delay
+            const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+            // 2. Loop through each grammar card and capture it
+            for (let i = 0; i < grammarCards.length; i++) {
+                const card = grammarCards[i];
+                const questionId = card.querySelector('textarea')?.id.replace('practice-', '');
+                
+                overlayText.textContent = `Capturing question ${i + 1} of ${grammarCards.length}...`;
+                
+                // Scroll card into view and highlight it
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                card.classList.add('capturing-highlight');
+                await delay(700); // Wait for scroll and highlight to be visible
+
+                try {
+                    const canvas = await html2canvas(card, {
+                        useCORS: true,
+                        allowTaint: true,
+                        scale: window.devicePixelRatio || 2,
+                        backgroundColor: '#ffffff', // Capture card with a clean white background
+                    });
+
+                    const link = document.createElement('a');
+                    link.download = `korean-practice-${questionId || i + 1}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    
+                    // Wait a bit before starting the next capture
+                    await delay(1000); 
+
+                } catch (err) {
+                    console.error(`Failed to capture card #${i + 1}:`, err);
+                    overlayText.textContent = `Error capturing question ${i + 1}.`;
+                    await delay(2000);
+                } finally {
+                    card.classList.remove('capturing-highlight');
                 }
-
-                // 큰 페이지에서 하얗게 캡쳐되는 문제 방지: 최상단으로 이동 및 전체 크기 지정
-                const prevScrollX = window.pageXOffset;
-                const prevScrollY = window.pageYOffset;
-                window.scrollTo(0, 0);
-
-                // 고해상도 렌더링
-                const scale = Math.max(2, window.devicePixelRatio || 1);
-
-                const canvas = await html2canvas(captureElement, {
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: getComputedStyle(document.body).backgroundColor || '#ffffff',
-                    scale,
-                    logging: false,
-                    windowWidth: document.documentElement.scrollWidth,
-                    windowHeight: document.documentElement.scrollHeight,
-                    removeContainer: true
-                });
-
-                const link = document.createElement('a');
-                link.download = 'korean-speaking-practice.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-
-                // 원래 스크롤 위치 복원
-                window.scrollTo(prevScrollX, prevScrollY);
-            } catch (e) {
-                // 최소한의 오류 안내 (다른 부분 수정 금지 조건을 지키기 위해 alert만 사용)
-                alert('캡처에 실패했습니다. 브라우저를 새로고침하거나 다른 브라우저에서 다시 시도해 주세요.');
             }
+
+            // 3. Clean up and remove overlay
+            document.body.removeChild(overlay);
+            if (fabContainer) fabContainer.style.visibility = 'visible';
         }
         
         // Initial setup
@@ -604,3 +640,4 @@
 </script>
 </body>
 </html>
+
