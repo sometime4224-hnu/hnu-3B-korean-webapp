@@ -52,19 +52,19 @@
         <main id="main-content">
             <!-- Sections will be dynamically generated here -->
         </main>
+    </div>
 
-        <!-- Floating Action Buttons -->
-        <div class="fixed bottom-6 right-6 flex flex-col space-y-3">
-            <button id="save-button" class="bg-blue-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 transition-transform transform hover:scale-110">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 3v6h10V3" />
-                </svg>
-            </button>
-            <button id="capture-button" class="bg-green-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-green-700 transition-transform transform hover:scale-110">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            </button>
-        </div>
+    <!-- Floating Action Buttons -->
+    <div id="fab-container" class="fixed bottom-6 right-6 flex flex-col space-y-3">
+        <button id="save-button" class="bg-blue-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 transition-transform transform hover:scale-110" title="Save progress">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 3v6h10V3" />
+            </svg>
+        </button>
+        <button id="capture-button" class="bg-green-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-green-700 transition-transform transform hover:scale-110" title="Capture as image">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+        </button>
     </div>
 
     <!-- Custom Alert Modal -->
@@ -487,16 +487,16 @@
         function changeLanguage(lang) {
             document.querySelectorAll('[data-lang-key]').forEach(el => {
                 const key = el.getAttribute('data-lang-key');
-                // 예문 키(q1_ex1, q2_ex2 등)인지 확인합니다.
+                // Check if the key is for an example sentence (e.g., q1_ex1, q2_ex2)
                 const isExampleSentence = /^q\d+_ex\d+$/.test(key);
 
                 if (isExampleSentence) {
-                    // 예문인 경우, 항상 한국어 텍스트를 표시합니다.
+                    // Always display example sentences in Korean for learning purposes
                     if (translations['ko'] && translations['ko'][key]) {
                         el.innerHTML = translations['ko'][key];
                     }
                 } else {
-                    // 그 외 다른 모든 요소는 선택된 언어로 번역합니다.
+                    // Translate all other elements to the selected language
                     if (translations[lang] && translations[lang][key]) {
                         el.innerHTML = translations[lang][key];
                     }
@@ -539,18 +539,39 @@
             }
         }
 
-        // Function to capture screen
+        // --- EDITED SECTION: Improved screen capture function ---
         function captureScreen() {
+            const fabContainer = document.getElementById('fab-container');
             const captureElement = document.getElementById('app-container');
+
+            // Hide floating buttons to prevent them from appearing in the screenshot
+            if (fabContainer) fabContainer.style.visibility = 'hidden';
+
+            // Scroll to the top of the page to ensure the capture starts from the beginning
+            window.scrollTo(0, 0);
+
             html2canvas(captureElement, {
-                useCORS: true,
-                scale: 2, // for better quality
-                backgroundColor: '#f9fafb'
+                useCORS: true, // Handle cross-origin resources like fonts
+                allowTaint: true,
+                scale: 2, // Use a higher scale for better image quality
+                backgroundColor: '#f9fafb',
+                // Explicitly set the width and height to capture the entire element
+                width: captureElement.scrollWidth,
+                height: captureElement.scrollHeight,
+                windowWidth: captureElement.scrollWidth,
+                windowHeight: captureElement.scrollHeight,
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = 'korean-speaking-practice.png';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
+
+                // Show the floating buttons again after the capture is done
+                if (fabContainer) fabContainer.style.visibility = 'visible';
+            }).catch(err => {
+                console.error("Screenshot failed:", err);
+                // Also show the buttons in case of an error
+                if (fabContainer) fabContainer.style.visibility = 'visible';
             });
         }
         
@@ -570,5 +591,3 @@
 </script>
 </body>
 </html>
-
-
