@@ -6,6 +6,7 @@
     <title data-lang-key="meta_title">한국어 말하기 연습 앱</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -42,13 +43,6 @@
             z-index: 9999;
             text-align: center;
             padding: 1rem;
-        }
-        /* Style for highlighting the element being captured */
-        .capturing-highlight {
-            outline: 3px solid #3b82f6; /* Blue outline */
-            box-shadow: 0 0 25px rgba(59, 130, 246, 0.8);
-            transition: outline 0.3s ease, box-shadow 0.3s ease;
-            transform: scale(1.01);
         }
     </style>
 </head>
@@ -87,8 +81,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 3v6h10V3" />
             </svg>
         </button>
-        <button id="capture-button" class="bg-green-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-green-700 transition-transform transform hover:scale-110" title="Capture as image">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+        <button id="capture-button" class="bg-green-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-green-700 transition-transform transform hover:scale-110" title="PDF로 저장하기">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
         </button>
     </div>
 
@@ -512,16 +506,13 @@
         function changeLanguage(lang) {
             document.querySelectorAll('[data-lang-key]').forEach(el => {
                 const key = el.getAttribute('data-lang-key');
-                // Check if the key is for an example sentence (e.g., q1_ex1, q2_ex2)
                 const isExampleSentence = /^q\d+_ex\d+$/.test(key);
 
                 if (isExampleSentence) {
-                    // Always display example sentences in Korean for learning purposes
                     if (translations['ko'] && translations['ko'][key]) {
                         el.innerHTML = translations['ko'][key];
                     }
                 } else {
-                    // Translate all other elements to the selected language
                     if (translations[lang] && translations[lang][key]) {
                         el.innerHTML = translations[lang][key];
                     }
@@ -564,64 +555,65 @@
             }
         }
 
-        // --- MODIFIED SECTION: Capture cards individually ---
+        // --- MODIFIED SECTION: Save as PDF ---
         async function captureScreen() {
             const fabContainer = document.getElementById('fab-container');
-            const grammarCards = document.querySelectorAll('.grammar-card');
+            const captureElement = document.getElementById('app-container');
 
             // 1. Create and show a loading overlay
             const overlay = document.createElement('div');
             overlay.id = 'capture-overlay';
             const overlayText = document.createElement('p');
-            overlayText.textContent = 'Preparing for capture...';
+            overlayText.textContent = 'PDF 파일을 생성 중입니다...'; // "Generating PDF file..."
             overlay.appendChild(overlayText);
             document.body.appendChild(overlay);
 
             if (fabContainer) fabContainer.style.visibility = 'hidden';
-            
-            // Helper function for a short delay
-            const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+            window.scrollTo(0, 0); // Scroll to top to ensure clean capture
 
-            // 2. Loop through each grammar card and capture it
-            for (let i = 0; i < grammarCards.length; i++) {
-                const card = grammarCards[i];
-                const questionId = card.querySelector('textarea')?.id.replace('practice-', '');
+            try {
+                const { jsPDF } = window.jspdf;
+                const canvas = await html2canvas(captureElement, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#f9fafb' // Match body background
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
                 
-                overlayText.textContent = `Capturing question ${i + 1} of ${grammarCards.length}...`;
+                const canvasWidth = canvas.width;
+                const canvasHeight = canvas.height;
                 
-                // Scroll card into view and highlight it
-                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                card.classList.add('capturing-highlight');
-                await delay(700); // Wait for scroll and highlight to be visible
+                const ratio = canvasWidth / pdfWidth;
+                const scaledCanvasHeight = canvasHeight / ratio;
 
-                try {
-                    const canvas = await html2canvas(card, {
-                        useCORS: true,
-                        allowTaint: true,
-                        scale: window.devicePixelRatio || 2,
-                        backgroundColor: '#ffffff', // Capture card with a clean white background
-                    });
+                let position = 0;
+                let heightLeft = scaledCanvasHeight;
 
-                    const link = document.createElement('a');
-                    link.download = `korean-practice-${questionId || i + 1}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                    
-                    // Wait a bit before starting the next capture
-                    await delay(1000); 
+                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, scaledCanvasHeight);
+                heightLeft -= pdfHeight;
 
-                } catch (err) {
-                    console.error(`Failed to capture card #${i + 1}:`, err);
-                    overlayText.textContent = `Error capturing question ${i + 1}.`;
-                    await delay(2000);
-                } finally {
-                    card.classList.remove('capturing-highlight');
+                while (heightLeft > 0) {
+                    position -= pdfHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, scaledCanvasHeight);
+                    heightLeft -= pdfHeight;
                 }
-            }
+                
+                pdf.save('korean-speaking-practice.pdf');
 
-            // 3. Clean up and remove overlay
-            document.body.removeChild(overlay);
-            if (fabContainer) fabContainer.style.visibility = 'visible';
+            } catch (err) {
+                console.error("PDF generation failed:", err);
+                overlayText.textContent = 'PDF 생성에 실패했습니다.';
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            } finally {
+                // 3. Clean up and remove overlay
+                document.body.removeChild(overlay);
+                if (fabContainer) fabContainer.style.visibility = 'visible';
+            }
         }
         
         // Initial setup
