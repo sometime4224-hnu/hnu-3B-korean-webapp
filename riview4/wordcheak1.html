@@ -79,20 +79,8 @@
     </div>
     
     <script type="module">
-        // Firebase Imports
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // --- App State and Data ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'korean-vocab-app-default';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-
-        let app;
-        let auth;
-        let db;
-        let userId = null;
-        let isAuthReady = false;
+        // 로컬 저장소에 데이터를 저장하기 위한 고유 키
+        const LOCAL_STORAGE_KEY = 'korean-vocab-progress';
 
         const allWords = [
             '중소기업', '소개팅을 하다', '몸이 가벼워지다', '청혼을 받다', '부하 직원', 
@@ -132,32 +120,31 @@
             return array;
         }
 
-        // --- Firestore Functions ---
+        // --- Local Storage Functions ---
         async function saveData(data) {
-            if (!isAuthReady || !userId || !db) return;
             try {
-                const docRef = doc(db, `artifacts/${appId}/users/${userId}/korean_vocab_drag_drop/progress`);
-                await setDoc(docRef, { answers: data });
+                // 학습 진행 상황을 JSON 문자열 형태로 로컬 저장소에 저장합니다.
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
                 return true;
             } catch (error) {
-                console.error("Error saving data: ", error);
+                console.error("Error saving data to localStorage: ", error);
                 return false;
             }
         }
         
         async function loadData() {
-            if (!isAuthReady || !userId || !db) return null;
             try {
-                const docRef = doc(db, `artifacts/${appId}/users/${userId}/korean_vocab_drag_drop/progress`);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    return docSnap.data().answers;
+                // 로컬 저장소에서 저장된 데이터를 불러옵니다.
+                const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (savedData) {
+                    // JSON 문자열을 다시 객체 형태로 변환하여 반환합니다.
+                    return JSON.parse(savedData);
                 } else {
-                    console.log("No saved data found.");
+                    console.log("No saved data found in localStorage.");
                     return null;
                 }
             } catch (error) {
-                console.error("Error loading data: ", error);
+                console.error("Error loading data from localStorage: ", error);
                 return null;
             }
         }
@@ -195,19 +182,18 @@
         }
 
         async function renderUI() {
-            // Shuffle and render words
             wordBank.innerHTML = '';
             shuffleArray([...allWords]).forEach(word => {
                 wordBank.appendChild(createDraggableWord(word));
             });
 
-            // Shuffle and render questions
             questionsContainer.innerHTML = '';
             questions = shuffleArray([...allQuestions]);
             questions.forEach((q, index) => {
                 questionsContainer.appendChild(createQuestion(q, index));
             });
             
+            // 페이지 로드 시 저장된 데이터를 불러와 적용합니다.
             const savedAnswers = await loadData();
             if (savedAnswers) {
                 applySavedState(savedAnswers);
@@ -220,15 +206,15 @@
                 if (!wordText) return;
                 
                 const dropZone = document.querySelector(`.drop-zone[data-question-id='${questionId}']`);
-                const wordEl = document.getElementById(`word-${wordText}`);
+                // 단어 목록에 없을 수도 있으므로, 새로 생성해서 넣어줍니다.
+                const wordEl = document.getElementById(`word-${wordText}`) || createDraggableWord(wordText);
 
-                if (dropZone && wordEl) {
+                if (dropZone) {
                     if (wordBank.contains(wordEl)) {
                        wordBank.removeChild(wordEl);
                     }
-                    dropZone.innerHTML = ''; // Clear placeholder
+                    dropZone.innerHTML = ''; 
                     dropZone.appendChild(wordEl);
-                    wordEl.classList.remove('draggable'); // Prevent re-dragging for simplicity
                 }
             });
         }
@@ -269,7 +255,6 @@
             if (draggable) {
                 draggable.classList.remove('dragging');
                 
-                // If dropzone already has a word, move it back to the bank
                 if (dropZone.children.length > 0) {
                     const existingWord = dropZone.children[0];
                     wordBank.appendChild(existingWord);
@@ -278,7 +263,6 @@
                 dropZone.innerHTML = '';
                 dropZone.appendChild(draggable);
                 
-                // Trigger auto-save
                 clearTimeout(autoSaveTimer);
                 autoSaveTimer = setTimeout(() => {
                     handleSave(true);
@@ -343,43 +327,8 @@
         }
 
         // --- Initialization ---
-        async function init() {
-            if (!firebaseConfig) {
-                console.error("Firebase config is not available.");
-                document.getElementById('app').innerHTML = `<div class="text-center text-red-500">Firebase 설정이 없어 앱을 실행할 수 없습니다.</div>`;
-                return;
-            }
-
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                setLogLevel('debug');
-                
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        console.log("User is signed in with UID:", userId);
-                        isAuthReady = true;
-                        await renderUI();
-                    } else {
-                        console.log("User is signed out.");
-                        isAuthReady = false;
-                    }
-                });
-                
-                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-            } catch (error) {
-                 console.error("Firebase initialization failed:", error);
-                 document.getElementById('app').innerHTML = `<div class="text-center text-red-500">앱 초기화에 실패했습니다. 콘솔을 확인해주세요.</div>`;
-            }
-
+        function init() {
+            renderUI();
             checkButton.addEventListener('click', handleCheckAnswers);
             saveButton.addEventListener('click', () => handleSave(false));
         }
@@ -388,3 +337,4 @@
     </script>
 </body>
 </html>
+
