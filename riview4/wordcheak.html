@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국어 어휘 학습: 빈칸 채우기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .draggable {
+            cursor: grab;
+            user-select: none;
+        }
+        .dragging {
+            opacity: 0.5;
+            border: 2px dashed #cbd5e0;
+        }
+        .drop-zone {
+            transition: background-color 0.3s, border-color 0.3s;
+            min-width: 120px;
+            min-height: 40px;
+        }
+        .drop-hover {
+            background-color: #e2e8f0;
+            border-color: #4299e1;
+        }
+        .correct {
+            border-color: #48bb78 !important;
+            background-color: #f0fff4;
+            color: #2f855a;
+        }
+        .incorrect {
+            border-color: #f56565 !important;
+            background-color: #fff5f5;
+            color: #c53030;
+        }
+        .correct .draggable, .incorrect .draggable {
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div id="app" class="w-full max-w-4xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800">한국어 어휘 학습</h1>
+                <p class="text-gray-500 mt-2">아래 보기에서 알맞은 말을 드래그하여 빈칸에 넣어 문장을 완성하세요.</p>
+            </div>
+
+            <!-- 보기 목록 (Word Bank) -->
+            <div id="word-bank" class="bg-gray-50 p-4 rounded-lg flex flex-wrap justify-center items-center gap-3 mb-8 border-2 border-dashed border-gray-300">
+                <!-- Draggable words will be inserted here by JS -->
+            </div>
+
+            <!-- 문제 목록 (Questions) -->
+            <div id="questions-container" class="space-y-4">
+                <!-- Questions will be inserted here by JS -->
+            </div>
+
+            <!-- 컨트롤 버튼 (Controls) -->
+            <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                     <button id="save-button" class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105 shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        <span>수동 저장</span>
+                    </button>
+                    <p id="save-status" class="text-sm text-gray-500 transition-opacity duration-300 opacity-0"></p>
+                </div>
+                <button id="check-answers" class="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg transition-transform transform hover:scale-105 shadow-md">
+                    결과 확인
+                </button>
+            </div>
+             <div id="result-message" class="text-center mt-4 font-semibold text-lg"></div>
+        </div>
+    </div>
+    
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // --- App State and Data ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'korean-vocab-app-default';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+
+        let app;
+        let auth;
+        let db;
+        let userId = null;
+        let isAuthReady = false;
+
+        const allWords = [
+            '중소기업', '소개팅을 하다', '몸이 가벼워지다', '청혼을 받다', '부하 직원', 
+            '연애결혼', '직장 상사', '첫눈에 반하다', '쥐가 나다', '대기업'
+        ];
+
+        const allQuestions = [
+            { id: 1, sentence_start: '저는', sentence_end: '에서 일하고 싶어요. 크고 유명한 회사에 다니면 배울 점이 많을 거라고 생각해요.', answer: '대기업' },
+            { id: 2, sentence_start: '남자 친구에게', sentence_end: '. 작년 봄에 결혼하자고 해서 그러자고 했어요.', answer: '청혼을 받다' },
+            { id: 3, sentence_start: '꾸준히 요가를 했더니', sentence_end: '고 자세도 좋아졌어요.', answer: '몸이 가벼워지다' },
+            { id: 4, sentence_start: '오랜만에 친구들과 축구를 하다가 다리에', sentence_end: '. 운동 전에 준비 운동을 충분히 할걸 그랬어요.', answer: '쥐가 나다' },
+            { id: 5, sentence_start: '저는', sentence_end: '을 했어요. 동아리 모임에서 알게 된 학교 선배와 졸업하자마자 결혼했어요.', answer: '연애결혼' },
+            { id: 6, sentence_start: '새로 들어온', sentence_end: '때문에 속상해요. 지각을 자주 해서 야단을 쳤는데도 계속 늦게 오고 실수를 해요.', answer: '부하 직원' },
+            { id: 7, sentence_start: '저는 큰 회사보다는 발전 가능성이 많은', sentence_end: '에서 경험을 쌓고 싶어요.', answer: '중소기업' },
+            { id: 8, sentence_start: '친구가 좋은 사람을 소개해 준다고 해서 주말에', sentence_end: '로 했어요.', answer: '소개팅을 하다' },
+            { id: 9, sentence_start: '새로 오신', sentence_end: '는 아주 꼼꼼하고 엄격해서 일하기가 조금 힘들어요.', answer: '직장 상사' },
+            { id: 10, sentence_start: '영화 속 남자 주인공은 여자 주인공을 보자마자', sentence_end: '.', answer: '첫눈에 반하다' },
+        ];
+        
+        let questions = [];
+        let autoSaveTimer;
+
+        // --- DOM Elements ---
+        const wordBank = document.getElementById('word-bank');
+        const questionsContainer = document.getElementById('questions-container');
+        const checkButton = document.getElementById('check-answers');
+        const saveButton = document.getElementById('save-button');
+        const saveStatus = document.getElementById('save-status');
+        const resultMessage = document.getElementById('result-message');
+        
+        // --- Utility Functions ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- Firestore Functions ---
+        async function saveData(data) {
+            if (!isAuthReady || !userId || !db) return;
+            try {
+                const docRef = doc(db, `artifacts/${appId}/users/${userId}/korean_vocab_drag_drop/progress`);
+                await setDoc(docRef, { answers: data });
+                return true;
+            } catch (error) {
+                console.error("Error saving data: ", error);
+                return false;
+            }
+        }
+        
+        async function loadData() {
+            if (!isAuthReady || !userId || !db) return null;
+            try {
+                const docRef = doc(db, `artifacts/${appId}/users/${userId}/korean_vocab_drag_drop/progress`);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    return docSnap.data().answers;
+                } else {
+                    console.log("No saved data found.");
+                    return null;
+                }
+            } catch (error) {
+                console.error("Error loading data: ", error);
+                return null;
+            }
+        }
+        
+        // --- UI Rendering ---
+        function createDraggableWord(word) {
+            const wordEl = document.createElement('div');
+            wordEl.textContent = word;
+            wordEl.draggable = true;
+            wordEl.id = `word-${word}`;
+            wordEl.className = 'draggable bg-white p-2 px-4 rounded-md shadow-sm border border-gray-300 text-gray-700 font-medium';
+            wordEl.addEventListener('dragstart', handleDragStart);
+            return wordEl;
+        }
+
+        function createQuestion(question, index) {
+            const questionEl = document.createElement('div');
+            questionEl.className = 'flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg text-lg';
+            questionEl.dataset.questionId = question.id;
+
+            questionEl.innerHTML = `
+                <span class="font-semibold">${index + 1}.</span>
+                <span>${question.sentence_start}</span>
+                <div class="drop-zone inline-block bg-gray-200 border-2 border-dashed border-gray-400 rounded-md p-2 text-center" data-question-id="${question.id}"></div>
+                <span>${question.sentence_end}</span>
+            `;
+
+            const dropZone = questionEl.querySelector('.drop-zone');
+            dropZone.addEventListener('dragover', handleDragOver);
+            dropZone.addEventListener('dragenter', handleDragEnter);
+            dropZone.addEventListener('dragleave', handleDragLeave);
+            dropZone.addEventListener('drop', handleDrop);
+            
+            return questionEl;
+        }
+
+        async function renderUI() {
+            // Shuffle and render words
+            wordBank.innerHTML = '';
+            shuffleArray([...allWords]).forEach(word => {
+                wordBank.appendChild(createDraggableWord(word));
+            });
+
+            // Shuffle and render questions
+            questionsContainer.innerHTML = '';
+            questions = shuffleArray([...allQuestions]);
+            questions.forEach((q, index) => {
+                questionsContainer.appendChild(createQuestion(q, index));
+            });
+            
+            const savedAnswers = await loadData();
+            if (savedAnswers) {
+                applySavedState(savedAnswers);
+                showSaveStatus("진행 상황을 불러왔습니다.", 2000);
+            }
+        }
+        
+        function applySavedState(savedAnswers) {
+            Object.entries(savedAnswers).forEach(([questionId, wordText]) => {
+                if (!wordText) return;
+                
+                const dropZone = document.querySelector(`.drop-zone[data-question-id='${questionId}']`);
+                const wordEl = document.getElementById(`word-${wordText}`);
+
+                if (dropZone && wordEl) {
+                    if (wordBank.contains(wordEl)) {
+                       wordBank.removeChild(wordEl);
+                    }
+                    dropZone.innerHTML = ''; // Clear placeholder
+                    dropZone.appendChild(wordEl);
+                    wordEl.classList.remove('draggable'); // Prevent re-dragging for simplicity
+                }
+            });
+        }
+
+
+        // --- Event Handlers ---
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.id);
+            setTimeout(() => e.target.classList.add('dragging'), 0);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            if (e.target.classList.contains('drop-zone')) {
+                e.target.classList.add('drop-hover');
+            }
+        }
+        
+        function handleDragLeave(e) {
+            if (e.target.classList.contains('drop-zone')) {
+                e.target.classList.remove('drop-hover');
+            }
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            const dropZone = e.target.closest('.drop-zone');
+            if (!dropZone) return;
+            
+            dropZone.classList.remove('drop-hover');
+            const id = e.dataTransfer.getData('text');
+            const draggable = document.getElementById(id);
+            
+            if (draggable) {
+                draggable.classList.remove('dragging');
+                
+                // If dropzone already has a word, move it back to the bank
+                if (dropZone.children.length > 0) {
+                    const existingWord = dropZone.children[0];
+                    wordBank.appendChild(existingWord);
+                }
+
+                dropZone.innerHTML = '';
+                dropZone.appendChild(draggable);
+                
+                // Trigger auto-save
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(() => {
+                    handleSave(true);
+                }, 2000);
+            }
+        }
+        
+        function handleCheckAnswers() {
+            let correctCount = 0;
+            const dropZones = document.querySelectorAll('.drop-zone');
+            
+            dropZones.forEach(zone => {
+                const questionId = zone.dataset.questionId;
+                const droppedWordEl = zone.querySelector('div');
+                const question = allQuestions.find(q => q.id == questionId);
+
+                zone.classList.remove('correct', 'incorrect');
+                
+                if (droppedWordEl && question) {
+                    const droppedWord = droppedWordEl.textContent;
+                    if (droppedWord === question.answer) {
+                        zone.classList.add('correct');
+                        droppedWordEl.draggable = false;
+                        correctCount++;
+                    } else {
+                        zone.classList.add('incorrect');
+                    }
+                } else {
+                     zone.classList.add('incorrect');
+                }
+            });
+
+            resultMessage.textContent = `총 ${allQuestions.length}문제 중 ${correctCount}개를 맞혔습니다!`;
+        }
+
+        async function handleSave(isAuto = false) {
+             const userAnswers = {};
+             document.querySelectorAll('.drop-zone').forEach(zone => {
+                 const questionId = zone.dataset.questionId;
+                 const wordEl = zone.querySelector('div');
+                 userAnswers[questionId] = wordEl ? wordEl.textContent : null;
+             });
+
+             const success = await saveData(userAnswers);
+             if (success && !isAuto) {
+                 showSaveStatus("저장되었습니다!", 2000);
+             } else if (success && isAuto) {
+                 showSaveStatus("자동 저장 완료", 1500);
+             }
+             else if (!success && !isAuto) {
+                 showSaveStatus("저장에 실패했습니다.", 2000, true);
+             }
+        }
+
+        function showSaveStatus(message, duration, isError = false) {
+            saveStatus.textContent = message;
+            saveStatus.style.color = isError ? '#c53030' : '#4a5568';
+            saveStatus.classList.remove('opacity-0');
+            setTimeout(() => {
+                saveStatus.classList.add('opacity-0');
+            }, duration);
+        }
+
+        // --- Initialization ---
+        async function init() {
+            if (!firebaseConfig) {
+                console.error("Firebase config is not available.");
+                document.getElementById('app').innerHTML = `<div class="text-center text-red-500">Firebase 설정이 없어 앱을 실행할 수 없습니다.</div>`;
+                return;
+            }
+
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                setLogLevel('debug');
+                
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        console.log("User is signed in with UID:", userId);
+                        isAuthReady = true;
+                        await renderUI();
+                    } else {
+                        console.log("User is signed out.");
+                        isAuthReady = false;
+                    }
+                });
+                
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+            } catch (error) {
+                 console.error("Firebase initialization failed:", error);
+                 document.getElementById('app').innerHTML = `<div class="text-center text-red-500">앱 초기화에 실패했습니다. 콘솔을 확인해주세요.</div>`;
+            }
+
+            checkButton.addEventListener('click', handleCheckAnswers);
+            saveButton.addEventListener('click', () => handleSave(false));
+        }
+
+        init();
+    </script>
+</body>
+</html>
