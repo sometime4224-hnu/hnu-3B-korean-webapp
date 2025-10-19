@@ -1,1 +1,384 @@
 
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>문법 학습: 하도 A/V-아서/어서</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .grammar-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .example-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .example-list li::before {
+            content: '◦';
+            position: absolute;
+            left: 0;
+            color: #3b82f6; /* blue-500 */
+        }
+        .quiz-option.correct {
+            background-color: #dcfce7; /* green-100 */
+            border-color: #22c55e; /* green-500 */
+        }
+        .quiz-option.wrong {
+            background-color: #fee2e2; /* red-100 */
+            border-color: #ef4444; /* red-500 */
+        }
+        .lang-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .lang-btn.active {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="container mx-auto max-w-4xl">
+        <!-- Grammar Explanation View -->
+        <div id="explanation-view">
+            <div class="grammar-card">
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl font-bold text-gray-800">문법 학습</h1>
+                    <p id="grammar-title" class="text-2xl text-blue-600 font-semibold mt-2">하도 A/V-아서/어서</p>
+                </div>
+
+                <div id="language-selector" class="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8 bg-gray-100 p-2 rounded-xl shadow-inner">
+                    <button data-lang="ko" class="lang-btn px-4 py-2 text-sm sm:text-base font-semibold text-white bg-blue-500 rounded-lg shadow-md hover:bg-blue-600">한국어</button>
+                    <button data-lang="en" class="lang-btn px-4 py-2 text-sm sm:text-base font-semibold text-white bg-teal-500 rounded-lg shadow-md hover:bg-teal-600">English</button>
+                    <button data-lang="vi" class="lang-btn px-4 py-2 text-sm sm:text-base font-semibold text-white bg-green-500 rounded-lg shadow-md hover:bg-green-600">Tiếng Việt</button>
+                    <button data-lang="ja" class="lang-btn px-4 py-2 text-sm sm:text-base font-semibold text-white bg-purple-500 rounded-lg shadow-md hover:bg-purple-600">日本語</button>
+                    <button data-lang="zh" class="lang-btn px-4 py-2 text-sm sm:text-base font-semibold text-white bg-red-500 rounded-lg shadow-md hover:bg-red-600">中文</button>
+                </div>
+
+
+                <div class="space-y-6">
+                    <div>
+                        <h2 id="description-title" class="text-xl font-bold text-gray-700 mb-2">설명</h2>
+                        <p id="description-content" class="text-gray-600">
+                            어떤 일의 정도가 지나침을 강조하여 그 결과나 원인을 나타낼 때 사용합니다. '하도'는 '너무'와 비슷한 의미로, 정도가 매우 심하다는 것을 강조하는 부사입니다.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h2 id="conjugation-title" class="text-xl font-bold text-gray-700 mb-2">결합 형태</h2>
+                        <ul id="conjugation-list" class="list-disc list-inside text-gray-600 space-y-1">
+                            <li><b>형용사/동사 어간의 마지막 모음이 'ㅏ, ㅗ'일 때: -아서</b>
+                                <ul class="list-inside ml-6 text-sm">
+                                    <li>비싸다 → 하도 비싸서</li>
+                                    <li>좋다 → 하도 좋아서</li>
+                                    <li>많다 → 하도 많아서</li>
+                                </ul>
+                            </li>
+                            <li><b>형용사/동사 어간의 마지막 모음이 'ㅏ, ㅗ'가 아닐 때: -어서</b>
+                                <ul class="list-inside ml-6 text-sm">
+                                   <li>읽다 → 하도 읽어서</li>
+                                   <li>먹다 → 하도 먹어서</li>
+                                   <li>피곤하다 (피곤하+여서) → 하도 피곤해서</li>
+                                </ul>
+                           </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h2 id="example-title" class="text-xl font-bold text-gray-700 mb-2">예시</h2>
+                        <ul id="example-list" class="example-list text-gray-600">
+                            <li>어제 <span class="font-semibold text-blue-500">하도 피곤해서</span> 저녁 먹자마자 잠이 들었어요.</li>
+                            <li>머리가 <span class="font-semibold text-blue-500">하도 아파서</span> 일찍 퇴근했어요.</li>
+                            <li>길이 <span class="font-semibold text-blue-500">하도 막혀서</span> 요즘 대중교통을 이용하고 있어요.</li>
+                            <li>어제 저녁에 <span class="font-semibold text-blue-500">하도 많이 먹어서</span> 아직까지 배가 안 고파요.</li>
+                            <li><span class="font-semibold text-blue-500">하도 걸어서</span> 다리가 아파요.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="text-center mt-10">
+                    <button id="start-quiz-btn" class="px-8 py-3 font-bold text-white bg-blue-500 rounded-lg shadow-md hover:bg-blue-600 transition-all duration-300">연습 문제 풀기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz View -->
+        <div id="quiz-view" class="hidden">
+             <div class="grammar-card">
+                 <div id="quiz-header" class="text-center mb-6">
+                     <p id="quiz-progress" class="text-sm text-gray-500"></p>
+                     <h2 id="quiz-question" class="text-2xl font-bold text-gray-800 mt-2"></h2>
+                 </div>
+                 <div id="quiz-options" class="grid grid-cols-1 gap-4">
+                     <!-- Options will be injected here -->
+                 </div>
+                 <div id="quiz-feedback" class="mt-6 text-center h-8"></div>
+             </div>
+        </div>
+        
+        <!-- Result View -->
+        <div id="result-view" class="hidden">
+            <div class="grammar-card text-center">
+                <h2 id="result-title" class="text-3xl font-bold text-blue-600 mb-4">퀴즈 완료!</h2>
+                <p id="result-score" class="text-xl text-gray-700 mb-6"></p>
+                <div id="result-details" class="text-left space-y-4"></div>
+                <div class="mt-8 flex justify-center gap-4">
+                    <button id="restart-quiz-btn" class="px-6 py-3 font-bold text-white bg-blue-500 rounded-lg shadow-md hover:bg-blue-600 transition-all duration-300">다시 풀기</button>
+                    <button id="back-to-explanation-btn" class="px-6 py-3 font-bold text-gray-700 bg-gray-200 rounded-lg shadow-md hover:bg-gray-300 transition-all duration-300">설명 보기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const explanationView = document.getElementById('explanation-view');
+        const quizView = document.getElementById('quiz-view');
+        const resultView = document.getElementById('result-view');
+        
+        const startQuizBtn = document.getElementById('start-quiz-btn');
+        const restartQuizBtn = document.getElementById('restart-quiz-btn');
+        const backToExplanationBtn = document.getElementById('back-to-explanation-btn');
+
+        const langButtons = document.querySelectorAll('.lang-btn');
+
+        // Content Elements
+        const grammarTitleEl = document.getElementById('grammar-title');
+        const descriptionTitleEl = document.getElementById('description-title');
+        const descriptionContentEl = document.getElementById('description-content');
+        const conjugationTitleEl = document.getElementById('conjugation-title');
+        const conjugationListEl = document.getElementById('conjugation-list');
+        const exampleTitleEl = document.getElementById('example-title');
+        const exampleListEl = document.getElementById('example-list');
+
+        const quizProgressEl = document.getElementById('quiz-progress');
+        const quizQuestionEl = document.getElementById('quiz-question');
+        const quizOptionsEl = document.getElementById('quiz-options');
+        const quizFeedbackEl = document.getElementById('quiz-feedback');
+        
+        const resultTitleEl = document.getElementById('result-title');
+        const resultScoreEl = document.getElementById('result-score');
+        const resultDetailsEl = document.getElementById('result-details');
+
+        const koreanExamples = [
+            "<li>어제 <span class='font-semibold text-blue-500'>하도 피곤해서</span> 저녁 먹자마자 잠이 들었어요.</li>",
+            "<li>머리가 <span class='font-semibold text-blue-500'>하도 아파서</span> 일찍 퇴근했어요.</li>",
+            "<li>길이 <span class='font-semibold text-blue-500'>하도 막혀서</span> 요즘 대중교통을 이용하고 있어요.</li>",
+            "<li>어제 저녁에 <span class='font-semibold text-blue-500'>하도 많이 먹어서</span> 아직까지 배가 안 고파요.</li>",
+            "<li><span class='font-semibold text-blue-500'>하도 걸어서</span> 다리가 아파요.</li>"
+        ];
+
+        const contentData = {
+            ko: {
+                title: "하도 A/V-아서/어서",
+                descriptionTitle: "설명",
+                description: "어떤 일의 정도가 지나침을 강조하여 그 결과나 원인을 나타낼 때 사용합니다. '하도'는 '너무'와 비슷한 의미로, 정도가 매우 심하다는 것을 강조하는 부사입니다.",
+                conjugationTitle: "결합 형태",
+                conjugation: [
+                    "<li><b>형용사/동사 어간의 마지막 모음이 'ㅏ, ㅗ'일 때: -아서</b><ul class='list-inside ml-6 text-sm'><li>비싸다 → 하도 비싸서</li><li>좋다 → 하도 좋아서</li><li>많다 → 하도 많아서</li></ul></li>",
+                    "<li><b>형용사/동사 어간의 마지막 모음이 'ㅏ, ㅗ'가 아닐 때: -어서</b><ul class='list-inside ml-6 text-sm'><li>읽다 → 하도 읽어서</li><li>먹다 → 하도 먹어서</li><li>피곤하다 (피곤하+여서) → 하도 피곤해서</li></ul></li>"
+                ],
+                exampleTitle: "예시",
+                examples: koreanExamples
+            },
+            en: {
+                title: "So A/V that...",
+                descriptionTitle: "Description",
+                description: "Used to emphasize that the degree of something is excessive, indicating its result or cause. '하도' is similar in meaning to 'too' or 'so', emphasizing that the degree is very severe.",
+                conjugationTitle: "Conjugation",
+                conjugation: [
+                    "<li><b>When the last vowel of the A/V stem is 'ㅏ' or 'ㅗ': -아서</b><ul class='list-inside ml-6 text-sm'><li>비싸다 (expensive) → 하도 비싸서 (so expensive that)</li><li>좋다 (good) → 하도 좋아서 (so good that)</li><li>많다 (many/much) → 하도 많아서 (so much that)</li></ul></li>",
+                    "<li><b>When the last vowel of the A/V stem is not 'ㅏ' or 'ㅗ': -어서</b><ul class='list-inside ml-6 text-sm'><li>읽다 (to read) → 하도 읽어서 (read so much that)</li><li>먹다 (to eat) → 하도 먹어서 (ate so much that)</li><li>피곤하다 (to be tired) → 하도 피곤해서 (so tired that)</li></ul></li>"
+                ],
+                exampleTitle: "Examples",
+                examples: koreanExamples
+            },
+            vi: {
+                title: "Ngữ pháp: 하도 A/V-아서/어서",
+                descriptionTitle: "Giải thích",
+                description: "Sử dụng khi muốn nhấn mạnh mức độ của một việc gì đó quá mức, và thể hiện kết quả hoặc nguyên nhân của nó. '하도' có nghĩa tương tự như '너무' (quá), là một phó từ nhấn mạnh rằng mức độ rất nghiêm trọng.",
+                conjugationTitle: "Hình thức kết hợp",
+                conjugation: [
+                    "<li><b>Khi nguyên âm cuối của gốc động từ/tính từ là 'ㅏ, ㅗ': -아서</b><ul class='list-inside ml-6 text-sm'><li>비싸다 → 하도 비싸서</li><li>좋다 → 하도 좋아서</li></ul></li>",
+                    "<li><b>Khi nguyên âm cuối của gốc động từ/tính từ không phải là 'ㅏ, ㅗ': -어서</b><ul class='list-inside ml-6 text-sm'><li>읽다 → 하도 읽어서</li><li>먹다 → 하도 먹어서</li></ul></li>"
+                ],
+                exampleTitle: "Ví dụ",
+                examples: koreanExamples
+            },
+            ja: {
+                title: "文法：하도 A/V-아서/어서",
+                descriptionTitle: "説明",
+                description: "ある事柄の程度が甚だしいことを強調し、その結果や原因を表すときに使います。「하도」は「あまりにも」という意味で、程度が非常に激しいことを強調する副詞です。",
+                conjugationTitle: "結合形態",
+                conjugation: [
+                    "<li><b>形容詞・動詞の語幹の最後の母音が「ㅏ, ㅗ」の場合：-아서</b><ul class='list-inside ml-6 text-sm'><li>비싸다 → 하도 비싸서</li><li>좋다 → 하도 좋아서</li></ul></li>",
+                    "<li><b>形容詞・動詞の語幹の最後の母音が「ㅏ, ㅗ」以外の場合：-어서</b><ul class='list-inside ml-6 text-sm'><li>읽다 → 하도 읽어서</li><li>먹다 → 하도 먹어서</li></ul></li>"
+                ],
+                exampleTitle: "例文",
+                examples: koreanExamples
+            },
+            zh: {
+                title: "语法：하도 A/V-아서/어서",
+                descriptionTitle: "说明",
+                description: "用于强调某件事的程度过分，从而引出其结果或原因。'하도' 的意思类似于 '너무' (太)，是强调程度非常严重的副词。",
+                conjugationTitle: "结合形态",
+                conjugation: [
+                    "<li><b>当形容词/动词词干的最后一个元音是'ㅏ, ㅗ'时: -아서</b><ul class='list-inside ml-6 text-sm'><li>비싸다 → 하도 비싸서</li><li>좋다 → 하도 좋아서</li></ul></li>",
+                    "<li><b>当形容词/动词词干的最后一个元音不是'ㅏ, ㅗ'时: -어서</b><ul class='list-inside ml-6 text-sm'><li>읽다 → 하도 읽어서</li><li>먹다 → 하도 먹어서</li></ul></li>"
+                ],
+                exampleTitle: "示例",
+                examples: koreanExamples
+            }
+        };
+
+        const quizData = [
+            { question: "가: 왜 저녁 먹자마자 잠이 들었어요? <br>나: 어제 ______.", options: ["하도 피곤해서요", "너무 피곤할 거예요", "가끔 피곤하니까요", "피곤하지만 괜찮아요"], answer: "하도 피곤해서요" },
+            { question: "가: 왜 그렇게 일찍 퇴근했어요?<br>나: ______ 일찍 퇴근했어요.", options: ["머리가 하도 아파서", "머리가 아프지만", "머리가 안 아파서", "머리가 아프면"], answer: "머리가 하도 아파서" },
+            { question: "가: 그 영화 어때요?<br>나: ______ 세 번이나 봤어요.", options: ["하도 재미없어서", "하도 재미있어서", "재미있을 것 같아서", "재미없지만 봤어요"], answer: "하도 재미있어서" },
+            { question: "다음 문장 중 옳은 것을 고르세요.", options: ["아이가 하도 예뻐서 눈을 뗄 수가 없어요.", "날씨가 하도 좋아서 기분이 나빠요.", "음식이 하도 매워서 아주 맛있었어요.", "숙제가 하도 쉬워서 밤을 새웠어요."], answer: "아이가 하도 예뻐서 눈을 뗄 수가 없어요." },
+            { question: "가: 왜 요즘 대중교통을 이용해요?<br>나: 길이 ______.", options: ["안 막혀서요", "하도 막혀서요", "막히는 것 같아서요", "막힐지도 몰라요"], answer: "하도 막혀서요" }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userAnswers = [];
+        let currentLang = 'ko';
+
+        function updateContent(lang) {
+            const content = contentData[lang];
+            grammarTitleEl.textContent = content.title;
+            descriptionTitleEl.textContent = content.descriptionTitle;
+            descriptionContentEl.textContent = content.description;
+            conjugationTitleEl.textContent = content.conjugationTitle;
+            conjugationListEl.innerHTML = content.conjugation.join('');
+            exampleTitleEl.textContent = content.exampleTitle;
+            exampleListEl.innerHTML = content.examples.join('');
+
+            langButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.lang === lang) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function showView(view) {
+            explanationView.classList.add('hidden');
+            quizView.classList.add('hidden');
+            resultView.classList.add('hidden');
+            view.classList.remove('hidden');
+        }
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            showView(quizView);
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            const question = quizData[currentQuestionIndex];
+            quizProgressEl.textContent = `문제 ${currentQuestionIndex + 1} / ${quizData.length}`;
+            quizQuestionEl.innerHTML = question.question;
+            quizOptionsEl.innerHTML = '';
+            quizFeedbackEl.innerHTML = '';
+
+            const shuffledOptions = [...question.options].sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.innerHTML = option;
+                button.className = "quiz-option w-full p-4 text-left bg-gray-100 rounded-lg border-2 border-transparent hover:bg-gray-200 transition-all duration-200";
+                button.onclick = () => selectAnswer(option, question.answer, button);
+                quizOptionsEl.appendChild(button);
+            });
+        }
+        
+        function selectAnswer(selected, correct, btn) {
+            userAnswers[currentQuestionIndex] = selected;
+            const isCorrect = selected === correct;
+            const question = quizData[currentQuestionIndex];
+            
+            if (isCorrect) {
+                score++;
+                btn.classList.add('correct');
+                quizFeedbackEl.innerHTML = '<span class="font-bold text-green-600">정답입니다! 🎉</span>';
+            } else {
+                btn.classList.add('wrong');
+                let feedbackText = `<span class="font-bold text-red-600">틀렸습니다.</span>`;
+                if(question.explanation) {
+                    feedbackText += `<br><span class="text-sm text-gray-600">${question.explanation}</span>`;
+                }
+                quizFeedbackEl.innerHTML = feedbackText;
+            }
+
+            Array.from(quizOptionsEl.children).forEach(button => {
+                button.disabled = true;
+                if(button.innerHTML === correct) {
+                    button.classList.add('correct');
+                }
+            });
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < quizData.length) {
+                    displayQuestion();
+                } else {
+                    showResult();
+                }
+            }, 2000);
+        }
+
+        function showResult() {
+            showView(resultView);
+            resultTitleEl.textContent = '퀴즈 완료!';
+            resultScoreEl.textContent = `총 ${quizData.length}문제 중 ${score}문제를 맞혔습니다. (점수: ${Math.round((score/quizData.length)*100)}점)`;
+            resultDetailsEl.innerHTML = '';
+            
+            quizData.forEach((q, index) => {
+                const userAnswer = userAnswers[index];
+                const isCorrect = userAnswer === q.answer;
+                const resultItem = document.createElement('div');
+                resultItem.className = `p-3 rounded-lg ${isCorrect ? 'bg-green-50' : 'bg-red-50'}`;
+                resultItem.innerHTML = `
+                    <p class="font-semibold">${index + 1}. ${q.question.replace(/<br>/g, ' ')}</p>
+                    <p class="text-sm ${isCorrect ? 'text-green-700' : 'text-red-700'}">
+                        <b>선택:</b> ${userAnswer} ${isCorrect ? '✔' : `✘ (정답: ${q.answer})`}
+                    </p>
+                `;
+                resultDetailsEl.appendChild(resultItem);
+            });
+        }
+
+        // Event Listeners
+        startQuizBtn.addEventListener('click', startQuiz);
+        restartQuizBtn.addEventListener('click', startQuiz);
+
+        backToExplanationBtn.addEventListener('click', () => showView(explanationView));
+        
+        langButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                currentLang = button.dataset.lang;
+                updateContent(currentLang);
+            });
+        });
+
+        // Initial Setup
+        updateContent('ko');
+    });
+    </script>
+</body>
+</html>
+
