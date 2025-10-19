@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도시와 시골 어휘 학습</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: background-color 0.5s ease;
+        }
+        .card-container {
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        .lang-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+        .correct-answer {
+            background-color: #dcfce7; /* green-100 */
+        }
+        .wrong-answer {
+            background-color: #fee2e2; /* red-100 */
+        }
+        .answer-feedback {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 1rem;
+            height: 30px;
+        }
+        .correct {
+            color: #15803d; /* green-700 */
+        }
+        .wrong {
+            color: #b91c1c; /* red-700 */
+        }
+    </style>
+</head>
+<body class="bg-blue-50 min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="text-center mb-6">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">한국어 어휘 학습</h1>
+        <p class="text-lg text-gray-600">도시와 시골</p>
+        <div id="last-score-display" class="mt-2 text-sm text-gray-500 font-medium hidden"></div>
+    </div>
+
+    <div id="language-selector" class="flex flex-wrap justify-center gap-2 sm:gap-4 mb-6 bg-white p-2 rounded-xl shadow-md">
+        <button data-lang="korean" class="lang-btn px-4 py-2 text-sm sm:text-base font-semibold text-white bg-blue-500 rounded-lg shadow-md hover:bg-blue-600 transition-all duration-300">한국어 설명</button>
+        <button data-lang="english" class="lang-btn px-4 py-2 text-sm sm:text-base font-semibold text-white bg-teal-500 rounded-lg shadow-md hover:bg-teal-600 transition-all duration-300">영어</button>
+        <button data-lang="vietnamese" class="lang-btn px-4 py-2 text-sm sm:text-base font-semibold text-white bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition-all duration-300">베트남어</button>
+        <button data-lang="japanese" class="lang-btn px-4 py-2 text-sm sm:text-base font-semibold text-white bg-purple-500 rounded-lg shadow-md hover:bg-purple-600 transition-all duration-300">일본어</button>
+        <button data-lang="chinese" class="lang-btn px-4 py-2 text-sm sm:text-base font-semibold text-white bg-red-500 rounded-lg shadow-md hover:bg-red-600 transition-all duration-300">중국어</button>
+    </div>
+
+    <!-- Main Card View -->
+    <div id="card-view" class="w-full max-w-6xl">
+        <div class="flex justify-center mb-6">
+            <button id="start-quiz-btn" class="px-6 py-3 font-bold text-white bg-blue-500 rounded-lg shadow-md hover:bg-blue-600 transition-all duration-300">퀴즈 시작하기</button>
+        </div>
+        <div id="game-board" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+    </div>
+
+    <!-- Quiz View -->
+    <div id="quiz-view" class="w-full max-w-2xl hidden">
+        <div class="bg-white rounded-xl shadow-md p-6 sm:p-8 flex flex-col items-center text-center">
+            <div id="quiz-header" class="w-full mb-4">
+                <p id="quiz-question-number" class="text-gray-500 text-sm mb-2"></p>
+                <h3 id="quiz-question" class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6"></h3>
+            </div>
+            <div id="quiz-options" class="w-full grid gap-4"></div>
+            <div id="quiz-feedback" class="answer-feedback"></div>
+            <div id="quiz-combo" class="mt-4 text-gray-500 text-lg font-semibold"></div>
+        </div>
+    </div>
+
+    <!-- Result View -->
+    <div id="result-view" class="w-full max-w-2xl hidden">
+        <div id="result-content-to-capture" class="bg-white rounded-xl shadow-md p-6 sm:p-8 flex flex-col items-center text-center">
+            <h3 id="result-title" class="text-3xl font-bold text-blue-600 mb-4"></h3>
+            <p id="result-score" class="text-xl text-gray-700 mb-6"></p>
+            <table class="w-full text-left table-auto border-collapse">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="p-3 border-b-2">문제</th>
+                        <th class="p-3 border-b-2">정답</th>
+                        <th class="p-3 border-b-2">결과</th>
+                        <th class="p-3 border-b-2 text-right">점수</th>
+                    </tr>
+                </thead>
+                <tbody id="result-table-body">
+                </tbody>
+            </table>
+        </div>
+        <div class="flex flex-wrap justify-center gap-4 mt-6">
+            <button id="capture-btn" class="px-6 py-3 font-bold text-white bg-teal-500 rounded-lg shadow-md hover:bg-teal-600 transition-all duration-300">
+                <span id="capture-text">결과 캡처하기</span> 📸
+            </button>
+            <button id="restart-quiz-btn" class="px-6 py-3 font-bold text-white bg-blue-500 rounded-lg shadow-md hover:bg-blue-600 transition-all duration-300">퀴즈 다시 풀기</button>
+            <button id="back-to-cards-btn" class="px-6 py-3 font-bold text-gray-700 bg-gray-200 rounded-lg shadow-md hover:bg-gray-300 transition-all duration-300">어휘 카드 보기</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const allVocabulary = {
+                korean: {
+                    themeColor: 'blue',
+                    data: [
+                        { korean: "여유가 있다", foreign: "시간이나 공간, 돈 등이 넉넉하여 남음이 있다" },
+                        { korean: "여유가 없다", foreign: "시간이나 공간, 돈 등이 넉넉하지 않아 남음이 없다" },
+                        { korean: "활기차다", foreign: "활발하고 생기가 넘치다" },
+                        { korean: "평화롭다", foreign: "평온하고 화목하다" },
+                        { korean: "공기가 맑다", foreign: "공기가 깨끗하다" },
+                        { korean: "공해가 심하다", foreign: "공장, 자동차 등으로 공기나 물이 더러워지는 것이 심각하다" },
+                        { korean: "따분하다", foreign: "재미가 없고 지루하다" },
+                        { korean: "시간 가는 줄 모르다", foreign: "어떤 일에 몰두하여 시간이 지나는 것을 느끼지 못하다" },
+                        { korean: "편의 시설이 잘 되어 있다", foreign: "생활을 편리하게 해 주는 시설이 잘 갖추어져 있다" },
+                        { korean: "불편하다", foreign: "편하지 않아 괴롭거나 거북하다" },
+                        { korean: "정원(을) 가꾸다", foreign: "집의 뜰에 나무나 꽃을 심고 돌보다" },
+                        { korean: "잔디(를) 깎다", foreign: "기계 등을 이용해 잔디를 짧게 자르다" },
+                        { korean: "채소(를) 심다", foreign: "밭에 여러 가지 남새를 심다" },
+                        { korean: "농사(를) 짓다", foreign: "곡식이나 채소 등을 기르고 거두는 일을 하다" },
+                        { korean: "가축(을) 키우다", foreign: "소, 돼지, 닭 등 집에서 기르는 동물을 돌보다" },
+                        { korean: "물고기(를) 잡다", foreign: "강이나 바다에서 낚시 등으로 물고기를 잡다" },
+                        { korean: "사라지다", foreign: "있던 것이 보이지 않게 되다" },
+                        { korean: "생기다", foreign: "없던 것이 새로 나타나다" },
+                        { korean: "변하다", foreign: "모습이나 성질이 이전과 달라지다" },
+                        { korean: "몰라보다", foreign: "상대방의 모습이 너무 변해서 알아보지 못하다" },
+                        { korean: "상상이 되다", foreign: "마음속으로 어떤 모습을 그려볼 수 있다" },
+                        { korean: "상상이 안 되다", foreign: "마음속으로 어떤 모습을 그려보기 어렵다" }
+                    ]
+                },
+                english: {
+                    themeColor: 'teal',
+                    data: [
+                        { korean: "여유가 있다", foreign: "to have something to spare" },
+                        { korean: "여유가 없다", foreign: "to have nothing to spare" },
+                        { korean: "활기차다", foreign: "to be vigorous/animated" },
+                        { korean: "평화롭다", foreign: "to be peaceful" },
+                        { korean: "공기가 맑다", foreign: "to have clean air" },
+                        { korean: "공해가 심하다", foreign: "to have severe air pollution" },
+                        { korean: "따분하다", foreign: "to be dull/boring" },
+                        { korean: "시간 가는 줄 모르다", foreign: "to not know how time has passed" },
+                        { korean: "편의 시설이 잘 되어 있다", foreign: "to have good amenities" },
+                        { korean: "불편하다", foreign: "to be uncomfortable" },
+                        { korean: "정원(을) 가꾸다", foreign: "to garden" },
+                        { korean: "잔디(를) 깎다", foreign: "to cut the grass" },
+                        { korean: "채소(를) 심다", foreign: "to plant vegetables" },
+                        { korean: "농사(를) 짓다", foreign: "to farm" },
+                        { korean: "가축(을) 키우다", foreign: "to raise livestock" },
+                        { korean: "물고기(를) 잡다", foreign: "to catch fish" },
+                        { korean: "사라지다", foreign: "to disappear" },
+                        { korean: "생기다", foreign: "to be formed" },
+                        { korean: "변하다", foreign: "to change" },
+                        { korean: "몰라보다", foreign: "to fail to recognize" },
+                        { korean: "상상이 되다", foreign: "to be able to imagine" },
+                        { korean: "상상이 안 되다", foreign: "to not be able to imagine" }
+                    ]
+                },
+                vietnamese: {
+                    themeColor: 'green',
+                    data: [
+                        { korean: "여유가 있다", foreign: "có dư, thong thả" },
+                        { korean: "여유가 없다", foreign: "không có dư, không thong thả" },
+                        { korean: "활기차다", foreign: "sôi nổi, đầy sức sống" },
+                        { korean: "평화롭다", foreign: "bình yên, hòa bình" },
+                        { korean: "공기가 맑다", foreign: "không khí trong lành" },
+                        { korean: "공해가 심하다", foreign: "ô nhiễm môi trường nghiêm trọng" },
+                        { korean: "따분하다", foreign: "nhàm chán, buồn tẻ" },
+                        { korean: "시간 가는 줄 모르다", foreign: "không biết thời gian trôi đi như thế nào" },
+                        { korean: "편의 시설이 잘 되어 있다", foreign: "có đầy đủ tiện nghi" },
+                        { korean: "불편하다", foreign: "bất tiện" },
+                        { korean: "정원(을) 가꾸다", foreign: "làm vườn" },
+                        { korean: "잔디(를) 깎다", foreign: "cắt cỏ" },
+                        { korean: "채소(를) 심다", foreign: "trồng rau" },
+                        { korean: "농사(를) 짓다", foreign: "làm nông" },
+                        { korean: "가축(을) 키우다", foreign: "nuôi gia súc" },
+                        { korean: "물고기(를) 잡다", foreign: "bắt cá" },
+                        { korean: "사라지다", foreign: "biến mất" },
+                        { korean: "생기다", foreign: "phát sinh, xuất hiện" },
+                        { korean: "변하다", foreign: "thay đổi" },
+                        { korean: "몰라보다", foreign: "không nhận ra" },
+                        { korean: "상상이 되다", foreign: "có thể tưởng tượng" },
+                        { korean: "상상이 안 되다", foreign: "không thể tưởng tượng" }
+                    ]
+                },
+                japanese: {
+                    themeColor: 'purple',
+                    data: [
+                        { korean: "여유가 있다", foreign: "余裕がある" },
+                        { korean: "여유가 없다", foreign: "余裕がない" },
+                        { korean: "활기차다", foreign: "活気がある" },
+                        { korean: "평화롭다", foreign: "平和だ" },
+                        { korean: "공기가 맑다", foreign: "空気がきれいだ" },
+                        { korean: "공해가 심하다", foreign: "公害がひどい" },
+                        { korean: "따분하다", foreign: "退屈だ" },
+                        { korean: "시간 가는 줄 모르다", foreign: "時間が経つのも忘れる" },
+                        { korean: "편의 시설이 잘 되어 있다", foreign: "便利な施設が整っている" },
+                        { korean: "불편하다", foreign: "不便だ" },
+                        { korean: "정원(을) 가꾸다", foreign: "庭の手入れをする" },
+                        { korean: "잔디(를) 깎다", foreign: "芝生を刈る" },
+                        { korean: "채소(를) 심다", foreign: "野菜を植える" },
+                        { korean: "농사(를) 짓다", foreign: "農業をする" },
+                        { korean: "가축(을) 키우다", foreign: "家畜を飼う" },
+                        { korean: "물고기(를) 잡다", foreign: "魚を釣る" },
+                        { korean: "사라지다", foreign: "消える" },
+                        { korean: "생기다", foreign: "できる、生じる" },
+                        { korean: "변하다", foreign: "変わる" },
+                        { korean: "몰라보다", foreign: "見違える" },
+                        { korean: "상상이 되다", foreign: "想像ができる" },
+                        { korean: "상상이 안 되다", foreign: "想像ができない" }
+                    ]
+                },
+                chinese: {
+                    themeColor: 'red',
+                    data: [
+                        { korean: "여유가 있다", foreign: "有空闲/有富余" },
+                        { korean: "여유가 없다", foreign: "没有空闲/不富余" },
+                        { korean: "활기차다", foreign: "充满活力" },
+                        { korean: "평화롭다", foreign: "和平" },
+                        { korean: "공기가 맑다", foreign: "空气清新" },
+                        { korean: "공해가 심하다", foreign: "公害严重" },
+                        { korean: "따분하다", foreign: "无聊" },
+                        { korean: "시간 가는 줄 모르다", foreign: "不知道时间流逝" },
+                        { korean: "편의 시설이 잘 되어 있다", foreign: "便利设施齐全" },
+                        { korean: "불편하다", foreign: "不方便" },
+                        { korean: "정원(을) 가꾸다", foreign: "打理庭院" },
+                        { korean: "잔디(를) 깎다", foreign: "修剪草坪" },
+                        { korean: "채소(를) 심다", foreign: "种蔬菜" },
+                        { korean: "농사(를) 짓다", foreign: "务农" },
+                        { korean: "가축(을) 키우다", foreign: "饲养家畜" },
+                        { korean: "물고기(를) 잡다", foreign: "抓鱼" },
+                        { korean: "사라지다", foreign: "消失" },
+                        { korean: "생기다", foreign: "出现/产生" },
+                        { korean: "변하다", foreign: "变化" },
+                        { korean: "몰라보다", foreign: "认不出来" },
+                        { korean: "상상이 되다", foreign: "可以想象" },
+                        { korean: "상상이 안 되다", foreign: "无法想象" }
+                    ]
+                }
+            };
+
+            const gameBoard = document.getElementById('game-board');
+            const langButtons = document.querySelectorAll('.lang-btn');
+            const body = document.body;
+            const cardView = document.getElementById('card-view');
+            const quizView = document.getElementById('quiz-view');
+            const resultView = document.getElementById('result-view');
+            const startQuizBtn = document.getElementById('start-quiz-btn');
+            const restartQuizBtn = document.getElementById('restart-quiz-btn');
+            const backToCardsBtn = document.getElementById('back-to-cards-btn');
+            const captureBtn = document.getElementById('capture-btn');
+            const captureText = document.getElementById('capture-text');
+            const resultContentToCapture = document.getElementById('result-content-to-capture');
+            const quizQuestionEl = document.getElementById('quiz-question');
+            const quizQuestionNumberEl = document.getElementById('quiz-question-number');
+            const quizOptionsEl = document.getElementById('quiz-options');
+            const quizFeedbackEl = document.getElementById('quiz-feedback');
+            const quizComboEl = document.getElementById('quiz-combo');
+            const resultTitleEl = document.getElementById('result-title');
+            const resultScoreEl = document.getElementById('result-score');
+            const resultTableBodyEl = document.getElementById('result-table-body');
+            const lastScoreDisplayEl = document.getElementById('last-score-display');
+            
+            let currentLang = 'korean';
+            let currentQuizData = [];
+            let currentQuestionIndex = 0;
+            let totalScore = 0;
+            let combo = 0;
+            let quizResults = [];
+            
+            const colorMap = {
+                blue: { bg: 'bg-blue-50', text: 'text-blue-800', cardBack: 'bg-blue-500' },
+                teal: { bg: 'bg-teal-50', text: 'text-teal-800', cardBack: 'bg-teal-500' },
+                green: { bg: 'bg-green-50', text: 'text-green-800', cardBack: 'bg-green-500' },
+                purple: { bg: 'bg-purple-50', text: 'text-purple-800', cardBack: 'bg-purple-500' },
+                red: { bg: 'bg-red-50', text: 'text-red-800', cardBack: 'bg-red-500' }
+            };
+
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            function saveQuizResult() {
+                try {
+                    const localStorageKey = `quizResult_city_countryside_${currentLang}`;
+                    const resultData = {
+                        score: totalScore,
+                        totalQuestions: allVocabulary[currentLang].data.length,
+                        date: new Date().toLocaleDateString('ko-KR')
+                    };
+                    localStorage.setItem(localStorageKey, JSON.stringify(resultData));
+                    displayLastScore();
+                } catch (e) {
+                    console.error("Local storage save failed:", e);
+                }
+            }
+
+            function displayLastScore() {
+                try {
+                    const localStorageKey = `quizResult_city_countryside_${currentLang}`;
+                    const savedData = localStorage.getItem(localStorageKey);
+                    if (savedData) {
+                        const result = JSON.parse(savedData);
+                        lastScoreDisplayEl.textContent = `최근 점수 (${currentLang}): ${result.score}점`;
+                        lastScoreDisplayEl.classList.remove('hidden');
+                    } else {
+                        lastScoreDisplayEl.classList.add('hidden');
+                    }
+                } catch (e) {
+                    console.error("Local storage load failed:", e);
+                }
+            }
+            
+            function showView(view) {
+                cardView.classList.add('hidden');
+                quizView.classList.add('hidden');
+                resultView.classList.add('hidden');
+                document.getElementById(view).classList.remove('hidden');
+            }
+
+            function createCardBoard(language) {
+                gameBoard.innerHTML = '';
+                const langData = allVocabulary[language];
+                const vocabulary = langData.data;
+                const colors = colorMap[langData.themeColor];
+                
+                body.className = `min-h-screen flex flex-col items-center justify-center p-4 ${colors.bg}`;
+
+                vocabulary.forEach(item => {
+                    const cardContainer = document.createElement('div');
+                    cardContainer.className = 'card-container h-48';
+                    
+                    const cardInner = document.createElement('div');
+                    cardInner.className = 'card-inner';
+
+                    const cardFront = document.createElement('div');
+                    cardFront.className = `card-front bg-white ${colors.text}`;
+                    const koreanText = document.createElement('h2');
+                    koreanText.className = 'text-xl font-bold';
+                    koreanText.textContent = item.korean;
+                    cardFront.appendChild(koreanText);
+
+                    const cardBack = document.createElement('div');
+                    cardBack.className = `card-back text-white ${colors.cardBack}`;
+                    const foreignText = document.createElement('p');
+                    foreignText.className = 'text-lg font-semibold';
+                    foreignText.textContent = item.foreign;
+                    cardBack.appendChild(foreignText);
+                    
+                    cardInner.appendChild(cardFront);
+                    cardInner.appendChild(cardBack);
+                    cardContainer.appendChild(cardInner);
+                    gameBoard.appendChild(cardContainer);
+
+                    cardContainer.addEventListener('click', () => cardContainer.classList.toggle('flipped'));
+                });
+            }
+
+            function showQuizQuestion() {
+                const totalQuestions = currentQuizData.length;
+                if (currentQuestionIndex >= totalQuestions) {
+                    showQuizResult();
+                    return;
+                }
+
+                const currentItem = currentQuizData[currentQuestionIndex];
+                const allItems = allVocabulary[currentLang].data;
+                
+                const distractors = [];
+                while (distractors.length < 2) {
+                    const randomIndex = Math.floor(Math.random() * allItems.length);
+                    const randomItem = allItems[randomIndex];
+                    if (randomItem.foreign !== currentItem.foreign && !distractors.includes(randomItem.foreign)) {
+                        distractors.push(randomItem.foreign);
+                    }
+                }
+
+                const options = [currentItem.foreign, ...distractors];
+                shuffleArray(options);
+
+                quizQuestionNumberEl.textContent = `${currentQuestionIndex + 1} / ${totalQuestions}`;
+                quizQuestionEl.textContent = currentItem.korean;
+                quizOptionsEl.innerHTML = '';
+                quizFeedbackEl.textContent = '';
+                quizComboEl.textContent = (combo > 0) ? `✨ ${combo} 콤보! ✨` : '';
+
+                options.forEach(option => {
+                    const optionBtn = document.createElement('button');
+                    optionBtn.className = 'w-full px-4 py-4 text-lg font-semibold rounded-lg shadow-md transition-all duration-300 text-gray-800 bg-gray-100 hover:bg-gray-200';
+                    optionBtn.textContent = option;
+                    optionBtn.addEventListener('click', () => handleAnswer(option, currentItem.foreign, optionBtn));
+                    quizOptionsEl.appendChild(optionBtn);
+                });
+            }
+
+            function handleAnswer(selectedAnswer, correctAnswer, selectedBtn) {
+                const isCorrect = selectedAnswer === correctAnswer;
+                Array.from(quizOptionsEl.children).forEach(btn => btn.disabled = true);
+
+                let pointsGained = 0;
+                if (isCorrect) {
+                    combo++;
+                    pointsGained = 10 + combo;
+                    totalScore += pointsGained;
+                    selectedBtn.classList.remove('bg-gray-100', 'hover:bg-gray-200');
+                    selectedBtn.classList.add('bg-green-500', 'text-white');
+                    quizFeedbackEl.textContent = '정답입니다! 🎉';
+                    quizFeedbackEl.classList.add('correct');
+                } else {
+                    combo = 0;
+                    pointsGained = 0;
+                    selectedBtn.classList.remove('bg-gray-100', 'hover:bg-gray-200');
+                    selectedBtn.classList.add('bg-red-500', 'text-white');
+                    quizFeedbackEl.textContent = `아쉽네요. 정답은 '${correctAnswer}' 입니다.`;
+                    quizFeedbackEl.classList.add('wrong');
+                    
+                    Array.from(quizOptionsEl.children).forEach(btn => {
+                        if (btn.textContent === correctAnswer) {
+                            btn.classList.remove('bg-gray-100', 'hover:bg-gray-200');
+                            btn.classList.add('bg-green-500', 'text-white');
+                        }
+                    });
+                }
+                
+                quizResults.push({
+                    question: currentQuizData[currentQuestionIndex].korean,
+                    userAnswer: selectedAnswer,
+                    correctAnswer: correctAnswer,
+                    isCorrect: isCorrect,
+                    points: pointsGained
+                });
+                
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    quizFeedbackEl.classList.remove('correct', 'wrong');
+                    showQuizQuestion();
+                }, 1500);
+            }
+
+            function showQuizResult() {
+                showView('result-view');
+                resultTitleEl.textContent = '퀴즈 완료!';
+                resultScoreEl.textContent = `총 점수: ${totalScore}점`;
+                resultTableBodyEl.innerHTML = '';
+                
+                quizResults.forEach(result => {
+                    const row = document.createElement('tr');
+                    const correctClass = result.isCorrect ? 'correct-answer' : 'wrong-answer';
+                    row.className = correctClass;
+                    
+                    row.innerHTML = `
+                        <td class="p-3 border-b-2 font-medium">${result.question}</td>
+                        <td class="p-3 border-b-2 text-gray-700">${result.correctAnswer}</td>
+                        <td class="p-3 border-b-2 font-bold">${result.isCorrect ? 'O' : 'X'}</td>
+                        <td class="p-3 border-b-2 text-right">${result.points}점</td>
+                    `;
+                    resultTableBodyEl.appendChild(row);
+                });
+
+                saveQuizResult();
+            }
+
+            // Event Listeners
+            langButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    langButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentLang = button.dataset.lang;
+                    createCardBoard(currentLang);
+                    displayLastScore();
+                    showView('card-view');
+                });
+            });
+
+            startQuizBtn.addEventListener('click', () => {
+                currentQuizData = [...allVocabulary[currentLang].data];
+                shuffleArray(currentQuizData);
+                currentQuestionIndex = 0;
+                totalScore = 0;
+                combo = 0;
+                quizResults = [];
+                showView('quiz-view');
+                showQuizQuestion();
+            });
+
+            restartQuizBtn.addEventListener('click', () => {
+                startQuizBtn.click();
+            });
+
+            backToCardsBtn.addEventListener('click', () => {
+                createCardBoard(currentLang);
+                showView('card-view');
+            });
+
+            captureBtn.addEventListener('click', () => {
+                const buttonsContainer = captureBtn.parentElement;
+                buttonsContainer.style.display = 'none';
+                
+                captureText.textContent = '캡처 중...';
+                
+                html2canvas(resultContentToCapture, {
+                    scale: 2,
+                    useCORS: true
+                }).then(canvas => {
+                    const a = document.createElement('a');
+                    a.href = canvas.toDataURL('image/png');
+                    a.download = `quiz_result_${currentLang}_${new Date().toLocaleDateString('ko-KR')}.png`;
+                    a.click();
+                    
+                    buttonsContainer.style.display = 'flex';
+                    captureText.textContent = '결과 캡처하기';
+                }).catch(err => {
+                    console.error("Capture failed:", err);
+                    buttonsContainer.style.display = 'flex';
+                    captureText.textContent = '결과 캡처하기';
+                });
+            });
+
+            // Initial setup
+            document.querySelector('[data-lang="korean"]').classList.add('active');
+            createCardBoard('korean');
+            displayLastScore();
+        });
+    </script>
+</body>
+</html>
