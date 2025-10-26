@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>문법 학습: 단형 사동 (이/히/리/기/우/구/추)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .quiz-option.correct {
+            background-color: #dcfce7; /* green-100 */
+            border-color: #22c55e; /* green-500 */
+            color: #166534; /* green-800 */
+        }
+        .quiz-option.wrong {
+            background-color: #fee2e2; /* red-100 */
+            border-color: #ef4444; /* red-500 */
+            color: #991b1b; /* red-800 */
+        }
+        .quiz-option:disabled {
+            opacity: 0.8;
+            cursor: not-allowed;
+        }
+        .lang-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            border: 2px solid white;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #e5e7eb; /* gray-200 */
+            padding: 0.75rem 1rem;
+            text-align: left;
+        }
+        th {
+            background-color: #f9fafb; /* gray-50 */
+            font-weight: 700;
+        }
+        tr:nth-child(even) {
+            background-color: #f3f4f6; /* gray-100 */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+
+        <!-- 헤더 -->
+        <header class="text-center mb-12">
+            <h1 data-key="title" class="text-4xl font-bold text-blue-600">문법 및 표현 2</h1>
+            <p data-key="grammar_name" class="text-5xl font-bold text-gray-800 mt-2">단형 사동</p>
+            <p data-key="description" class="text-xl text-gray-600 mt-4">동사 어간에 접미사 '이, 히, 리, 기, 우, 구, 추'를 붙여 사동의 의미를 더합니다.</p>
+            <p data-key="description_en" class="text-lg text-gray-500 mt-1">(Short-form causative, using suffixes)</p>
+        </header>
+
+        <!-- 언어 선택 버튼 -->
+        <div class="flex flex-wrap justify-center gap-3 my-8">
+            <button data-lang="ko" class="lang-btn px-4 py-2 font-semibold text-white bg-blue-500 rounded-md shadow-md hover:bg-blue-600 transition-all duration-300 active">한국어</button>
+            <button data-lang="en" class="lang-btn px-4 py-2 font-semibold text-white bg-teal-500 rounded-md shadow-md hover:bg-teal-600 transition-all duration-300">English</button>
+            <button data-lang="vi" class="lang-btn px-4 py-2 font-semibold text-white bg-green-500 rounded-md shadow-md hover:bg-green-600 transition-all duration-300">Tiếng Việt</button>
+            <button data-lang="ja" class="lang-btn px-4 py-2 font-semibold text-white bg-purple-500 rounded-md shadow-md hover:bg-purple-600 transition-all duration-300">日本語</button>
+            <button data-lang="zh" class="lang-btn px-4 py-2 font-semibold text-white bg-red-500 rounded-md shadow-md hover:bg-red-600 transition-all duration-300">中文</button>
+        </div>
+
+        <!-- 1. 예문 (Examples) -->
+        <section class="mb-12">
+            <h2 data-key="example_title" class="text-3xl font-bold text-gray-800 mb-6">예문</h2>
+            <div class="bg-white p-8 rounded-xl shadow-lg space-y-5 overflow-x-auto">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="w-1/4">접미사 (Suffix)</th>
+                            <th class="w-1/4">기본 동사 (Verb)</th>
+                            <th class="w-1/4">사동사 (Causative)</th>
+                            <th class="w-1/2">예문 (Example Sentence)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-bold text-blue-600 text-2xl text-center">이</td>
+                            <td>보다 (to see)</td>
+                            <td>보이다 (to show)</td>
+                            <td>친구에게 사진을 <strong class="text-blue-600">보여</strong> 줬어요.</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-blue-600 text-2xl text-center">이</td>
+                            <td>먹다 (to eat)</td>
+                            <td>먹이다 (to feed)</td>
+                            <td>엄마가 아이에게 밥을 <strong class="text-blue-600">먹여요.</strong></td>
+                        </tr>
+                         <tr>
+                            <td class="font-bold text-red-600 text-2xl text-center">히</td>
+                            <td>앉다 (to sit)</td>
+                            <td>앉히다 (to seat)</td>
+                            <td>아이를 의자에 <strong class="text-red-600">앉혔어요.</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-red-600 text-2xl text-center">히</td>
+                            <td>입다 (to wear)</td>
+                            <td>입히다 (to dress)</td>
+                            <td>동생에게 옷을 <strong class="text-red-600">입혔어요.</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-green-600 text-2xl text-center">리</td>
+                            <td>알다 (to know)</td>
+                            <td>알리다 (to inform)</td>
+                            <td>모두에게 소식을 <strong class="text-green-600">알렸어요.</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-green-600 text-2xl text-center">리</td>
+                            <td>울다 (to cry)</td>
+                            <td>울리다 (to make cry)</td>
+                            <td>동생을 <strong class="text-green-600">울리지</strong> 마세요.</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-purple-600 text-2xl text-center">기</td>
+                            <td>웃다 (to laugh)</td>
+                            <td>웃기다 (to make laugh)</td>
+                            <td>그 코미디언은 사람들을 잘 <strong class="text-purple-600">웃겨요.</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-purple-600 text-2xl text-center">기</td>
+                            <td>신다 (to wear shoes)</td>
+                            <td>신기다 (to put shoes on)</td>
+                            <td>아이에게 양말을 <strong class="text-purple-600">신겼어요.</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-yellow-600 text-2xl text-center">우</td>
+                            <td>자다 (to sleep)</td>
+                            <td>재우다 (to put to sleep)</td>
+                            <td>아기를 침대에 <strong class="text-yellow-600">재웠어요.</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-yellow-600 text-2xl text-center">우</td>
+                            <td>깨다 (to wake up)</td>
+                            <td>깨우다 (to wake someone)</td>
+                            <td>아침 7시에 저를 <strong class="text-yellow-600">깨워</strong> 주세요.</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-pink-600 text-2xl text-center">구</td>
+                            <td>돋다 (to sprout)</td>
+                            <td>돋구다 (to raise, stir up)</td>
+                            <td>식욕을 <strong class="text-pink-600">돋구는</strong> 냄새가 나요.</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-indigo-600 text-2xl text-center">추</td>
+                            <td>낮다 (to be low)</td>
+                            <td>낮추다 (to lower)</td>
+                            <td>소리를 조금 <strong class="text-indigo-600">낮춰</strong> 주세요.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 3. 문법 퀴즈 (Grammar Quiz) -->
+        <section class="mb-12">
+            <h2 data-key="quiz_title" class="text-3xl font-bold text-gray-800 mb-6">문법 퀴즈</h2>
+            <div id="quiz-container" class="bg-white p-8 rounded-xl shadow-lg space-y-8">
+                <!-- 퀴즈 1 -->
+                <div class="quiz-item" data-correct="A">
+                    <p class="text-xl font-semibold mb-4">1. 아이에게 옷을 (입다 / 입히다).</p>
+                    <div class="space-y-3">
+                        <button class="quiz-option w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:bg-gray-100 transition">
+                            (A) 입히다
+                        </button>
+                        <button class="quiz-option w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:bg-gray-100 transition">
+                            (B) 입다
+                        </button>
+                    </div>
+                    <p class="feedback mt-3 text-lg font-medium hidden"></p>
+                </div>
+
+                <!-- 퀴즈 2 -->
+                <div class="quiz-item" data-correct="B">
+                    <p class="text-xl font-semibold mb-4">2. 친구에게 내일 일정을 (알다 / 알리다).</p>
+                    <div class="space-y-3">
+                        <button class="quiz-option w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:bg-gray-100 transition">
+                            (A) 알다
+                        </button>
+                        <button class="quiz-option w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:bg-gray-100 transition">
+                            (B) 알리다
+                        </button>
+                    </div>
+                    <p class="feedback mt-3 text-lg font-medium hidden"></p>
+                </div>
+
+                <!-- 퀴즈 3 -->
+                <div class="quiz-item" data-correct="B">
+                    <p class="text-xl font-semibold mb-4">3. 아이가 밥을 안 먹어서 억지로 (먹다 / 먹이다).</p>
+                    <div class="space-y-3">
+                        <button class="quiz-option w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:bg-gray-100 transition">
+                            (A) 먹다
+                        </button>
+                        <button class="quiz-option w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:bg-gray-100 transition">
+                            (B) 먹였다
+                        </button>
+                    </div>
+                    <p class="feedback mt-3 text-lg font-medium hidden"></p>
+                </div>
+                
+                <!-- 퀴즈 4 -->
+                <div class="quiz-item" data-correct="A">
+                    <p class="text-xl font-semibold mb-4">4. 아침 일찍 동생을 (깨다 / 깨우다).</p>
+                    <div class="space-y-3">
+                        <button class="quiz-option w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:bg-gray-100 transition">
+                            (A) 깨웠다
+                        </button>
+                        <button class="quiz-option w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:bg-gray-100 transition">
+                            (B) 깼다
+                        </button>
+                    </div>
+                    <p class="feedback mt-3 text-lg font-medium hidden"></p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const translations = {
+                'ko': {
+                    'title': '문법 및 표현 2',
+                    'grammar_name': '단형 사동',
+                    'description': "동사 어간에 접미사 '이, 히, 리, 기, 우, 구, 추'를 붙여 사동의 의미를 더합니다.",
+                    'description_en': '(Short-form causative, using suffixes)',
+                    'example_title': '예문',
+                    'quiz_title': '문법 퀴즈',
+                    'feedback_correct': '정답입니다! 👏',
+                    'feedback_wrong': '아쉽네요. 정답은 ({correct}) 입니다.'
+                },
+                'en': {
+                    'title': 'Grammar and Expression 2',
+                    'grammar_name': 'Short-form Causative',
+                    'description': "Adds a causative meaning by attaching suffixes '이, 히, 리, 기, 우, 구, 추' to the verb stem.",
+                    'description_en': '(Short-form causative, using suffixes)',
+                    'example_title': 'Examples',
+                    'quiz_title': 'Grammar Quiz',
+                    'feedback_correct': 'Correct! 👏',
+                    'feedback_wrong': 'Not quite. The answer is ({correct}).'
+                },
+                'vi': {
+                    'title': 'Ngữ pháp và Biểu hiện 2',
+                    'grammar_name': 'Thể sai khiến dạng ngắn',
+                    'description': 'Thêm ý nghĩa sai khiến bằng cách gắn các hậu tố \'이, 히, 리, 기, 우, 구, 추\' vào gốc động từ.',
+                    'description_en': '(Short-form causative, using suffixes)',
+                    'example_title': 'Ví dụ',
+                    'quiz_title': 'Câu đố Ngữ pháp',
+                    'feedback_correct': 'Chính xác! 👏',
+                    'feedback_wrong': 'Tiếc quá. Đáp án là ({correct}).'
+                },
+                'ja': {
+                    'title': '文法と表現 2',
+                    'grammar_name': '短形使役',
+                    'description': '動詞の語幹に接尾辞「이, 히, 리, 기, 우, 구, 추」を付けて使役の意味を加えます。',
+                    'description_en': '(Short-form causative, using suffixes)',
+                    'example_title': '例文',
+                    'quiz_title': '文法クイズ',
+                    'feedback_correct': '正解です！👏',
+                    'feedback_wrong': '残念です。正解は ({correct}) です。'
+                },
+                'zh': {
+                    'title': '语法与表达 2',
+                    'grammar_name': '短型使动',
+                    'description': '在动词词干上添加后缀“이, 히, 리, 기, 우, 구, 추”，增加使动意义。',
+                    'description_en': '(Short-form causative, using suffixes)',
+                    'example_title': '例句',
+                    'quiz_title': '语法测验',
+                    'feedback_correct': '正确！👏',
+                    'feedback_wrong': '很遗憾。正确答案是 ({correct})。'
+                }
+            };
+
+            let currentLang = 'ko';
+            const langButtons = document.querySelectorAll('.lang-btn');
+            const quizItems = document.querySelectorAll('.quiz-item');
+
+            function updateLanguage(lang) {
+                if (!translations[lang]) return;
+                currentLang = lang;
+
+                document.querySelectorAll('[data-key]').forEach(el => {
+                    const key = el.dataset.key;
+                    if (translations[lang][key]) {
+                        el.textContent = translations[lang][key];
+                    }
+                });
+
+                // 버튼 활성 상태 업데이트
+                langButtons.forEach(btn => {
+                    if (btn.dataset.lang === lang) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            langButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const lang = button.dataset.lang;
+                    updateLanguage(lang);
+                });
+            });
+
+            quizItems.forEach(item => {
+                const options = item.querySelectorAll('.quiz-option');
+                const feedbackEl = item.querySelector('.feedback');
+                const correctAnswer = item.dataset.correct; // A or B
+
+                options.forEach(option => {
+                    option.addEventListener('click', () => {
+                        const parent = option.closest('.quiz-item');
+                        if (parent.dataset.answered === 'true') {
+                            return;
+                        }
+                        parent.dataset.answered = 'true';
+
+                        parent.querySelectorAll('.quiz-option').forEach(btn => btn.disabled = true);
+                        
+                        // (A) or (B)
+                        const selectedAnswer = option.textContent.match(/\(A\)|\(B\)/)[0].replace(/[\(\)]/g, ''); 
+
+                        if (selectedAnswer === correctAnswer) {
+                            option.classList.add('correct');
+                            feedbackEl.textContent = translations[currentLang].feedback_correct;
+                            feedbackEl.className = 'feedback mt-3 text-lg font-medium text-green-600';
+                        } else {
+                            option.classList.add('wrong');
+                            feedbackEl.textContent = translations[currentLang].feedback_wrong.replace('{correct}', correctAnswer);
+                            feedbackEl.className = 'feedback mt-3 text-lg font-medium text-red-600';
+                            
+                            // 정답 버튼 하이라이트
+                            const correctIndex = (correctAnswer === 'A') ? 0 : 1;
+                            parent.querySelectorAll('.quiz-option')[correctIndex].classList.add('correct');
+                        }
+                        feedbackEl.classList.remove('hidden');
+                    });
+                });
+            });
+            
+            // Initialize
+            updateLanguage('ko');
+        });
+    </script>
+
+</body>
+</html>
+
