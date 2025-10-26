@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교실 어휘 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            overflow: hidden; /* 스크롤 방지 */
+        }
+        /* 버튼 비활성화 시 스타일 */
+        .option-btn:disabled {
+            opacity: 0.7;
+        }
+        /* 정답 버튼 */
+        .option-btn.correct {
+            background-color: #22c55e; /* green-500 */
+            color: white;
+            transform: scale(1.05);
+            border-color: #16a34a; /* green-600 */
+        }
+        /* 오답 버튼 */
+        .option-btn.wrong {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            border-color: #dc2626; /* red-600 */
+        }
+        /* 선택되지 않은 버튼 (정답 공개 후) */
+        .option-btn.faded {
+            background-color: #f3f4f6; /* gray-100 */
+            color: #9ca3af; /* gray-400 */
+        }
+        /* 빈칸을 눈에 띄게 표시 */
+        #quiz-question .blank {
+            color: #3b82f6; /* blue-500 */
+            font-weight: 700;
+            display: inline-block;
+            width: 150px; /* 빈칸의 너비 */
+            border-bottom: 3px solid #3b82f6;
+            margin: 0 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col justify-between items-center p-8">
+
+    <!-- 1. 선택지 (상단) -->
+    <div id="quiz-options-container" class="w-full flex flex-wrap justify-center gap-4 mb-6">
+        <!-- 선택지 버튼이 여기에 동적으로 생성됩니다 -->
+    </div>
+
+    <!-- 2. 퀴즈 메인 콘텐츠 (중앙) -->
+    <div id="quiz-main-content" class="flex-grow flex flex-col justify-center items-center w-full max-w-5xl text-center">
+        <p id="quiz-category" class="text-3xl font-bold text-blue-600 mb-4"></p>
+        <p id="quiz-question-number" class="text-xl text-gray-500 mb-6"></p>
+        
+        <!-- 질문 (빈칸 채우기 또는 정의) -->
+        <h2 id="quiz-question" class="text-5xl font-bold text-gray-800 my-8 leading-relaxed">
+            <!-- 퀴즈 질문이 여기에 표시됩니다 -->
+        </h2>
+
+        <!-- 피드백 (중앙 하단) -->
+        <div id="feedback-container" class="mt-8 h-32">
+            <p id="quiz-feedback-message" class="text-4xl font-bold"></p>
+            <p id="quiz-correct-answer" class="text-3xl text-gray-700 mt-4 hidden"></p>
+        </div>
+    </div>
+
+    <!-- 3. 네비게이션 (하단) -->
+    <div id="navigation-container" class="w-full flex justify-between items-center">
+        <!-- 카테고리 바로가기 버튼 (왼쪽/중앙 정렬) -->
+        <div id="category-jump-container" class="flex-grow flex flex-col justify-center gap-2">
+            <!-- 카테고리 버튼이 여기에 동적으로 생성됩니다 (2줄로) -->
+        </div>
+
+        <!-- 다음 문제 버튼 (오른쪽 정렬) -->
+        <div class="flex-shrink-0">
+            <button id="next-question-btn" class="px-8 py-4 text-2xl font-bold bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 transition-colors hidden">
+                다음 문제 →
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // 1. 퀴즈 데이터 정의 (카테고리별 순서 고정 + 쉬운 표현)
+            const allQuizData = [
+                {
+                    category: "생활 시설 문제",
+                    quizzes: [
+                        { korean: "수돗물이 안 나오다", type: "definition", question: "물 안 나와요." },
+                        { korean: "수돗물이 안 나오다", type: "fill-in-the-blank", question: "샤워를 하려는데 갑자기 [ ](이)가 안 나왔어요." },
+                        { korean: "전기가 나가다", type: "definition", question: "불 꺼졌어요. (전기 안 들어와요)" },
+                        { korean: "전기가 나가다", type: "fill-in-the-blank", question: "어젯밤에 [ ](이)가 나가서 텔레비전이 꺼졌어요." },
+                        { korean: "변기가 막히다", type: "definition", question: "화장실 변기 막혔어요." },
+                        { korean: "변기가 막히다", type: "fill-in-the-blank", question: "화장실 [ ](이)가 막혀서 물이 안 내려가요." },
+                        { korean: "물이 새다", type: "definition", question: "천장이나 벽에서 물이 떨어져요." },
+                        { korean: "물이 새다", type: "fill-in-the-blank", question: "비가 오면 천장에서 [ ](이)가 새요." },
+                        { korean: "소음이 심하다", type: "definition", question: "너무 시끄러워요." },
+                        { korean: "소음이 심하다", type: "fill-in-the-blank", question: "윗집 공사 때문에 [ ](이)가 심해서 공부에 집중이 안 돼요." },
+                        { korean: "난방이 안 되다", type: "definition", question: "방이 추워요. (보일러 안 돼요)" },
+                        { korean: "난방이 안 되다", type: "fill-in-the-blank", question: "겨울에 [ ](이)가 안 돼서 너무 추워요." },
+                        { korean: "이상한 냄새가 나다", type: "definition", question: "냄새가 이상해요." },
+                        { korean: "이상한 냄새가 나다", type: "fill-in-the-blank", question: "냉장고에서 [ ](이)가 나요." },
+                        { korean: "물이 안 내려가다", type: "definition", question: "싱크대나 화장실에 물이 안 빠져요." },
+                        { korean: "물이 안 내려가다", type: "fill-in-the-blank", question: "설거지를 하는데 싱크대에 [ ](이)가 안 내려가요." }
+                    ]
+                },
+                {
+                    category: "계약 및 요금",
+                    quizzes: [
+                        { korean: "계약서", type: "definition", question: "집이나 물건을 빌릴 때 쓰는 서류." },
+                        { korean: "계약서", type: "fill-in-the-blank", question: "집을 계약할 때 [ ](을)를 꼼꼼히 읽어봐야 해요." },
+                        { korean: "계약 기간", type: "definition", question: "집을 빌리기로 한 시간 (예: 2년)." },
+                        { korean: "계약 기간", type: "fill-in-the-blank", question: "이 집의 [ ](은)는 2년입니다." },
+                        { korean: "계약하다", type: "definition", question: "집을 빌리기로 약속하는 것." },
+                        { korean: "계약하다", type: "fill-in-the-blank", question: "마음에 드는 집이 있어서 오늘 [ ](을)를 했어요." },
+                        { korean: "보증금", type: "definition", question: "집 빌릴 때 미리 맡기는 큰돈." },
+                        { korean: "보증금", type: "fill-in-the-blank", question: "월세방을 얻으려면 [ ](이)가 필요해요." },
+                        { korean: "공과금", type: "definition", question: "전기, 수도 요금 등을 합쳐서 부르는 말." },
+                        { korean: "공과금", type: "fill-in-the-blank", question: "이번 달 [ ](이)가 많이 나왔어요." },
+                        { korean: "연체료", type: "definition", question: "요금을 늦게 냈을 때 더 내는 돈." },
+                        { korean: "연체료", type: "fill-in-the-blank", question: "요금을 늦게 내면 [ ](을)를 내야 해요." },
+                        { korean: "포함되다", type: "definition", question: "어떤 것에 같이 들어 있어요." },
+                        { korean: "포함되다", type: "fill-in-the-blank", question: "관리비에 수도 요금이 [ ](이)가 있어요." },
+                        { korean: "납부하다", type: "definition", question: "요금을 내요." },
+                        { korean: "납부하다", type: "fill-in-the-blank", question: "전기 요금을 오늘까지 [ ](을)를 해야 해요." },
+                        { korean: "밀리다", type: "definition", question: "요금을 제때 못 냈어요." },
+                        { korean: "밀리다", type: "fill-in-the-blank", question: "월세가 두 달이나 [ ](이)가 있어요." }
+                    ]
+                },
+                {
+                    category: "재정 및 절약",
+                    quizzes: [
+                        { korean: "지출", type: "definition", question: "돈을 써요." },
+                        { korean: "지출", type: "fill-in-the-blank", question: "이번 달은 [ ](이)가 너무 많았어요." },
+                        { korean: "수입", type: "definition", question: "돈을 벌어요." },
+                        { korean: "수입", type: "fill-in-the-blank", question: "[ ](이)가 지출보다 적으면 안 돼요." },
+                        { korean: "늘다", type: "definition", question: "많아졌어요." },
+                        { korean: "늘다", type: "fill-in-the-blank", question: "월급이 [ ](이)가 나서 기분이 좋아요." },
+                        { korean: "줄다", type: "definition", question: "적어졌어요." },
+                        { korean: "줄다", type: "fill-in-the-blank", question: "용돈이 [ ](이)가 들어서 아껴 써야 해요." },
+                        { korean: "아끼다", type: "definition", question: "소중하게 사용해요." },
+                        { korean: "아끼다", type: "fill-in-the-blank", question: "물건을 [ ](이)가 쓰는 습관을 들여야 해요." },
+                        { korean: "절약하다", type: "definition", question: "아껴 써요." },
+                        { korean: "절약하다", type: "fill-in-the-blank", question: "전기를 [ ](이)가 하면 요금을 줄일 수 있어요." },
+                        { korean: "낭비하다", type: "definition", question: "돈이나 물건을 함부로 막 써요." },
+                        { korean: "낭비하다", type: "fill-in-the-blank", question: "필요 없는 물건을 사서 돈을 [ ](을)를 했어요." },
+                        { korean: "저축하다", type: "definition", question: "돈을 모아요." },
+                        { korean: "저축하다", type: "fill-in-the-blank", question: "매달 월급의 일부를 [ ](을)를 해요." }
+                    ]
+                }
+            ];
+
+            // 2. DOM 요소 가져오기
+            const quizOptionsContainer = document.getElementById('quiz-options-container');
+            const quizCategoryEl = document.getElementById('quiz-category');
+            const quizQuestionNumberEl = document.getElementById('quiz-question-number');
+            const quizQuestionEl = document.getElementById('quiz-question');
+            const quizFeedbackMessageEl = document.getElementById('quiz-feedback-message');
+            const quizCorrectAnswerEl = document.getElementById('quiz-correct-answer');
+            const nextQuestionBtn = document.getElementById('next-question-btn');
+            const categoryJumpContainer = document.getElementById('category-jump-container'); // New
+
+            // 3. 퀴즈 상태 변수
+            let allVocabularyWords = [];
+            let quizList = [];
+            let currentQuestionIndex = 0;
+            let isAnswered = false;
+            let categoryStartIndices = {}; // New: Will store {fill: index, def: index}
+
+            // 4. 헬퍼 함수
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            // 모든 고유 어휘 목록 생성 (선택지용)
+            function getAllWords() {
+                const words = allQuizData.flatMap(category => 
+                    category.quizzes.map(q => q.korean)
+                );
+                return [...new Set(words)]; // Set을 사용해 고유한 값만 추출
+            }
+
+            // 5. 퀴즈 핵심 로직
+            
+            // 퀴즈 시작
+            function startQuiz() {
+                // *** 변경된 퀴즈 순서 로직 ***
+                let fillInBlankQuizzes = [];
+                let definitionQuizzes = [];
+
+                categoryStartIndices = {}; // Reset
+                let fillInBlankIndex = 0; // Index counter for fill-in-the-blank quizzes
+                let definitionIndex = 0; // Relative index counter for definition quizzes
+
+                // 1. 카테고리별로 퀴즈를 분리하고 섞음
+                allQuizData.forEach(categoryObj => {
+                    const categoryName = categoryObj.category;
+                    categoryStartIndices[categoryName] = {}; // Initialize object for category
+
+                    // --- Fill in the Blank ---
+                    let fillIns = categoryObj.quizzes.filter(q => q.type === 'fill-in-the-blank');
+                    let shuffledFillIns = shuffleArray(fillIns);
+                    
+                    categoryStartIndices[categoryName].fill = fillInBlankIndex; // Store start index
+                    fillInBlankQuizzes.push(...shuffledFillIns);
+                    fillInBlankIndex += shuffledFillIns.length; // Increment for next category
+
+                    // --- Definition ---
+                    let defs = categoryObj.quizzes.filter(q => q.type === 'definition');
+                    let shuffledDefs = shuffleArray(defs);
+
+                    categoryStartIndices[categoryName].def = definitionIndex; // Store *relative* start index
+                    definitionQuizzes.push(...shuffledDefs);
+                    definitionIndex += shuffledDefs.length; // Increment for next category
+                });
+
+                // Now, offset all definition indices by the total number of fill-in-blanks
+                const totalFillInBlanks = fillInBlankQuizzes.length;
+                allQuizData.forEach(categoryObj => {
+                    const categoryName = categoryObj.category;
+                    categoryStartIndices[categoryName].def += totalFillInBlanks;
+                });
+
+                // 2. 빈칸 채우기 문제 먼저, 그 다음 뜻 맞추기 문제
+                quizList = [...fillInBlankQuizzes, ...definitionQuizzes];
+                
+                allVocabularyWords = getAllWords();
+                currentQuestionIndex = 0;
+                
+                createCategoryButtons(); // New
+                showQuestion(currentQuestionIndex);
+            }
+
+            // New function: 카테고리 바로가기 버튼 생성
+            function createCategoryButtons() {
+                categoryJumpContainer.innerHTML = ''; // Clear container
+
+                // Create Row 1: 빈칸 고르기
+                const fillRow = document.createElement('div');
+                fillRow.className = "flex-grow flex justify-center items-center gap-4";
+                
+                const fillLabel = document.createElement('span');
+                fillLabel.className = "px-4 py-3 text-lg font-bold text-gray-600 w-20 text-right";
+                fillLabel.textContent = "빈칸:";
+                fillRow.appendChild(fillLabel);
+
+                allQuizData.forEach(categoryObj => {
+                    const categoryName = categoryObj.category;
+                    const jumpIndex = categoryStartIndices[categoryName].fill;
+                    
+                    const buttonEl = document.createElement('button');
+                    buttonEl.textContent = categoryName;
+                    // Styling for category buttons
+                    buttonEl.className = "category-btn px-6 py-3 text-lg font-semibold bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-gray-100 hover:border-blue-400 transition-all duration-200";
+                    buttonEl.dataset.category = categoryName; // Store category
+                    buttonEl.dataset.type = 'fill-in-the-blank'; // Store type
+                    
+                    buttonEl.onclick = () => {
+                        currentQuestionIndex = jumpIndex;
+                        showQuestion(currentQuestionIndex);
+                    };
+                    fillRow.appendChild(buttonEl);
+                });
+                categoryJumpContainer.appendChild(fillRow);
+
+                // Create Row 2: 뜻 맞추기
+                const defRow = document.createElement('div');
+                defRow.className = "flex-grow flex justify-center items-center gap-4";
+
+                const defLabel = document.createElement('span');
+                defLabel.className = "px-4 py-3 text-lg font-bold text-gray-600 w-20 text-right";
+                defLabel.textContent = "뜻:";
+                defRow.appendChild(defLabel);
+
+                allQuizData.forEach(categoryObj => {
+                    const categoryName = categoryObj.category;
+                    const jumpIndex = categoryStartIndices[categoryName].def;
+                    
+                    const buttonEl = document.createElement('button');
+                    buttonEl.textContent = categoryName;
+                    buttonEl.className = "category-btn px-6 py-3 text-lg font-semibold bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-gray-100 hover:border-blue-400 transition-all duration-200";
+                    buttonEl.dataset.category = categoryName; // Store category
+                    buttonEl.dataset.type = 'definition'; // Store type
+                    
+                    buttonEl.onclick = () => {
+                        currentQuestionIndex = jumpIndex;
+                        showQuestion(currentQuestionIndex);
+                    };
+                    defRow.appendChild(buttonEl);
+                });
+                categoryJumpContainer.appendChild(defRow);
+            }
+
+            // 질문 표시
+            function showQuestion(index) {
+                if (index >= quizList.length) {
+                    showQuizComplete();
+                    return;
+                }
+
+                isAnswered = false;
+                const currentItem = quizList[index];
+                const currentCategory = allQuizData.find(cat => 
+                    cat.quizzes.some(q => q.korean === currentItem.korean)
+                ).category;
+                const currentType = currentItem.type; // Get the type
+
+                // UI 업데이트
+                quizCategoryEl.textContent = `[${currentCategory}]`;
+                quizQuestionNumberEl.textContent = `문제 ${index + 1} / ${quizList.length}`;
+                
+                // 빈칸 채우기 질문 형식 변경
+                if (currentItem.type === 'fill-in-the-blank') {
+                    quizQuestionEl.innerHTML = currentItem.question.replace(
+                        /\[ \]/, 
+                        '<span class="blank"></span>'
+                    );
+                } else {
+                    quizQuestionEl.textContent = currentItem.question;
+                }
+
+                quizFeedbackMessageEl.textContent = '';
+                quizCorrectAnswerEl.classList.add('hidden');
+                nextQuestionBtn.classList.add('hidden');
+
+                // 선택지 생성 (정답 1 + 오답 3)
+                const correctAnswer = currentItem.korean;
+                const distractors = [];
+                while (distractors.length < 3) {
+                    const randomWord = allVocabularyWords[Math.floor(Math.random() * allVocabularyWords.length)];
+                    if (randomWord !== correctAnswer && !distractors.includes(randomWord)) {
+                        distractors.push(randomWord);
+                    }
+                }
+
+                const options = shuffleArray([correctAnswer, ...distractors]);
+                
+                // 선택지 버튼 렌더링 (상단)
+                quizOptionsContainer.innerHTML = '';
+                options.forEach(option => {
+                    const buttonEl = document.createElement('button');
+                    buttonEl.textContent = option;
+                    buttonEl.className = "option-btn px-6 py-4 text-2xl font-semibold bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-gray-100 hover:border-blue-400 transition-all duration-200";
+                    buttonEl.onclick = () => handleAnswer(option, correctAnswer);
+                    quizOptionsContainer.appendChild(buttonEl);
+                });
+
+                // 카테고리 버튼 활성/비활성 스타일
+                Array.from(categoryJumpContainer.querySelectorAll('.category-btn')).forEach(btn => {
+                    if (btn.dataset.category === currentCategory && btn.dataset.type === currentType) {
+                        btn.classList.add('bg-blue-100', 'border-blue-400');
+                    } else {
+                        btn.classList.remove('bg-blue-100', 'border-blue-400');
+                    }
+                });
+            }
+
+            // 답안 처리
+            function handleAnswer(selectedAnswer, correctAnswer) {
+                if (isAnswered) return; // 중복 클릭 방지
+                isAnswered = true;
+
+                const isCorrect = selectedAnswer === correctAnswer;
+
+                // 버튼 스타일링 (정답/오답/비활성)
+                Array.from(quizOptionsContainer.children).forEach(btn => {
+                    btn.disabled = true;
+                    if (btn.textContent === correctAnswer) {
+                        btn.classList.add('correct');
+                    } else if (btn.textContent === selectedAnswer) {
+                        btn.classList.add('wrong');
+                    } else {
+                        btn.classList.add('faded');
+                    }
+                });
+
+                // 피드백 메시지 표시
+                if (isCorrect) {
+                    quizFeedbackMessageEl.textContent = '정답입니다! 👏';
+                    quizFeedbackMessageEl.className = 'text-4xl font-bold text-green-600';
+                } else {
+                    quizFeedbackMessageEl.textContent = '아쉽네요!';
+                    quizFeedbackMessageEl.className = 'text-4xl font-bold text-red-600';
+                    quizCorrectAnswerEl.textContent = `정답: ${correctAnswer}`;
+                    quizCorrectAnswerEl.classList.remove('hidden');
+                }
+
+                // 다음 문제 버튼 표시
+                nextQuestionBtn.classList.remove('hidden');
+            }
+
+            // 다음 문제로 이동
+            nextQuestionBtn.addEventListener('click', () => {
+                currentQuestionIndex++;
+                showQuestion(currentQuestionIndex);
+            });
+
+            // 퀴즈 완료 처리
+            function showQuizComplete() {
+                quizOptionsContainer.innerHTML = '';
+                categoryJumpContainer.innerHTML = ''; // Hide category buttons
+                quizCategoryEl.textContent = '퀴즈 완료!';
+                quizQuestionNumberEl.textContent = `총 ${quizList.length}개의 문제를 모두 풀었습니다.`;
+                quizQuestionEl.textContent = '🎉 수고하셨습니다! 🎉';
+                quizFeedbackMessageEl.textContent = '';
+                quizCorrectAnswerEl.classList.add('hidden');
+                
+                nextQuestionBtn.textContent = '다시 풀기';
+                nextQuestionBtn.onclick = () => {
+                    location.reload(); // 페이지 새로고침으로 간단히 다시 시작
+                };
+            }
+
+            // 6. 퀴즈 시작
+            startQuiz();
+        });
+    </script>
+</body>
+</html>
+
+
+
