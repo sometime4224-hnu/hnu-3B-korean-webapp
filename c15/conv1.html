@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>말하기 연습 앱</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Noto Sans KR 폰트 -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        /* 활성/비활성 버튼 스타일 */
+        .practice-btn-active {
+            @apply bg-blue-600 text-white border-blue-600;
+        }
+        .practice-btn-inactive {
+            @apply bg-white text-blue-600 border-blue-600 hover:bg-blue-50;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- 앱 전체 컨테이너 -->
+    <div class="max-w-3xl w-full mx-auto p-6 md:p-8 bg-white rounded-xl shadow-2xl">
+
+        <!-- 1. 앱 제목 -->
+        <header class="mb-6 pb-4 border-b border-gray-200">
+            <h1 class="text-3xl font-bold text-blue-700">
+                말하기 연습 1
+            </h1>
+        </header>
+
+        <!-- 2. 대화 표시 영역 -->
+        <main>
+            <div id="dialogue-box" class="bg-gray-50 border border-gray-200 rounded-lg p-6 min-h-[250px] flex flex-col justify-center space-y-5 shadow-inner">
+                
+                <!-- 켈리 대화 라인 -->
+                <div id="kelly-container" class="flex items-start space-x-4">
+                    <span class="font-bold text-blue-600 w-20 shrink-0 text-right">켈리 👩</span>
+                    <p id="kelly-line" class="text-lg text-gray-800 font-medium bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex-1">
+                        <!-- JS로 내용이 채워집니다 -->
+                    </p>
+                </div>
+                
+                <!-- 아주머니 대화 라인 -->
+                <div id="ajumma-container" class="flex items-start space-x-4">
+                    <span class="font-bold text-pink-600 w-20 shrink-0 text-right">아주머니 👩‍🦱</span>
+                    <p id="ajumma-line" class="text-lg text-gray-800 font-medium bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex-1">
+                        <!-- JS로 내용이 채워집니다 -->
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- 3. 네비게이션 (이전/다음) -->
+            <nav class="flex justify-between items-center mt-6">
+                <button id="prev-btn" class="py-2 px-6 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-300 transition-colors">
+                    이전
+                </button>
+                <span id="progress-text" class="text-gray-600 font-medium text-lg">
+                    1 / 5
+                </span>
+                <button id="next-btn" class="py-2 px-6 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-300 transition-colors">
+                    다음
+                </button>
+            </nav>
+        </main>
+
+        <!-- 4. 연습 1: 표현 바꾸기 영역 -->
+        <footer class="mt-10 border-t border-gray-200 pt-6">
+            <h2 class="text-2xl font-semibold mb-3 text-gray-800">연습 1: 표현 바꾸기</h2>
+            <p class="text-gray-600 mb-5">
+                아래 버튼을 눌러 대화 주제를 바꾸고 처음부터 다시 연습해 보세요.
+            </p>
+            <div class="flex space-x-4">
+                <button id="set-1-btn" class="practice-btn-active py-2 px-6 rounded-lg font-bold border-2 transition-all duration-200">
+                    1. 전기 (기본)
+                </button>
+                <button id="set-2-btn" class="practice-btn-inactive py-2 px-6 rounded-lg font-bold border-2 transition-all duration-200">
+                    2. 물
+                </button>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- 1. 데이터 추출 ---
+
+        // 기본 대화 (전기 요금)
+        const electricDialogueTurns = [
+            { 
+                kelly: "아주머니, 제 방에 전기가 안 들어와요.", 
+                ajumma: "전기가 안 들어온다고요? 다른 방은 다 괜찮은데……. 혹시 전기 요금을 안 낸 거 아니에요?" 
+            },
+            { 
+                kelly: "네? 전기 요금을 제가 내야 돼요? 전에 살던 집에서는 관리비에 포함됐는데요.", 
+                ajumma: "여기선 따로 내야 돼요. 고지서 못 받았어요?" 
+            },
+            { 
+                kelly: "잠시만요. 이거 말씀인가요? 몇 번 받았는데 무슨 내용인지 몰랐어요.", 
+                ajumma: "이게 고지서예요. 전기 요금이 세 달이나 밀렸네요." 
+            },
+            { 
+                kelly: "그럼 전기가 다시 들어오게 하려면 어떻게 해야 돼요?", 
+                ajumma: "밀린 요금을 빨리 내세요. 아마 연체료가 꽤 될걸요." 
+            },
+            { 
+                kelly: "네, 알겠습니다.", 
+                ajumma: "" // 마지막 턴은 아주머니 대답 없음
+            }
+        ];
+
+        // 교체용 대화 (수도 요금) - '연습 1'의 2번 항목 기준
+        const waterDialogueTurns = [
+            { 
+                kelly: "아주머니, 제 방에 물이 안 나와요.", 
+                ajumma: "물이 안 나온다고요? 다른 방은 다 괜찮은데……. 혹시 수도 요금을 안 낸 거 아니에요?" 
+            },
+            { 
+                kelly: "네? 수도 요금을 제가 내야 돼요? 전에 살던 집에서는 관리비에 포함됐는데요.", 
+                ajumma: "여기선 따로 내야 돼요. 고지서 못 받았어요?" 
+            },
+            { 
+                kelly: "잠시만요. 이거 말씀인가요? 몇 번 받았는데 무슨 내용인지 몰랐어요.", 
+                ajumma: "이게 고지서예요. 수도 요금이 세 달이나 밀렸네요." 
+            },
+            { 
+                kelly: "그럼 물이 다시 나오게 하려면 어떻게 해야 돼요?", 
+                ajumma: "밀린 요금을 빨리 내세요. 아마 연체료도 내야 해요." // '연체료도 내야 하다' 적용
+            },
+            { 
+                kelly: "네, 알겠습니다.", 
+                ajumma: "" 
+            }
+        ];
+
+        // --- 2. 앱 상태 관리 ---
+        let currentTurn = 0;
+        let currentDialogueSet = electricDialogueTurns; // 기본값은 '전기' 대화
+
+        // --- 3. DOM 요소 선택 ---
+        const kellyLine = document.getElementById('kelly-line');
+        const ajummaLine = document.getElementById('ajumma-line');
+        const kellyContainer = document.getElementById('kelly-container');
+        const ajummaContainer = document.getElementById('ajumma-container');
+        
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const progressText = document.getElementById('progress-text');
+
+        const set1Btn = document.getElementById('set-1-btn');
+        const set2Btn = document.getElementById('set-2-btn');
+
+        // --- 4. 핵심 함수 ---
+
+        /**
+         * 현재 턴의 대화를 화면에 표시하는 함수
+         * @param {number} index - 표시할 턴의 인덱스
+         */
+        function displayTurn(index) {
+            const turn = currentDialogueSet[index];
+
+            // 켈리 대화 설정
+            kellyLine.textContent = turn.kelly;
+
+            // 아주머니 대화 설정 (대화가 없으면 숨김)
+            if (turn.ajumma === "") {
+                ajummaContainer.style.display = 'none';
+                ajummaLine.textContent = '';
+            } else {
+                ajummaContainer.style.display = 'flex';
+                ajummaLine.textContent = turn.ajumma;
+            }
+
+            // 진행률 텍스트 업데이트
+            progressText.textContent = `${index + 1} / ${currentDialogueSet.length}`;
+
+            // 버튼 활성/비활성 상태 업데이트
+            // 1. 이전 버튼
+            prevBtn.disabled = (index === 0);
+            
+            // 2. 다음 버튼
+            nextBtn.disabled = (index === currentDialogueSet.length - 1);
+        }
+
+        /**
+         * 대화 세트를 바꾸는 함수
+         * @param {string} setName - 'electric' 또는 'water'
+         */
+        function changeDialogueSet(setName) {
+            if (setName === 'electric') {
+                currentDialogueSet = electricDialogueTurns;
+                set1Btn.classList.replace('practice-btn-inactive', 'practice-btn-active');
+                set2Btn.classList.replace('practice-btn-active', 'practice-btn-inactive');
+            } else {
+                currentDialogueSet = waterDialogueTurns;
+                set1Btn.classList.replace('practice-btn-active', 'practice-btn-inactive');
+                set2Btn.classList.replace('practice-btn-inactive', 'practice-btn-active');
+            }
+            // 세트 변경 시 0번 턴부터 다시 시작
+            currentTurn = 0;
+            displayTurn(currentTurn);
+        }
+
+        // --- 5. 이벤트 리스너 ---
+
+        // 다음 버튼
+        nextBtn.addEventListener('click', () => {
+            if (currentTurn < currentDialogueSet.length - 1) {
+                currentTurn++;
+                displayTurn(currentTurn);
+            }
+        });
+
+        // 이전 버튼
+        prevBtn.addEventListener('click', () => {
+            if (currentTurn > 0) {
+                currentTurn--;
+                displayTurn(currentTurn);
+            }
+        });
+
+        // 1번 세트 (전기) 버튼
+        set1Btn.addEventListener('click', () => {
+            changeDialogueSet('electric');
+        });
+
+        // 2번 세트 (물) 버튼
+        set2Btn.addEventListener('click', () => {
+            changeDialogueSet('water');
+        });
+
+        // --- 6. 앱 초기화 ---
+        // 앱이 처음 로드될 때 0번 턴을 표시
+        document.addEventListener('DOMContentLoaded', () => {
+            displayTurn(0);
+        });
+
+    </script>
+</body>
+</html>
+
