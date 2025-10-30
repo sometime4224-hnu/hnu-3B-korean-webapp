@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>듣기 1: 퀴즈</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter 폰트 (기본 폰트) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Noto Sans KR (한국어 폰트) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+        }
+        /* 라디오 버튼 선택 시 라벨 스타일 변경 */
+        input[type="radio"]:checked + label {
+            @apply bg-blue-100 border-blue-500 ring-2 ring-blue-300;
+        }
+        /* 정답/오답 피드백 스타일 */
+        .feedback-correct {
+            @apply bg-green-100 border-green-500;
+        }
+        .feedback-incorrect {
+            @apply bg-red-100 border-red-500;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full max-w-2xl">
+        
+        <!-- 헤더 및 대본 보기 버튼 -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">듣기 1: 퀴즈</h1>
+            <button id="openScriptBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                대본 보기
+            </button>
+        </div>
+
+        <!-- 퀴즈 폼 -->
+        <form id="quizForm" class="space-y-8">
+            
+            <!-- 문제 1 -->
+            <fieldset id="q1-group" class="space-y-3">
+                <legend class="text-lg font-semibold text-gray-900 mb-2">
+                    <span class="text-blue-600 font-bold mr-1">문제 1.</span> 여자가 남자를 찾아온 이유는 무엇입니까?
+                </legend>
+                <div class="space-y-2">
+                    <div class="option-container">
+                        <input type="radio" id="q1-1" name="q1" value="1" class="hidden">
+                        <label for="q1-1" class="block p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                            (1) 이사를 와서 인사하려고
+                        </label>
+                    </div>
+                    <div class="option-container">
+                        <input type="radio" id="q1-2" name="q1" value="2" class="hidden">
+                        <label for="q1-2" class="block p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                            (2) 화장실 수리를 부탁하려고
+                        </label>
+                    </div>
+                    <div class="option-container">
+                        <input type="radio" id="q1-3" name="q1" value="3" class="hidden">
+                        <label for="q1-3" class="block p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                            (3) 아래층 화장실에 물이 새서
+                        </label>
+                    </div>
+                    <div class="option-container">
+                        <input type="radio" id="q1-4" name="q1" value="4" class="hidden">
+                        <label for="q1-4" class="block p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                            (4) 하수구가 막혀서 뚫어 달라고
+                        </label>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- 문제 2 -->
+            <fieldset id="q2-group" class="space-y-3">
+                <legend class="text-lg font-semibold text-gray-900 mb-2">
+                    <span class="text-blue-600 font-bold mr-1">문제 2.</span> 이 대화의 내용과 <strong>다른</strong> 것은 무엇입니까?
+                </legend>
+                <div class="space-y-2">
+                    <div class="option-container">
+                        <input type="radio" id="q2-1" name="q2" value="1" class="hidden">
+                        <label for="q2-1" class="block p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                            (1) 여자의 집은 남자의 집 아래층입니다.
+                        </label>
+                    </div>
+                    <div class="option-container">
+                        <input type="radio" id="q2-2" name="q2" value="2" class="hidden">
+                        <label for="q2-2" class="block p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                            (2) 남자는 자기 집 하수구에 문제가 있다는 것을 바로 알았습니다.
+                        </label>
+                    </div>
+                    <div class="option-container">
+                        <input type="radio" id="q2-3" name="q2" value="3" class="hidden">
+                        <label for="q2-3" class="block p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                            (3) 여자는 수리 기사를 불러서 문제를 확인해 달라고 말했습니다.
+                        </label>
+                    </div>
+                    <div class="option-container">
+                        <input type="radio" id="q2-4" name="q2" value="4" class="hidden">
+                        <label for="q2-4" class="block p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                            (4) 남자는 여자에게 불편을 준 것에 대해 사과했습니다.
+                        </label>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- 문제 3 -->
+            <fieldset id="q3-group" class="space-y-3">
+                <legend class="text-lg font-semibold text-gray-900 mb-2">
+                    <span class="text-blue-600 font-bold mr-1">문제 3.</span> (O/X 퀴즈) 들은 내용과 같으면 O, 다르면 X 하세요.
+                </legend>
+                <div class="space-y-4">
+                    <!-- 3-1 -->
+                    <div class="option-container-ox p-3 border border-gray-200 rounded-lg">
+                        <p class="mb-2">(1) 남자의 집 화장실 천장에서 물이 뚝뚝 떨어집니다.</p>
+                        <div class="flex space-x-4">
+                            <input type="radio" id="q3-1-o" name="q3_1" value="o" class="hidden">
+                            <label for="q3-1-o" class="w-1/2 p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition text-center">O</label>
+                            
+                            <input type="radio" id="q3-1-x" name="q3_1" value="x" class="hidden">
+                            <label for="q3-1-x" class="w-1/2 p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition text-center">X</label>
+                        </div>
+                    </div>
+                    <!-- 3-2 -->
+                    <div class="option-container-ox p-3 border border-gray-200 rounded-lg">
+                        <p class="mb-2">(2) 남자는 요즘 화장실 물이 잘 내려가지 않는다고 생각했습니다.</p>
+                        <div class="flex space-x-4">
+                            <input type="radio" id="q3-2-o" name="q3_2" value="o" class="hidden">
+                            <label for="q3-2-o" class="w-1/2 p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition text-center">O</label>
+                            
+                            <input type="radio" id="q3-2-x" name="q3_2" value="x" class="hidden">
+                            <label for="q3-2-x" class="w-1/2 p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition text-center">X</label>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- 문제 4 -->
+            <fieldset id="q4-group" class="space-y-3">
+                <legend class="text-lg font-semibold text-gray-900 mb-2">
+                    <span class="text-blue-600 font-bold mr-1">문제 4.</span> 남자가 대화가 끝난 후에 할 일로 알맞은 것은 무엇입니까?
+                </legend>
+                <div class="space-y-2">
+                    <div class="option-container">
+                        <input type="radio" id="q4-1" name="q4" value="1" class="hidden">
+                        <label for="q4-1" class="block p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                            (1) 여자에게 수리비를 줄 것입니다.
+                        </label>
+                    </div>
+                    <div class="option-container">
+                        <input type="radio" id="q4-2" name="q4" value="2" class="hidden">
+                        <label for="q4-2" class="block p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                            (2) 수리 기사에게 전화를 걸 것입니다.
+                        </label>
+                    </div>
+                    <div class="option-container">
+                        <input type="radio" id="q4-3" name="q4" value="3" class="hidden">
+                        <label for="q4-3" class="block p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                            (3) 화장실 하수구를 직접 고칠 것입니다.
+                        </label>
+                    </div>
+                    <div class="option-container">
+                        <input type="radio" id="q4-4" name="q4" value="4" class="hidden">
+                        <label for="q4-4" class="block p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                            (4) 여자의 집 천장을 확인하러 갈 것입니다.
+                        </label>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- 채점 버튼 -->
+            <div class="pt-6 border-t">
+                <button type="submit" class="w-full bg-green-600 text-white p-3 rounded-lg font-bold text-lg shadow-lg hover:bg-green-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-400">
+                    채점하기
+                </button>
+            </div>
+        </form>
+
+        <!-- 결과 표시창 -->
+        <div id="result" class="hidden mt-8 p-6 bg-gray-50 rounded-lg border border-gray-300">
+            <h2 id="score" class="text-2xl font-bold text-center mb-4"></h2>
+            <div id="feedback" class="space-y-4"></div>
+        </div>
+    </div>
+
+
+    <!-- 대본 보기 모달 (팝업) -->
+    <div id="scriptModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 sm:p-8 rounded-lg shadow-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto relative">
+            <!-- 닫기 버튼 -->
+            <button id="closeScriptBtn" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
+            
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">🎧 듣기 1: 대본</h2>
+            
+            <div class="space-y-3 text-base sm:text-lg leading-relaxed">
+                <p><strong>남:</strong> 누구세요?</p>
+                <p><strong>여:</strong> 안녕하세요? 아래층에 사는 사람인데요.</p>
+                <p><strong>남:</strong> 네, 무슨 일이세요?</p>
+                <p><strong>여:</strong> 우리 집 화장실 천장에서 물이 새서 왔어요. 여기 화장실에 무슨 문제가 있는 것 같은데요.</p>
+                <p><strong>남:</strong> 우리 집 화장실은 아무 문제가 없는데요. 우리 집 문제가 아닐걸요.</p>
+                <p><strong>여:</strong> 혹시 하수구가 막힌 건 아닐까요?</p>
+                <p><strong>남:</strong> 그러고 보니 요즘 물이 잘 안 내려가긴 했는데…….</p>
+                <p><strong>여:</strong> 와서 보시면 아시겠지만 천장에서 물이 뚝뚝 떨어져요.</p>
+                <p><strong>남:</strong> 그 정도예요? 그러면 어떻게 하죠?</p>
+                <p><strong>여:</strong> 수리 기사를 불러서 무슨 문제가 있는지 확인해 주세요.</p>
+                <p><strong>남:</strong> 네, 그럼 바로 전화하겠습니다. 불편하게 해 드려서 죄송합니다.</p>
+                <p><strong>여:</strong> 아니에요. 그럴 수도 있죠. 그럼 부탁드립니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 모달 관련 스크립트 ---
+            const openBtn = document.getElementById('openScriptBtn');
+            const closeBtn = document.getElementById('closeScriptBtn');
+            const modal = document.getElementById('scriptModal');
+
+            openBtn.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+            });
+
+            closeBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+
+            // 모달 바깥쪽 클릭 시 닫기
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+
+            // --- 퀴즈 채점 스크립트 ---
+            const quizForm = document.getElementById('quizForm');
+            const resultDiv = document.getElementById('result');
+            const scoreEl = document.getElementById('score');
+            const feedbackEl = document.getElementById('feedback');
+            
+            // 정답
+            const answers = {
+                q1: '3',
+                q2: '2',
+                q3_1: 'x',
+                q3_2: 'o',
+                q4: '2'
+            };
+            
+            const totalQuestions = 5; // 총 문제 수 (3-1, 3-2 포함)
+
+            quizForm.addEventListener('submit', (event) => {
+                event.preventDefault(); // 폼 제출 기본 동작 방지
+
+                const formData = new FormData(quizForm);
+                let score = 0;
+                let feedbackHTML = '';
+
+                // 이전에 적용된 피드백 스타일 초기화
+                document.querySelectorAll('.feedback-correct, .feedback-incorrect').forEach(el => {
+                    el.classList.remove('feedback-correct', 'feedback-incorrect');
+                });
+
+                // 문제별 채점 및 피드백 생성
+                
+                // Q1
+                const q1Answer = formData.get('q1');
+                const q1Label = q1Answer ? document.querySelector(`label[for="q1-${q1Answer}"]`) : null;
+                if (q1Answer === answers.q1) {
+                    score++;
+                    if (q1Label) q1Label.classList.add('feedback-correct');
+                } else {
+                    if (q1Label) q1Label.classList.add('feedback-incorrect');
+                    document.querySelector(`label[for="q1-${answers.q1}"]`).classList.add('feedback-correct'); // 정답 표시
+                    feedbackHTML += `<div class="p-3 bg-red-50 rounded border border-red-200"><p class="font-semibold">문제 1: 오답</p><p>여자는 아래층 화장실 천장에서 물이 새서 남자를 찾아왔습니다.</p></div>`;
+                }
+
+                // Q2
+                const q2Answer = formData.get('q2');
+                const q2Label = q2Answer ? document.querySelector(`label[for="q2-${q2Answer}"]`) : null;
+                if (q2Answer === answers.q2) {
+                    score++;
+                    if (q2Label) q2Label.classList.add('feedback-correct');
+                } else {
+                    if (q2Label) q2Label.classList.add('feedback-incorrect');
+                    document.querySelector(`label[for="q2-${answers.q2}"]`).classList.add('feedback-correct');
+                    feedbackHTML += `<div class="p-3 bg-red-50 rounded border border-red-200"><p class="font-semibold">문제 2: 오답</p><p>남자는 처음에는 자기 집 문제가 아니라고 했지만, 여자가 하수구 이야기를 한 후에야 물이 잘 안 내려간 것을 기억해냈습니다.</p></div>`;
+                }
+
+                // Q3-1
+                const q3_1Answer = formData.get('q3_1');
+                const q3_1Label = q3_1Answer ? document.querySelector(`label[for="q3-1-${q3_1Answer}"]`) : null;
+                if (q3_1Answer === answers.q3_1) {
+                    score++;
+                    if (q3_1Label) q3_1Label.classList.add('feedback-correct');
+                } else {
+                    if (q3_1Label) q3_1Label.classList.add('feedback-incorrect');
+                    document.querySelector(`label[for="q3-1-${answers.q3_1}"]`).classList.add('feedback-correct');
+                    feedbackHTML += `<div class="p-3 bg-red-50 rounded border border-red-200"><p class="font-semibold">문제 3 (1): 오답</p><p>물이 떨어지는 곳은 여자의 집(아래층) 천장입니다.</p></div>`;
+                }
+
+                // Q3-2
+                const q3_2Answer = formData.get('q3_2');
+                const q3_2Label = q3_2Answer ? document.querySelector(`label[for="q3-2-${q3_2Answer}"]`) : null;
+                if (q3_2Answer === answers.q3_2) {
+                    score++;
+                    if (q3_2Label) q3_2Label.classList.add('feedback-correct');
+                } else {
+                    if (q3_2Label) q3_2Label.classList.add('feedback-incorrect');
+                    document.querySelector(`label[for="q3-2-${answers.q3_2}"]`).classList.add('feedback-correct');
+                    feedbackHTML += `<div class="p-3 bg-red-50 rounded border border-red-200"><p class="font-semibold">문제 3 (2): 오답</p><p>남자가 "그러고 보니 요즘 물이 잘 안 내려가긴 했는데"라고 말했습니다.</p></div>`;
+                }
+                
+                // Q4
+                const q4Answer = formData.get('q4');
+                const q4Label = q4Answer ? document.querySelector(`label[for="q4-${q4Answer}"]`) : null;
+                if (q4Answer === answers.q4) {
+                    score++;
+                    if (q4Label) q4Label.classList.add('feedback-correct');
+                } else {
+                    if (q4Label) q4Label.classList.add('feedback-incorrect');
+                    document.querySelector(`label[for="q4-${answers.q4}"]`).classList.add('feedback-correct');
+                    feedbackHTML += `<div class="p-3 bg-red-50 rounded border border-red-200"><p class="font-semibold">문제 4: 오답</p><p>남자는 수리 기사를 불러서 확인하겠다는 여자의 요청에 "바로 전화하겠습니다"라고 답했습니다.</p></div>`;
+                }
+
+                // 최종 점수 및 피드백 표시
+                scoreEl.textContent = `총 ${totalQuestions}문제 중 ${score}문제 정답!`;
+                if (score === totalQuestions) {
+                    feedbackEl.innerHTML = `<div class="p-4 bg-green-100 text-green-800 rounded-lg border border-green-300 text-center font-semibold">모든 문제를 맞혔습니다! 완벽해요!</div>`;
+                } else {
+                    feedbackEl.innerHTML = feedbackHTML;
+                }
+                
+                resultDiv.classList.remove('hidden');
+                resultDiv.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
+
