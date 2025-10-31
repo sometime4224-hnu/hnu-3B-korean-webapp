@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <title>듣기 2 퀴즈 앱</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter 폰트 (한국어는 기본 폰트 사용) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Inter 폰트를 기본으로 하되, 한국어는 시스템 폰트를 사용하도록 설정 */
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+        }
+        /* 스크롤바 스타일링 (선택 사항) */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1; /* cool-gray-300 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #f1f5f9; /* cool-gray-100 */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-2xl rounded-lg shadow-xl p-6 md:p-8">
+        
+        <!-- 헤더 -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800">🎧 듣기 2 퀴즈</h1>
+            <button id="showScriptBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow transition duration-200">
+                대본 보기
+            </button>
+        </div>
+
+        <p class="text-gray-600 mb-8">대화를 듣고 (또는 대본을 읽고) 다음 질문에 답해 보세요.</p>
+
+        <!-- 퀴즈 폼 -->
+        <form id="quizForm" class="space-y-8">
+            
+            <!-- 질문 1 -->
+            <div class="question-block" data-question="1">
+                <label class="text-lg font-semibold text-gray-700 block mb-3">1. 여자가 남자를 찾아온 주된 이유는 무엇입니까?</label>
+                <div class="space-y-2">
+                    <div>
+                        <input type="radio" id="q1_1" name="q1" value="1" class="mr-2">
+                        <label for="q1_1">① 방에 문제가 생겨서</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="q1_2" name="q1" value="2" class="mr-2">
+                        <label for="q1_2">② 계약 기간을 연장하고 싶어서</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="q1_3" name="q1" value="3" class="mr-2">
+                        <label for="q1_3">③ 갑자기 이사를 가게 되었다고 말하기 위해서</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="q1_4" name="q1" value="4" class="mr-2">
+                        <label for="q1_4">④ 아래층에 사는 사람을 찾기 위해서</label>
+                    </div>
+                </div>
+                <div class="result-feedback hidden mt-2 p-3 rounded-lg"></div>
+            </div>
+
+            <!-- 질문 2 -->
+            <div class="question-block" data-question="2">
+                <label class="text-lg font-semibold text-gray-700 block mb-3">2. 여자가 이사를 가야 하는 이유는 무엇입니까?</label>
+                <div class="space-y-2">
+                    <div>
+                        <input type="radio" id="q2_1" name="q2" value="1" class="mr-2">
+                        <label for="q2_1">① 더 좋은 집을 구해서</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="q2_2" name="q2" value="2" class="mr-2">
+                        <label for="q2_2">② 방세가 너무 비싸서</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="q2_3" name="q2" value="3" class="mr-2">
+                        <label for="q2_3">③ 집주인과 문제가 생겨서</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="q2_4" name="q2" value="4" class="mr-2">
+                        <label for="q2_4">④ 사정이 생겨 갑자기 귀국하게 되어서</label>
+                    </div>
+                </div>
+                <div class="result-feedback hidden mt-2 p-3 rounded-lg"></div>
+            </div>
+
+            <!-- 질문 3 -->
+            <div class="question-block" data-question="3">
+                <label class="text-lg font-semibold text-gray-700 block mb-3">3. (O/X 퀴즈) 여자가 이사 가기 전에 해야 할 일은 '대신 들어올 사람'을 구하는 것이다.</label>
+                <div class="space-y-2">
+                    <div>
+                        <input type="radio" id="q3_o" name="q3" value="O" class="mr-2">
+                        <label for="q3_o">O</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="q3_x" name="q3" value="X" class="mr-2">
+                        <label for="q3_x">X</label>
+                    </div>
+                </div>
+                <div class="result-feedback hidden mt-2 p-3 rounded-lg"></div>
+            </div>
+
+            <!-- 질문 4 -->
+            <div class="question-block" data-question="4">
+                <label class="text-lg font-semibold text-gray-700 block mb-3" for="q4">4. 만약 여자가 이사 가기 전까지 다음 사람을 구하지 못하면 어떻게 해야 합니까?</label>
+                <input type="text" id="q4" name="q4" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="답을 입력하세요...">
+                <div class="result-feedback hidden mt-2 p-3 rounded-lg"></div>
+            </div>
+
+            <!-- 제출 버튼 -->
+            <button type="submit" id="submitBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200 text-lg">
+                정답 확인
+            </button>
+
+        </form>
+
+        <!-- 전체 결과 -->
+        <div id="totalResult" class="hidden mt-6 text-center text-xl font-bold"></div>
+
+    </div>
+
+    <!-- 대본 팝업 (모달) -->
+    <div id="scriptModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
+            <!-- 모달 헤더 -->
+            <div class="flex justify-between items-center p-5 border-b">
+                <h2 class="text-xl font-bold text-gray-800">📖 듣기 2 대본</h2>
+                <button id="closeScriptBtn" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+            </div>
+            <!-- 모달 본문 (스크롤 가능) -->
+            <div class="p-6 space-y-4 overflow-y-auto">
+                <p><strong>남:</strong> 누구세요?</p>
+                <p><strong>여:</strong> 안녕하세요? 저 아래층 사는 학생인데요.</p>
+                <p><strong>남:</strong> 바바라 학생이 무슨 일이에요? 집에 무슨 문제라도 있어요?</p>
+                <p><strong>여:</strong> 저기……. 이번 달까지만 살고 이사해야 될 것 같아서요.</p>
+                <p><strong>남:</strong> 방을 빼겠다고요? 아직 계약 기간도 많이 남았는데……. 이렇게 갑자기 나가겠다고 하면 곤란하죠.</p>
+                <p><strong>여:</strong> 죄송해요. 사정이 생겨서 갑자기 귀국하게 됐어요.</p>
+                <p><strong>남:</strong> 그럼 어쩔 수 없죠. 그런데 대신 들어올 사람을 구해 놓고 나가지 않으면 안 돼요.</p>
+                <p><strong>여:</strong> 그럼 제가 어떻게 하면 될까요?</p>
+                <p><strong>남:</strong> 나도 부동산에 전화하겠지만 바바라 학생도 다른 부동산에 말해 놓으세요. 그리고 인터넷에 광고 글을 올려놓으면 빨리 사람을 구할 수 있을걸요.</p>
+                <p><strong>여:</strong> 네, 알겠습니다. 만약 제가 이사 가기 전까지 사람을 못 구하면 어떻게 되는 거죠?</p>
+                <p><strong>남:</strong> 계약 기간이 끝나기 전에 나가는 거니까 다른 사람이 들어오기 전까지 방세를 내야 돼요.</p>
+                <p><strong>여:</strong> 그래요? 그럼 빨리 서둘러야겠네요.</p>
+            </div>
+            <!-- 모달 푸터 -->
+            <div class="p-4 border-t bg-gray-50 text-right">
+                <button id="closeScriptBtnFooter" class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg shadow transition duration-200">
+                    닫기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const showScriptBtn = document.getElementById('showScriptBtn');
+            const scriptModal = document.getElementById('scriptModal');
+            const closeScriptBtn = document.getElementById('closeScriptBtn');
+            const closeScriptBtnFooter = document.getElementById('closeScriptBtnFooter');
+            const quizForm = document.getElementById('quizForm');
+            const totalResult = document.getElementById('totalResult');
+
+            // --- 모달 로직 ---
+            const openModal = () => scriptModal.classList.remove('hidden');
+            const closeModal = () => scriptModal.classList.add('hidden');
+
+            showScriptBtn.addEventListener('click', openModal);
+            closeScriptBtn.addEventListener('click', closeModal);
+            closeScriptBtnFooter.addEventListener('click', closeModal);
+            // 모달 바깥 영역 클릭 시 닫기
+            scriptModal.addEventListener('click', (e) => {
+                if (e.target === scriptModal) {
+                    closeModal();
+                }
+            });
+
+            // --- 퀴즈 정답 로직 ---
+            const correctAnswers = {
+                q1: '3',
+                q2: '4',
+                q3: 'O',
+                q4: ['방세', '방세를 내야', '방세를 내야 돼요', '방세를 내야 해요', '방세를 내야 한다'] // 주관식 다양한 정답 허용
+            };
+
+            quizForm.addEventListener('submit', (e) => {
+                e.preventDefault(); // 폼 제출 방지
+
+                const formData = new FormData(quizForm);
+                let score = 0;
+                const totalQuestions = Object.keys(correctAnswers).length;
+
+                // 각 질문 블록을 순회하며 채점
+                document.querySelectorAll('.question-block').forEach(block => {
+                    const qNum = block.dataset.question;
+                    const qName = 'q' + qNum;
+                    const userAnswer = formData.get(qName);
+                    const feedbackEl = block.querySelector('.result-feedback');
+
+                    let isCorrect = false;
+                    let correctAnswerText = '';
+
+                    if (!userAnswer) {
+                        // 답을 선택하지 않은 경우
+                        feedbackEl.innerHTML = '❌ 답을 선택하지 않았습니다.';
+                        feedbackEl.className = 'result-feedback p-3 rounded-lg bg-yellow-100 text-yellow-800';
+                        feedbackEl.classList.remove('hidden');
+                        return; // 다음 질문으로
+                    }
+
+                    if (qName === 'q4') {
+                        // 주관식 채점
+                        const normalizedUserAnswer = userAnswer.trim().replace(/\./g, ''); // 마침표 제거 및 공백 제거
+                        isCorrect = correctAnswers.q4.some(ans => normalizedUserAnswer.includes(ans));
+                        correctAnswerText = `정답: <b>방세를 내야 돼요.</b>`;
+                    } else {
+                        // 객관식 채점
+                        isCorrect = (userAnswer === correctAnswers[qName]);
+                        if (qName === 'q1') correctAnswerText = '정답: <b>③</b>';
+                        if (qName === 'q2') correctAnswerText = '정답: <b>④</b>';
+                        if (qName === 'q3') correctAnswerText = '정답: <b>O</b>';
+                    }
+
+                    // 피드백 표시
+                    if (isCorrect) {
+                        feedbackEl.innerHTML = `✅ 정답입니다! ${qName === 'q4' ? correctAnswerText : ''}`;
+                        feedbackEl.className = 'result-feedback p-3 rounded-lg bg-green-100 text-green-800';
+                        score++;
+                    } else {
+                        feedbackEl.innerHTML = `❌ 틀렸습니다. ${correctAnswerText}`;
+                        feedbackEl.className = 'result-feedback p-3 rounded-lg bg-red-100 text-red-800';
+                    }
+                    feedbackEl.classList.remove('hidden');
+                });
+
+                // 총점 표시
+                totalResult.textContent = `총 ${totalQuestions}문제 중 ${score}문제를 맞혔습니다!`;
+                if (score === totalQuestions) {
+                    totalResult.className = 'mt-6 text-center text-xl font-bold text-green-600';
+                } else {
+                    totalResult.className = 'mt-6 text-center text-xl font-bold text-blue-600';
+                }
+                totalResult.classList.remove('hidden');
+            });
+        });
+    </script>
+
+</body>
+</html>
+
