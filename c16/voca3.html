@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모양과 느낌 배우기</title>
+    <!-- Tailwind CSS 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter 폰트 로드 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* 기본 폰트 설정 */
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+        }
+        /* 활성 탭 스타일 */
+        .tab-active {
+            background-color: #2563eb; /* blue-600 */
+            color: white;
+        }
+        /* 비활성 탭 스타일 */
+        .tab-inactive {
+            background-color: #e5e7eb; /* gray-200 */
+            color: #374151; /* gray-700 */
+        }
+        /* 페이지 숨김 */
+        .page-hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg overflow-hidden">
+        <!-- 네비게이션 탭 -->
+        <nav class="flex">
+            <button id="tab-learn" class="flex-1 p-4 text-lg font-bold tab-active" onclick="showPage('learn')">
+                📚 배우기
+            </button>
+            <button id="tab-quiz" class="flex-1 p-4 text-lg font-bold tab-inactive" onclick="showPage('quiz')">
+                🎓 퀴즈
+            </button>
+        </nav>
+
+        <!-- ========================== -->
+        <!-- 1. 배우기 페이지 (설명) -->
+        <!-- ========================== -->
+        <div id="page-learn" class="p-6 md:p-8">
+            <h1 class="text-2xl font-bold text-center mb-6 text-blue-600">모양과 느낌 배우기</h1>
+            
+            <!-- 번역 버튼 -->
+            <div class="flex justify-center space-x-2 mb-6">
+                <button onclick="translateDescriptions('ko')" class="px-3 py-1 bg-blue-500 text-white rounded-full text-sm font-semibold shadow hover:bg-blue-600 transition">🇰🇷 한국어</button>
+                <button onclick="translateDescriptions('vi')" class="px-3 py-1 bg-green-500 text-white rounded-full text-sm font-semibold shadow hover:bg-green-600 transition">🇻🇳 베트남어</button>
+                <button onclick="translateDescriptions('zh')" class="px-3 py-1 bg-red-500 text-white rounded-full text-sm font-semibold shadow hover:bg-red-600 transition">🇨🇳 중국어</button>
+                <button onclick="translateDescriptions('ja')" class="px-3 py-1 bg-purple-500 text-white rounded-full text-sm font-semibold shadow hover:bg-purple-600 transition">🇯🇵 일본어</button>
+            </div>
+
+            <!-- 어휘 목록 -->
+            <div id="vocab-list" class="space-y-4">
+                <!-- 어휘 카드는 JavaScript로 생성됩니다 -->
+            </div>
+        </div>
+
+        <!-- ========================== -->
+        <!-- 2. 퀴즈 페이지 -->
+        <!-- ========================== -->
+        <div id="page-quiz" class="p-6 md:p-8 page-hidden">
+            <h1 class="text-2xl font-bold text-center mb-6 text-blue-600">모양/느낌 퀴즈</h1>
+            
+            <div id="quiz-container" class="text-center">
+                <!-- 퀴즈 질문 영역 -->
+                <div id="quiz-question" class="mb-6 p-6 bg-gray-100 rounded-lg">
+                    <p class="text-6xl mb-4">🔺</p>
+                    <p class="text-xl font-semibold">"세모"</p>
+                </div>
+
+                <!-- 퀴즈 정답/오답 버튼 -->
+                <div class="flex justify-center space-x-4">
+                    <button id="btn-correct" class="px-8 py-4 bg-green-500 text-white text-3xl font-bold rounded-lg shadow-lg hover:bg-green-600 transition transform hover:scale-105">
+                        O (맞아요)
+                    </button>
+                    <button id="btn-wrong" class="px-8 py-4 bg-red-500 text-white text-3xl font-bold rounded-lg shadow-lg hover:bg-red-600 transition transform hover:scale-105">
+                        X (틀려요)
+                    </button>
+                </div>
+
+                <!-- 퀴즈 피드백 -->
+                <div id="quiz-feedback" class="mt-6 text-2xl font-bold h-8">
+                    <!-- '정답!' 또는 '틀렸어요!' 메시지 -->
+                </div>
+            </div>
+
+            <!-- 퀴즈 결과 -->
+            <div id="quiz-result" class="text-center page-hidden mt-8">
+                <h2 class="text-3xl font-bold mb-4">퀴즈 끝!</h2>
+                <p class="text-xl mb-6">총 <span id="total-questions"></span> 문제 중 <span id="correct-answers" class="font-bold text-blue-600"></span>개를 맞췄어요!</p>
+                <button onclick="startQuiz()" class="px-6 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg shadow hover:bg-blue-700 transition">
+                    다시 하기 🔁
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 데이터베이스 ---
+        // 어휘 목록과 번역 데이터 (모양과 느낌 데이터로 교체)
+        const vocabData = [
+            {
+                phrase: '세모',
+                emoji: '🔺',
+                desc: {
+                    ko: '선이 3개 있어요. (텐트 모양)',
+                    vi: 'Có 3 đường kẻ. (hình lều)',
+                    zh: '有3条线。（帐篷形状）',
+                    ja: '線が3本あります。（テントの形）'
+                }
+            },
+            {
+                phrase: '네모',
+                emoji: '🟦',
+                desc: {
+                    ko: '선이 4개 있어요. (책 모양)',
+                    vi: 'Có 4 đường kẻ. (hình cuốn sách)',
+                    zh: '有4条线。（书的形状）',
+                    ja: '線が4本あります。（本の形）'
+                }
+            },
+            {
+                phrase: '동그라미',
+                emoji: '🟠',
+                desc: {
+                    ko: '동그란 모양이에요. (북 모양)',
+                    vi: 'Đó là một hình tròn. (hình cái trống)',
+                    zh: '是圆形的。（鼓的形状）',
+                    ja: '丸い形です。（太鼓の形）'
+                }
+            },
+            {
+                phrase: '마름모',
+                emoji: '💠',
+                desc: {
+                    ko: '뾰족한 네모 모양이에요.',
+                    vi: 'Đó là một hình vuông nhọn.',
+                    zh: '是尖的四边形。',
+                    ja: '尖った四角形です。'
+                }
+            },
+            {
+                phrase: '둥글다',
+                emoji: '🏀',
+                desc: {
+                    ko: '공처럼 동그래요. (호두 모양)',
+                    vi: 'Nó tròn như quả bóng. (hình quả óc chó)',
+                    zh: '像球一样圆。（核桃形状）',
+                    ja: 'ボールのように丸いです。（クルミの形）'
+                }
+            },
+            {
+                phrase: '평평하다',
+                emoji: '📖',
+                desc: {
+                    ko: '바닥처럼 높낮이가 같아요. (책상 위)',
+                    vi: 'Nó bằng phẳng như sàn nhà. (trên bàn)',
+                    zh: '像地板一样平。（桌面上）',
+                    ja: '床のように平らです。（机の上）'
+                }
+            },
+            {
+                phrase: '뾰족하다',
+                emoji: '✏️',
+                desc: {
+                    ko: '연필 끝처럼 날카로워요. (펜 끝)',
+                    vi: 'Nó nhọn như đầu bút chì. (đầu bút)',
+                    zh: '像铅笔尖一样锋利。（笔尖）',
+                    ja: '鉛筆の先のように尖っています。（ペンの先）'
+                }
+            },
+            {
+                phrase: '울퉁불퉁하다',
+                emoji: '⛰️',
+                desc: {
+                    ko: '표면이 고르지 않아요. (호두 껍질, 산)',
+                    vi: 'Bề mặt không bằng phẳng. (vỏ quả óc chó, núi)',
+                    zh: '表面不平整。（核桃壳，山）',
+                    ja: '表面がでこぼこしています。（クルミの殻、山）'
+                }
+            },
+            {
+                phrase: '매끄럽다',
+                emoji: '✨',
+                desc: {
+                    ko: '표면이 부드럽고 반반해요. (책상 위)',
+                    vi: 'Bề mặt mềm mại và đều. (trên bàn)',
+                    zh: '表面光滑平整。（桌面上）',
+                    ja: '表面が滑らかで平らです。（机の上）'
+                }
+            },
+            {
+                phrase: '부드럽다',
+                emoji: '🧸',
+                desc: {
+                    ko: '곰인형처럼 푹신해요.',
+                    vi: 'Nó mềm như gấu bông.',
+                    zh: '像泰迪熊一样柔软。',
+                    ja: 'テディベアのように柔らかいです。'
+                }
+            },
+            {
+                phrase: '거칠다',
+                emoji: '🧱',
+                desc: {
+                    ko: '표면이 부드럽지 않아요. (벽돌, 나무 껍질)',
+                    vi: 'Bề mặt không mềm. (gạch, vỏ cây)',
+                    zh: '表面不光滑。（砖头，树皮）',
+                    ja: '表面が滑らかではありません。（レンガ、木の皮）'
+                }
+            },
+            {
+                phrase: '딱딱하다',
+                emoji: '🪵',
+                desc: {
+                    ko: '단단해요. (나무, 돌)',
+                    vi: 'Nó cứng. (gỗ, đá)',
+                    zh: '很硬。（木头，石头）',
+                    ja: '硬いです。（木、石）'
+                }
+            }
+        ];
+
+        // --- 전역 변수 ---
+        let currentPage = 'learn';
+        let quizQuestions = [];
+        let currentQuestionIndex = 0;
+        let correctCount = 0;
+
+        // --- DOM 요소 ---
+        const pageLearn = document.getElementById('page-learn');
+        const pageQuiz = document.getElementById('page-quiz');
+        const tabLearn = document.getElementById('tab-learn');
+        const tabQuiz = document.getElementById('tab-quiz');
+        const vocabListContainer = document.getElementById('vocab-list');
+        
+        const quizContainer = document.getElementById('quiz-container');
+        const quizQuestionEl = document.getElementById('quiz-question');
+        const quizFeedbackEl = document.getElementById('quiz-feedback');
+        const quizResultEl = document.getElementById('quiz-result');
+        const totalQuestionsEl = document.getElementById('total-questions');
+        const correctAnswersEl = document.getElementById('correct-answers');
+        const btnCorrect = document.getElementById('btn-correct');
+        const btnWrong = document.getElementById('btn-wrong');
+
+        // --- 1. 공통 기능 ---
+
+        /**
+         * 페이지(탭)를 변경하는 함수
+         * @param {string} pageId ('learn' 또는 'quiz')
+         */
+        function showPage(pageId) {
+            currentPage = pageId;
+            if (pageId === 'learn') {
+                pageLearn.classList.remove('page-hidden');
+                pageQuiz.classList.add('page-hidden');
+                tabLearn.classList.replace('tab-inactive', 'tab-active');
+                tabQuiz.classList.replace('tab-active', 'tab-inactive');
+            } else {
+                pageLearn.classList.add('page-hidden');
+                pageQuiz.classList.remove('page-hidden');
+                tabLearn.classList.replace('tab-active', 'tab-inactive');
+                tabQuiz.classList.replace('tab-inactive', 'tab-active');
+                startQuiz(); // 퀴즈 탭을 누르면 퀴즈 시작
+            }
+        }
+
+        // --- 2. 배우기 페이지 기능 ---
+
+        /**
+         * '배우기' 페이지에 어휘 목록을 그리는 함수
+         */
+        function renderVocabList() {
+            vocabListContainer.innerHTML = ''; // 목록 비우기
+            vocabData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'flex items-center p-4 bg-gray-50 rounded-lg border border-gray-200';
+                card.innerHTML = `
+                    <span class="text-4xl mr-4">${item.emoji}</span>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-semibold text-gray-800">${item.phrase}</h3>
+                        <p class="text-gray-600" data-lang-key="${index}">${item.desc.ko}</p>
+                    </div>
+                `;
+                vocabListContainer.appendChild(card);
+            });
+        }
+
+        /**
+         * 설명을 선택한 언어로 번역하는 함수
+         * @param {string} lang ('ko', 'vi', 'zh', 'ja')
+         */
+        function translateDescriptions(lang) {
+            const descriptionElements = document.querySelectorAll('[data-lang-key]');
+            descriptionElements.forEach(el => {
+                const key = el.dataset.langKey;
+                const vocabItem = vocabData[key];
+                if (vocabItem && vocabItem.desc[lang]) {
+                    el.textContent = vocabItem.desc[lang];
+                }
+            });
+        }
+
+        // --- 3. 퀴즈 페이지 기능 ---
+
+        /**
+         * 퀴즈 질문 생성 함수 (OX 퀴즈)
+         * 50% 확률로 정답(이모지와 문구가 일치), 50% 확률로 오답(일치하지 않음)
+         */
+        function createQuizQuestions() {
+            quizQuestions = [];
+            // 각 어휘에 대해 정답 질문 1개, 오답 질문 1개씩 만들기
+            vocabData.forEach((correctItem, index) => {
+                // 정답 질문
+                quizQuestions.push({
+                    emoji: correctItem.emoji,
+                    phrase: correctItem.phrase,
+                    isCorrectMatch: true
+                });
+
+                // 오답 질문
+                // 현재 어휘를 제외한 다른 어휘 중에서 랜덤으로 하나 선택
+                let wrongIndex = index;
+                while (wrongIndex === index) {
+                    wrongIndex = Math.floor(Math.random() * vocabData.length);
+                }
+                quizQuestions.push({
+                    emoji: correctItem.emoji,
+                    phrase: vocabData[wrongIndex].phrase,
+                    isCorrectMatch: false
+                });
+            });
+            
+            // 질문 순서 섞기
+            shuffleArray(quizQuestions);
+        }
+
+        /**
+         * 배열을 랜덤으로 섞는 함수 (Fisher-Yates Shuffle)
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        /**
+         * 퀴즈 시작 함수
+         */
+        function startQuiz() {
+            createQuizQuestions();
+            currentQuestionIndex = 0;
+            correctCount = 0;
+            quizContainer.classList.remove('page-hidden');
+            quizResultEl.classList.add('page-hidden');
+            quizFeedbackEl.textContent = '';
+            loadQuizQuestion();
+        }
+
+        /**
+         * 현재 인덱스의 퀴즈 질문을 로드하는 함수
+         */
+        function loadQuizQuestion() {
+            if (currentQuestionIndex < quizQuestions.length) {
+                const q = quizQuestions[currentQuestionIndex];
+                quizQuestionEl.innerHTML = `
+                    <p class="text-6xl mb-4">${q.emoji}</p>
+                    <p class="text-xl font-semibold">"${q.phrase}"</p>
+                `;
+                // 정답/오답 버튼 활성화
+                btnCorrect.disabled = false;
+                btnWrong.disabled = false;
+                btnCorrect.onclick = () => checkAnswer(true);
+                btnWrong.onclick = () => checkAnswer(false);
+            } else {
+                // 퀴즈 종료
+                showQuizResult();
+            }
+        }
+
+        /**
+         * 사용자의 답을 체크하는 함수
+         * @param {boolean} userAnswer (true: 'O', false: 'X')
+         */
+        function checkAnswer(userAnswer) {
+            // 버튼 비활성화 (중복 클릭 방지)
+            btnCorrect.disabled = true;
+            btnWrong.disabled = true;
+
+            const q = quizQuestions[currentQuestionIndex];
+            const isAnswerCorrect = (userAnswer === q.isCorrectMatch);
+
+            if (isAnswerCorrect) {
+                quizFeedbackEl.textContent = '정답! ✅';
+                quizFeedbackEl.className = 'mt-6 text-2xl font-bold h-8 text-green-600';
+                correctCount++;
+            } else {
+                quizFeedbackEl.textContent = '틀렸어요... ❌';
+                quizFeedbackEl.className = 'mt-6 text-2xl font-bold h-8 text-red-600';
+            }
+
+            // 1초 후에 다음 문제로 이동
+            setTimeout(() => {
+                currentQuestionIndex++;
+                quizFeedbackEl.textContent = '';
+                loadQuizQuestion();
+            }, 1000);
+        }
+
+        /**
+         * 퀴즈 결과를 보여주는 함수
+         */
+        function showQuizResult() {
+            quizContainer.classList.add('page-hidden');
+            quizResultEl.classList.remove('page-hidden');
+            totalQuestionsEl.textContent = quizQuestions.length;
+            correctAnswersEl.textContent = correctCount;
+        }
+
+        // --- 초기화 ---
+        // DOM이 로드되면 '배우기' 페이지를 그리고 기본 페이지로 설정
+        document.addEventListener('DOMContentLoaded', () => {
+            renderVocabList();
+            showPage('learn');
+        });
+    </script>
+</body>
+</html>
+
