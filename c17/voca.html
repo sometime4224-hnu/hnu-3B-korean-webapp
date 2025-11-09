@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국어 어휘 학습 앱</title>
+    <!-- Tailwind CSS 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter 폰트 로드 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Noto Sans KR 폰트를 기본으로 사용 */
+        body {
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+        }
+
+        /* 어휘 카드 펼침/숨김을 위한 스타일 */
+        .details-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            visibility: hidden;
+            opacity: 0;
+        }
+
+        .details-content.open {
+            max-height: 500px; /* 충분히 큰 값 */
+            visibility: visible;
+            opacity: 1;
+            transition: max-height 0.4s ease-in, opacity 0.3s ease-in 0.1s;
+        }
+
+        /* 탭 버튼 활성/비활성 스타일 */
+        .tab-btn {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .tab-btn.active {
+            color: #2563EB; /* text-blue-600 */
+            border-bottom-width: 3px;
+            border-color: #2563EB;
+        }
+
+        .tab-btn.inactive {
+            color: #6B7280; /* text-gray-500 */
+        }
+        
+        /* 퀴즈 옵션 버튼 스타일 */
+        .option-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .option-btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- 
+      메인 컨테이너: 
+      모바일 화면에 최적화되도록 최대 너비(max-w-lg)를 설정하고,
+      화면 중앙(mx-auto)에 위치시킵니다.
+      min-h-screen과 bg-white로 전체 화면을 앱처럼 보이게 합니다.
+    -->
+    <div class="container mx-auto max-w-lg min-h-screen bg-white shadow-2xl flex flex-col">
+
+        <!-- 헤더 -->
+        <header class="text-center py-5 bg-blue-600 shadow-md">
+            <h1 class="text-2xl font-bold text-white">한국어 어휘 학습</h1>
+        </header>
+
+        <!-- 
+          페이지 컨텐츠 영역: 
+          flex-grow로 남은 공간을 모두 채워 하단 탭이 맨 아래에 고정되도록 합니다.
+          pb-20은 하단 탭과의 여백입니다.
+        -->
+        <main class="flex-grow p-4 pb-20">
+
+            <!-- 페이지 1: 어휘 학습 -->
+            <section id="page-vocab" class="space-y-6">
+                <!-- 어휘 카드는 JavaScript로 동적 생성됩니다. -->
+            </section>
+
+            <!-- 페이지 2: 퀴즈 -->
+            <section id="page-quiz" class="hidden flex flex-col h-full pt-4">
+                
+                <!-- 퀴즈 옵션 (화면 최상단) -->
+                <div id="quiz-options" class="w-full grid grid-cols-2 gap-3 mb-6">
+                    <!-- 퀴즈 옵션 버튼은 JavaScript로 생성됩니다. -->
+                </div>
+
+                <!-- 퀴즈 문제 (화면 중앙 상단) -->
+                <div class="w-full bg-blue-50 p-6 rounded-lg shadow-md mb-4 flex-grow flex items-center justify-center">
+                    <p id="quiz-question" class="text-xl font-medium text-center text-gray-800 h-24">
+                        <!-- 퀴즈 문제가 여기에 표시됩니다. -->
+                    </p>
+                </div>
+
+                <!-- 퀴즈 힌트 (추가된 부분) -->
+                <div class="w-full px-4 mb-4">
+                    <p id="quiz-hint" class="text-center text-gray-600 italic text-base h-10">
+                        <!-- 퀴즈 힌트가 여기에 표시됩니다. -->
+                    </p>
+                </div>
+
+                <!-- 퀴즈 피드백 -->
+                <div id="quiz-feedback" class="mt-4 text-lg font-semibold h-8 text-center">
+                    <!-- '정답입니다!' 또는 '틀렸습니다.'가 여기에 표시됩니다. -->
+                </div>
+
+                <!-- 다음 문제 버튼 -->
+                <button id="next-question" class="hidden mt-6 w-full bg-blue-600 text-white p-3 rounded-lg font-bold shadow-md hover:bg-blue-700 transition duration-200">
+                    다음 문제
+                </button>
+            </section>
+        </main>
+
+        <!-- 
+          하단 네비게이션 탭: 
+          모바일 앱과 유사한 UI를 위해 화면 하단에 고정합니다.
+        -->
+        <nav class="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t border-gray-200 shadow-inner z-10">
+            <div class="flex justify-around">
+                <button id="tab-vocab" class="tab-btn active flex-1 py-3 font-semibold">
+                    어휘 학습
+                </button>
+                <button id="tab-quiz" class="tab-btn inactive flex-1 py-3 font-semibold">
+                    퀴즈
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <script>
+        // --- 데이터 정의 ---
+
+        // 어휘 데이터 (요청대로 예문 2개 이상)
+        const vocabData = [
+            {
+                category: "소문 관련 어휘",
+                word: "소문이 나다",
+                explanation: "어떤 이야기가 사람들에게 알려지기 시작하는 거예요.",
+                examples: [
+                    "두 사람이 사귄다는 소문이 났어요.",
+                    "그 가게가 곧 문을 닫는다는 소문이 났다."
+                ]
+            },
+            {
+                category: "소문 관련 어휘",
+                word: "소문을 내다",
+                explanation: "(주로 나쁜) 이야기를 만들어서 다른 사람에게 말하는 거예요.",
+                examples: [
+                    "누가 그런 나쁜 소문을 냈어요?",
+                    "없는 사실을 지어내서 소문을 내면 안 돼요."
+                ]
+            },
+            {
+                category: "소문 관련 어휘",
+                word: "소문이 퍼지다",
+                explanation: "이야기가 많은 사람에게 빠르게 알려지는 거예요.",
+                examples: [
+                    "그 소문이 학교 전체에 금방 퍼졌어요.",
+                    "인터넷 때문에 소문이 더 빨리 퍼지는 것 같아요."
+                ]
+            },
+            {
+                category: "소문 관련 어휘",
+                word: "소문을 퍼뜨리다",
+                explanation: "어떤 이야기를 다른 사람들에게 일부러 널리 알리는 거예요.",
+                examples: [
+                    "거짓 소문을 퍼뜨리지 마세요.",
+                    "경쟁사에 대한 나쁜 소문을 퍼뜨린 사람이 잡혔대요."
+                ]
+            },
+            {
+                category: "추측 및 확신 관련 어휘",
+                word: "그럴 리가 없다",
+                explanation: "'절대 아니에요', '말도 안 돼요'라는 뜻이에요. 아주 강하게 아니라고 말할 때 써요.",
+                examples: [
+                    "A: 00 씨가 1등을 했대요. B: 그럴 리가 없어요! 공부 하나도 안 했어요.",
+                    "그 착한 사람이 범인이라고? 그럴 리가 없어."
+                ]
+            },
+            {
+                category: "추측 및 확신 관련 어휘",
+                word: "믿어지지 않다",
+                explanation: "어떤 사실이 정말인지 의심스럽거나 너무 놀라서 믿기 어려운 거예요.",
+                examples: [
+                    "그가 벌써 결혼을 했다니 믿어지지 않아요.",
+                    "내가 복권에 당첨되다니, 아직도 믿어지지 않아."
+                ]
+            },
+            {
+                category: "추측 및 확신 관련 어휘",
+                word: "그럴 수 있다",
+                explanation: "'가능해요', '이해해요'라는 뜻이에요.",
+                examples: [
+                    "A: 제가 실수했어요. B: 괜찮아요. 바쁘면 그럴 수 있어요.",
+                    "A: 저 오늘 좀 피곤해 보여요? B: 네, 어제 야근했으면 그럴 수 있죠."
+                ]
+            },
+            {
+                category: "추측 및 확신 관련 어휘",
+                word: "틀림없다",
+                explanation: "'100% 맞아요', '확실해요'라는 뜻이에요.",
+                examples: [
+                    "이건 제 우산이 틀림없어요. 여기 제 이름이 있어요.",
+                    "밤새 눈이 온 게 틀림없어. 밖이 하얘."
+                ]
+            },
+            {
+                category: "정도와 방식을 나타내는 말 (부사)",
+                word: "우연히",
+                explanation: "계획하거나 생각하지 않았는데 어떤 일이 일어나는 거예요.",
+                examples: [
+                    "길을 가다가 우연히 옛날 친구를 만났어요.",
+                    "우연히 들른 식당이 맛집이었어요."
+                ]
+            },
+            {
+                category: "정도와 방식을 나타내는 말 (부사)",
+                word: "자세히",
+                explanation: "아주 꼼꼼하게, 하나하나 다 보는 거예요.",
+                examples: [
+                    "이 서류를 자세히 읽어보세요.",
+                    "사고가 어떻게 났는지 자세히 말씀해 주세요."
+                ]
+            },
+            {
+                category: "정도와 방식을 나타내는 말 (부사)",
+                word: "분명히",
+                explanation: "확실하게, 틀림없이 맞아요.",
+                examples: [
+                    "제가 분명히 여기에 지갑을 뒀는데 없어졌어요.",
+                    "날씨가 흐린 것을 보니 오후에 비가 올 게 분명해요."
+                ]
+            },
+            {
+                category: "정도와 방식을 나타내는 말 (부사)",
+                word: "솔직히",
+                explanation: "거짓말이나 숨기는 것 없이 마음속 생각을 그대로 말하는 거예요.",
+                examples: [
+                    "솔직히 말하면, 저는 그 영화가 재미없었어요.",
+                    "솔직히 말해줘서 고마워. 기분 나쁘지 않아."
+                ]
+            },
+            {
+                category: "관계와 감정 변화 관련 어휘",
+                word: "실망하다",
+                explanation: "내가 기대하고 생각했던 것과 달라서 기분이 안 좋은 거예요.",
+                examples: [
+                    "친구가 약속을 지키지 않아서 실망했어요.",
+                    "시험 성적이 생각보다 낮아서 실망했다."
+                ]
+            },
+            {
+                category: "관계와 감정 변화 관련 어휘",
+                word: "다투다",
+                explanation: "친구나 다른 사람과 말로 싸우는 거예요.",
+                examples: [
+                    "사소한 일로 동생과 다퉜어요.",
+                    "의견이 달라서 동료와 다툴 뻔했어요."
+                ]
+            },
+            {
+                category: "관계와 감정 변화 관련 어휘",
+                word: "오해하다",
+                explanation: "다른 사람의 말이나 행동의 뜻을 잘못 생각하는 거예요.",
+                examples: [
+                    "A: 화났어요? B: 아니요, 오해하지 마세요. 그냥 피곤해서 그래요.",
+                    "나는 그가 나를 싫어한다고 오해했다."
+                ]
+            },
+            {
+                category: "관계와 감정 변화 관련 어휘",
+                word: "오해를 풀다",
+                explanation: "잘못 생각했던 것을 이야기해서 바로잡고, 다시 관계가 좋아지는 거예요.",
+                examples: [
+                    "서로 대화를 하고 오해를 풀었어요.",
+                    "오해를 풀고 나니 마음이 편해졌어요."
+                ]
+            },
+            {
+                category: "관계와 감정 변화 관련 어휘",
+                word: "화해하다",
+                explanation: "다툰(싸운) 후에 다시 사이가 좋아지는 거예요.",
+                examples: [
+                    "친구와 화해하고 같이 밥을 먹었어요.",
+                    "우리는 싸운 지 하루 만에 화해했다."
+                ]
+            }
+        ];
+
+        // 퀴즈 데이터
+        const quizData = [
+            {
+                question: "그가 시험에 떨어졌다는 건 ____. 공부를 아주 잘했어요.",
+                options: ["그럴 리가 없다", "소문이 나다", "다투다", "우연히"],
+                answer: "그럴 리가 없다",
+                hint: "'절대 아니다', '말도 안 된다'고 강하게 부정하는 표현이에요."
+            },
+            {
+                question: "길에서 ____ 옛날 선생님을 만났다.",
+                options: ["솔직히", "분명히", "우연히", "자세히"],
+                answer: "우연히",
+                hint: "계획하지 않았는데 갑자기 만났을 때 쓰는 말이에요."
+            },
+            {
+                question: "어제 친구와 싸웠지만 오늘 ____ 했다.",
+                options: ["실망하다", "오해하다", "화해하다", "소문을 내다"],
+                answer: "화해하다",
+                hint: "싸운 후에 다시 사이가 좋아지는 것을 말해요."
+            },
+            {
+                question: "그 사람이 범인이라는 ____ 학교 전체에 퍼졌다.",
+                options: ["소문이", "오해가", "화해가", "실망이"],
+                answer: "소문이",
+                hint: "사람들 사이에서 도는 확인되지 않은 이야기예요."
+            },
+            {
+                question: "약속을 안 지키는 친구에게 ____.",
+                options: ["실망했다", "화해했다", "오해했다", "다퉜다"],
+                answer: "실망했다",
+                hint: "기대했던 것과 달라서 기분이 안 좋을 때 쓰는 감정 표현이에요."
+            },
+            {
+                question: "계약서는 ____ 읽어보고 서명해야 합니다.",
+                options: ["솔직히", "우연히", "분명히", "자세히"],
+                answer: "자세히",
+                hint: "꼼꼼하게, 하나하나 빠짐없이 확인하는 모양을 뜻해요."
+            },
+            {
+                question: "내가 한 말이 아닌데, 나에 대한 나쁜 ____.",
+                options: ["소문을 냈어", "오해를 풀었어", "화해를 했어", "소문이 났어"],
+                answer: "소문이 났어",
+                hint: "이야기가 다른 사람들에게 알려지기 시작했다는 뜻이에요."
+            },
+            {
+                question: "제 말을 ____ 마세요. 그런 뜻이 아니었어요.",
+                options: ["오해하지", "실망하지", "다투지", "화해하지"],
+                answer: "오해하지",
+                hint: "상대방의 뜻을 잘못 생각하는 것을 말해요."
+            },
+            {
+                question: "____ 말하면, 이 음식은 제 입맛에 안 맞아요.",
+                options: ["솔직히", "자세히", "우연히", "분명히"],
+                answer: "솔직히",
+                hint: "숨기거나 거짓말하지 않고 사실대로 말할 때 써요."
+            }
+        ];
+
+
+        // --- DOM 요소 가져오기 ---
+        const vocabPage = document.getElementById('page-vocab');
+        const quizPage = document.getElementById('page-quiz');
+        const tabVocab = document.getElementById('tab-vocab');
+        const tabQuiz = document.getElementById('tab-quiz');
+        
+        const quizOptionsContainer = document.getElementById('quiz-options');
+        const quizQuestionEl = document.getElementById('quiz-question');
+        const quizHintEl = document.getElementById('quiz-hint'); // 힌트 요소
+        const quizFeedbackEl = document.getElementById('quiz-feedback');
+        const nextQuestionBtn = document.getElementById('next-question');
+
+        // 퀴즈 상태 변수
+        let currentQuestionIndex = 0;
+        let quizInProgress = false; // 퀴즈 정답 확인 중 이중 클릭 방지
+
+
+        // --- 어휘 목록 초기화 기능 ---
+        function initVocabList() {
+            // 어휘 데이터를 카테고리별로 그룹화
+            const groupedVocab = vocabData.reduce((acc, item) => {
+                const category = item.category;
+                if (!acc[category]) {
+                    acc[category] = [];
+                }
+                acc[category].push(item);
+                return acc;
+            }, {});
+
+            // 그룹화된 데이터를 기반으로 HTML 생성
+            for (const category in groupedVocab) {
+                // 카테고리 제목 생성
+                const categoryTitle = document.createElement('h2');
+                categoryTitle.className = "text-xl font-bold text-blue-700 border-b-2 border-blue-200 pb-2";
+                categoryTitle.textContent = category;
+                vocabPage.appendChild(categoryTitle);
+
+                const categoryWrapper = document.createElement('div');
+                categoryWrapper.className = "space-y-3";
+                
+                // 각 어휘 카드 생성
+                groupedVocab[category].forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden";
+
+                    // 클릭 가능한 버튼 (어휘)
+                    const button = document.createElement('button');
+                    button.className = "vocab-card-btn w-full text-left p-4 flex justify-between items-center";
+                    button.innerHTML = `
+                        <span class="text-lg font-semibold text-gray-900">${item.word}</span>
+                        <svg class="w-5 h-5 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    `;
+
+                    // 숨겨진 상세 내용 (해설, 예문)
+                    const details = document.createElement('div');
+                    details.className = "details-content px-4 pb-4 bg-gray-50";
+                    
+                    const explanation = document.createElement('p');
+                    explanation.className = "text-gray-700 mb-3 text-base";
+                    explanation.textContent = item.explanation;
+
+                    const exampleList = document.createElement('ul');
+                    exampleList.className = "list-disc list-inside space-y-1";
+                    item.examples.forEach(ex => {
+                        const li = document.createElement('li');
+                        li.className = "text-gray-800 text-sm";
+                        li.textContent = ex;
+                        exampleList.appendChild(li);
+                    });
+
+                    details.appendChild(explanation);
+                    details.appendChild(exampleList);
+                    card.appendChild(button);
+                    card.appendChild(details);
+                    categoryWrapper.appendChild(card);
+
+                    // 클릭 이벤트: 상세 내용 토글
+                    button.addEventListener('click', () => {
+                        details.classList.toggle('open');
+                        button.querySelector('svg').classList.toggle('rotate-180');
+                    });
+                });
+                
+                vocabPage.appendChild(categoryWrapper);
+            }
+        }
+
+
+        // --- 퀴즈 기능 ---
+        
+        // 퀴즈 불러오기
+        function loadQuestion(index) {
+            if (index >= quizData.length) {
+                // 퀴즈 완료
+                showQuizCompletion();
+                return;
+            }
+
+            quizInProgress = false; // 새 문제 로드 시 퀴즈 진행 가능
+            const question = quizData[index];
+
+            // 질문 텍스트 설정
+            // 빈칸을 '_'로 강조
+            quizQuestionEl.textContent = question.question.replace('____', '_______');
+
+            // 힌트 설정 (추가)
+            quizHintEl.textContent = question.hint ? `💡 힌트: ${question.hint}` : '';
+
+            // 옵션 버튼 생성
+            quizOptionsContainer.innerHTML = '';
+            
+            // 옵션 순서 섞기 (더 나은 퀴즈 경험을 위해)
+            const shuffledOptions = [...question.options].sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.className = "option-btn p-3 bg-gray-100 rounded-lg text-center font-medium hover:bg-gray-200 shadow";
+                button.textContent = option;
+                button.addEventListener('click', () => checkAnswer(option, question.answer));
+                quizOptionsContainer.appendChild(button);
+            });
+
+            // 피드백 및 다음 버튼 초기화
+            quizFeedbackEl.textContent = '';
+            nextQuestionBtn.classList.add('hidden');
+        }
+
+        // 퀴즈 완료 메시지
+        function showQuizCompletion() {
+            quizQuestionEl.textContent = '퀴즈 완료! 🎉';
+            quizHintEl.textContent = ''; // 힌트 숨기기
+            quizOptionsContainer.innerHTML = '';
+            quizFeedbackEl.textContent = `총 ${quizData.length}문제를 모두 풀었습니다.`;
+            nextQuestionBtn.textContent = '처음부터 다시하기';
+            nextQuestionBtn.classList.remove('hidden');
+            currentQuestionIndex = 0; // 인덱스 리셋
+        }
+
+        // 정답 확인
+        function checkAnswer(selectedOption, correctAnswer) {
+            if (quizInProgress) return; // 이미 정답 확인 중이면 반환
+            quizInProgress = true;
+
+            // 모든 옵션 버튼 비활성화
+            const optionButtons = quizOptionsContainer.querySelectorAll('button');
+            optionButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+                // 정답과 오답 시각적 표시
+                if (btn.textContent === correctAnswer) {
+                    btn.classList.remove('bg-gray-100');
+                    btn.classList.add('bg-green-500', 'text-white');
+                } else if (btn.textContent === selectedOption) {
+                    btn.classList.remove('bg-gray-100');
+                    btn.classList.add('bg-red-500', 'text-white');
+                }
+            });
+
+            // 피드백 표시
+            if (selectedOption === correctAnswer) {
+                quizFeedbackEl.textContent = '정답입니다! ✅';
+                quizFeedbackEl.className = 'mt-4 text-lg font-semibold h-8 text-center text-green-600';
+            } else {
+                quizFeedbackEl.textContent = `틀렸습니다. ❌ (정답: ${correctAnswer})`;
+                quizFeedbackEl.className = 'mt-4 text-lg font-semibold h-8 text-center text-red-600';
+            }
+
+            // 다음 문제 버튼 표시
+            nextQuestionBtn.textContent = (currentQuestionIndex === quizData.length - 1) ? '결과 보기' : '다음 문제';
+            nextQuestionBtn.classList.remove('hidden');
+        }
+
+        // 다음 문제 버튼 클릭 이벤트
+        nextQuestionBtn.addEventListener('click', () => {
+            if (quizQuestionEl.textContent.includes('퀴즈 완료')) {
+                // 퀴즈 완료 후 '처음부터 다시하기'
+                loadQuestion(0);
+            } else {
+                // 다음 문제로 이동
+                currentQuestionIndex++;
+                loadQuestion(currentQuestionIndex);
+            }
+        });
+
+
+        // --- 탭 전환 기능 ---
+        function switchTab(pageToShow) {
+            if (pageToShow === 'vocab') {
+                vocabPage.classList.remove('hidden');
+                quizPage.classList.add('hidden');
+                tabVocab.classList.add('active');
+                tabVocab.classList.remove('inactive');
+                tabQuiz.classList.add('inactive');
+                tabQuiz.classList.remove('active');
+            } else {
+                vocabPage.classList.add('hidden');
+                quizPage.classList.remove('hidden');
+                tabVocab.classList.remove('active');
+                tabVocab.classList.add('inactive');
+                tabQuiz.classList.remove('inactive');
+                tabQuiz.classList.add('active');
+                
+                // 퀴즈 페이지로 전환 시, 퀴즈가 시작되지 않았다면 첫 문제 로드
+                if (currentQuestionIndex === 0 && !quizInProgress) {
+                    loadQuestion(0);
+                }
+            }
+        }
+
+        tabVocab.addEventListener('click', () => switchTab('vocab'));
+        tabQuiz.addEventListener('click', () => switchTab('quiz'));
+
+
+        // --- 앱 초기화 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initVocabList();
+            // 퀴즈는 탭을 클릭할 때 처음 로드되도록 설정
+            // loadQuestion(currentQuestionIndex); 
+            switchTab('vocab'); // 기본으로 어휘 학습 탭 표시
+        });
+    </script>
+</body>
+</html>
