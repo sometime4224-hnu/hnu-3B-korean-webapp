@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-NB76SV96');</script>
+    <!-- End Google Tag Manager -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 1. 페이지 제목 수정 -->
+    <title>17과. 두 사람이 연인사이라니요?</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 스타일은 16과와 동일하게 유지합니다. */
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px 40px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2em;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .activity-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.2em;
+            color: #34495e;
+            margin-bottom: 15px;
+            text-align: left;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .section-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        /* 문법 섹션을 위한 2x2 그리드 레이아웃 */
+        .grammar-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        /* 3열 그리드 (듣고 말하기 전용) */
+        .grammar-grid-3 {
+             grid-template-columns: repeat(3, 1fr);
+        }
+
+        .activity-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 18px;
+            font-size: 1.1em;
+            font-weight: 500;
+            text-decoration: none;
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: center;
+        }
+        
+        .activity-button:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-vocabulary { background-color: #3498db; }
+        .btn-grammar { background-color: #2ecc71; }
+        .btn-conversation { background-color: #e67e22; }
+        .btn-listening { background-color: #9b59b6; }
+        /* 16과에서 사용된 다른 버튼 색상들 */
+        .btn-reading { background-color: #1abc9c; } 
+        .btn-task { background-color: #f1c40f; } 
+        .btn-culture { background-color: #e74c3c; } 
+        .btn-pronunciation { background-color: #8e44ad; } 
+
+
+        .activity-button.disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .activity-button.disabled:hover {
+            transform: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (max-width: 600px) {
+            .main-container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            .section-buttons, .grammar-grid, .grammar-grid-3 { /* 작은 화면에서는 모두 1열로 변경 */
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NB76SV96"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <div class="main-container">
+        <!-- 2. H1 제목 수정 -->
+        <h1>17과. 두 사람이 연인사이라니요?</h1>
+
+        <!-- 3. 어휘 섹션 수정 (voca.html 하나만) -->
+        <div class="activity-section">
+            <h2 class="section-title">어휘</h2>
+            <div class="section-buttons">
+                <!-- 아이콘과 텍스트를 이미지에 맞게 변경 -->
+                <a href="voca.html" class="activity-button btn-vocabulary"><i class="fas fa-comment-dots"></i> 1. 소문</a>
+            </div>
+        </div>
+
+        <!-- 4. 문법과 표현 1 섹션 수정 -->
+        <div class="activity-section">
+            <h2 class="section-title">문법과 표현 1</h2>
+            <div class="section-buttons grammar-grid">
+                <!-- 아이콘과 텍스트를 이미지에 맞게 변경 -->
+                <a href="gram1.html" class="activity-button btn-grammar"><i class="fas fa-eye"></i> -V-고 보니</a>
+                <a href="gram2.html" class="activity-button btn-grammar"><i class="fas fa-user-tie"></i> -A/(으)ㄴ/V-는 척하다</a>
+            </div>
+        </div>
+
+        <!-- 5. 말하기 1 섹션 수정 -->
+        <div class="activity-section">
+            <h2 class="section-title">말하기 1</h2>
+            <div class="section-buttons">
+                <!-- 아이콘과 텍스트를 이미지에 맞게 변경 -->
+                <a href="conv1.html" class="activity-button btn-conversation"><i class="fas fa-share-alt"></i> 소문 전달하기</a>
+            </div>
+        </div>
+
+        <!-- 6. 문법과 표현 2 섹션 수정 -->
+        <div class="activity-section">
+            <h2 class="section-title">문법과 표현 2</h2>
+            <div class="section-buttons grammar-grid">
+                <!-- 아이콘과 텍스트를 이미지에 맞게 변경 -->
+                <a href="gram3.html" class="activity-button btn-grammar"><i class="fas fa-exclamation-circle"></i> -A/V-다니(요)</a>
+                <a href="gram4.html" class="activity-button btn-grammar"><i class="fas fa-not-equal"></i> N(이)라고 (해서) 다 ...</a>
+            </div>
+        </div>
+
+        <!-- 7. 말하기 2 섹션 수정 -->
+        <div class="activity-section">
+            <h2 class="section-title">말하기 2</h2>
+            <div class="section-buttons">
+                <!-- 아이콘과 텍스트를 이미지에 맞게 변경 -->
+                <a href="conv2.html" class="activity-button btn-conversation"><i class="fas fa-check-circle"></i> 오해 정정하기</a>
+            </div>
+        </div>
+
+        <!-- 8. 듣고 말하기 섹션 수정 -->
+        <div class="activity-section">
+            <h2 class="section-title">듣고 말하기</h2>
+            <!-- 3개 항목이므로 3열 그리드(.grammar-grid-3) 사용 -->
+            <div class="section-buttons grammar-grid-3">
+                <!-- 아이콘과 텍스트를 이미지에 맞게 변경 -->
+                <a href="listen1.html" class="activity-button btn-listening"><i class="fas fa-newspaper"></i> 편견에 대한 뉴스 듣기</a>
+                <a href="listen2.html" class="activity-button btn-listening"><i class="fas fa-heartbeat"></i> 건강에 대한 상담 듣기</a>
+                <a href="listen3.html" class="activity-button btn-listening"><i class="fas fa-comments"></i> 편견과 오해에 대해 말하기</a>
+            </div>
+        </div>
+
+        <!-- 9. 읽고 쓰기, 과제, 문화 산책, 발음 섹션은 이미지에 없으므로 삭제함 -->
+
+    </div>
+
+    <!-- 10. 스크립트는 원본과 동일하게 유지 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.activity-button');
+            
+            buttons.forEach(button => {
+                const fileUrl = button.getAttribute('href');
+                
+                // fetch를 사용하여 실제 파일 존재 여부 확인 (서버 환경에서만 동작)
+                // 17과에 맞게 'voca.html', 'gram1.html' 등의 파일이 실제로 
+                // 서버에 존재하지 않으면 버튼이 비활성화됩니다.
+                fetch(fileUrl, { method: 'HEAD' })
+                    .then(response => {
+                        if (!response.ok) {
+                            button.classList.add('disabled');
+                            button.setAttribute('title', '준비 중인 활동입니다.');
+                            button.removeAttribute('href');
+                        }
+                    })
+                    .catch(error => {
+                        button.classList.add('disabled');
+                        button.setAttribute('title', '파일을 찾을 수 없습니다.');
+                        button.removeAttribute('href');
+                    });
+            });
+        });
+    </script>
+</body>
+</html>
