@@ -91,7 +91,13 @@
             <div class="mb-6">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-lg font-semibold text-blue-600">문제 <span id="question-number">1</span> / <span id="total-questions">27</span></span>
-                    <span id="question-vocab" class="text-sm font-medium bg-gray-200 text-gray-700 px-3 py-1 rounded-full"></span>
+                    <!-- 힌트 버튼과 텍스트가 표시될 영역 -->
+                    <div class="text-right">
+                        <button id="hint-btn" class="text-sm font-medium bg-yellow-300 hover:bg-yellow-400 text-yellow-800 px-3 py-1 rounded-full transition duration-300 shadow-sm">
+                            💡 힌트 보기
+                        </button>
+                        <span id="hint-text" class="hidden text-sm font-semibold text-yellow-800 bg-yellow-100 px-3 py-1 rounded-full ml-2"></span>
+                    </div>
                 </div>
                 <!-- 진행률 바 -->
                 <div class="w-full bg-gray-200 rounded-full h-2.5">
@@ -239,7 +245,7 @@
                 vocab: '물고기',
                 type: 'ox',
                 question: '문장이 바릅니까?: "은퇴 후에 바다에서 농사를 지으며 살고 싶다."',
-                note: 'Hint: 바다에서는 보통 물고기를 잡습니다.',
+                hint: '바다에서는 보통 물고기를 잡습니다.',
                 answer: 'x'
             },
             // 연습 3 어휘 (7개)
@@ -289,6 +295,7 @@
                 vocab: '낚다',
                 type: 'ox',
                 question: '문장이 바릅니까?: "어제 낚시를 가서 물고기를 열 마리나 심었다."',
+                hint: '물고기는 낚시로 잡습니다.',
                 answer: 'x'
             },
             // 연습 4 어휘 (6개)
@@ -356,7 +363,8 @@
 
         const questionNumberEl = document.getElementById('question-number');
         const totalQuestionsEl = document.getElementById('total-questions');
-        const questionVocabEl = document.getElementById('question-vocab');
+        const hintBtn = document.getElementById('hint-btn');
+        const hintTextEl = document.getElementById('hint-text');
         const progressBar = document.getElementById('progress-bar');
         const questionTextEl = document.getElementById('question-text');
         const optionsContainer = document.getElementById('options-container');
@@ -408,13 +416,24 @@
                 return;
             }
 
+            // 힌트 버튼과 텍스트 초기화
+            hintTextEl.classList.add('hidden'); // 힌트 숨기기
+            hintTextEl.textContent = ''; // 힌트 내용 지우기
+            hintBtn.classList.remove('hidden'); // 힌트 버튼 보이기
+
             const question = questions[currentQuestionIndex];
             
             // 질문 정보 업데이트
             questionNumberEl.textContent = currentQuestionIndex + 1;
-            questionVocabEl.textContent = question.vocab;
             questionTextEl.innerHTML = question.question.replace(/\n/g, '<br>'); // 줄바꿈 처리
             
+            // 힌트 내용 설정
+            let hint = question.vocab; // 기본 힌트는 어휘
+            if (question.hint) { // 'hint' 속성이 따로 있으면 그것을 사용
+                hint = question.hint;
+            }
+            hintTextEl.textContent = hint; // 힌트 텍스트 설정
+
             // 진행률 바 업데이트
             const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
             progressBar.style.width = `${progress}%`;
@@ -651,6 +670,11 @@
         
         closeModalBtn.addEventListener('click', closeModal);
         closeModalBtnBottom.addEventListener('click', closeModal);
+
+        hintBtn.addEventListener('click', () => {
+            hintTextEl.classList.remove('hidden'); // 힌트 표시
+            hintBtn.classList.add('hidden'); // 힌트 버튼 숨기기
+        });
 
         // 초기 화면 설정
         showScreen('main-screen');
