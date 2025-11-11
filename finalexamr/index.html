@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14과~18과 복습</title>
+    <style>
+        /* --- 기본 스타일 --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* --- 전체 컨테이너 --- */
+        .container {
+            width: 100%;
+            max-width: 700px;
+            margin: 20px;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+        }
+
+        /* --- 메인 타이틀 --- */
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2em; /* 2em = 32px */
+        }
+
+        /* --- 과(Lesson) 목록 --- */
+        .lesson-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* --- 각 과(Lesson) 항목 --- */
+        .lesson-item {
+            display: flex;
+            justify-content: space-between; /* 좌우로 정렬 */
+            align-items: center; /* 세로 중앙 정렬 */
+            padding: 20px 25px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background-color: #fafafa;
+            transition: box-shadow 0.2s ease-in-out;
+        }
+
+        .lesson-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- 과 제목 (예: 14과) --- */
+        .lesson-title {
+            font-size: 1.75em; /* 1.75em = 28px */
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        /* --- 버튼 그룹 (가로 정렬용) --- */
+        .button-group {
+            display: flex;
+            gap: 12px; /* 버튼 사이 간격 */
+        }
+
+        /* --- 공통 버튼 스타일 --- */
+        .button {
+            display: inline-block;
+            padding: 12px 22px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em; /* 1em = 16px */
+            font-weight: 500;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 100px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* --- 어휘 복습 버튼 --- */
+        .btn-vocab {
+            background-color: #3498db; /* 파란색 계열 */
+            color: white;
+        }
+
+        .btn-vocab:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* --- 문법 복습 버튼 --- */
+        .btn-grammar {
+            background-color: #2ecc71; /* 녹색 계열 */
+            color: white;
+        }
+
+        .btn-grammar:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>14과~18과 어휘, 문법 복습</h1>
+        
+        <ul class="lesson-list">
+            <li class="lesson-item">
+                <span class="lesson-title">14과</span>
+                <div class="button-group">
+                    <a href="14vocar.html" class="button btn-vocab">어휘 복습</a>
+                    <a href="14gramr.html" class="button btn-grammar">문법 복습</a>
+                </div>
+            </li>
+
+            <li class="lesson-item">
+                <span class="lesson-title">15과</span>
+                <div class="button-group">
+                    <a href="15vocar.html" class="button btn-vocab">어휘 복습</a>
+                    <a href="15gramr.html" class="button btn-grammar">문법 복습</a>
+                </div>
+            </li>
+
+            <li class="lesson-item">
+                <span class="lesson-title">16과</span>
+                <div class="button-group">
+                    <a href="16vocar.html" class="button btn-vocab">어휘 복습</a>
+                    <a href="16gramr.html" class="button btn-grammar">문법 복습</a>
+                </div>
+            </li>
+
+            <li class="lesson-item">
+                <span class="lesson-title">17과</span>
+                <div class="button-group">
+                    <a href="17vocar.html" class="button btn-vocab">어휘 복습</a>
+                    <a href="17gramr.html" class="button btn-grammar">문법 복습</a>
+                </div>
+            </li>
+
+            <li class="lesson-item">
+                <span class="lesson-title">18과</span>
+                <div class="button-group">
+                    <a href="18vocar.html" class="button btn-vocab">어휘 복습</a>
+                    <a href="18gramr.html" class="button btn-grammar">문법 복습</a>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+</body>
+</html>
