@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국어 어휘 퀴즈 (새 버전)</title>
+    <!-- Tailwind CSS 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Inter 폰트 적용 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* 화면 전환을 위한 기본 스타일 */
+        .screen {
+            display: none; /* 기본적으로 모든 화면 숨김 */
+        }
+        .screen.active {
+            display: block; /* active 클래스가 있는 화면만 표시 */
+        }
+        /* 커스텀 라디오 버튼/체크박스 스타일 */
+        .option-label {
+            transition: all 0.2s ease-in-out;
+        }
+        .option-input:checked + .option-label {
+            background-color: #3b82f6; /* bg-blue-500 */
+            color: white;
+            border-color: #3b82f6; /* border-blue-500 */
+        }
+        .option-input:disabled + .option-label {
+            background-color: #f3f4f6; /* bg-gray-100 */
+            color: #9ca3af; /* text-gray-400 */
+            cursor: not-allowed;
+        }
+        /* 정답/오답 피드백 스타일 */
+        .feedback-correct {
+            background-color: #d1fae5; /* bg-green-100 */
+            border-left: 4px solid #10b981; /* border-green-500 */
+        }
+        .feedback-incorrect {
+            background-color: #fee2e2; /* bg-red-100 */
+            border-left: 4px solid #ef4444; /* border-red-500 */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen">
+
+    <div class="container w-full max-w-2xl mx-auto p-4 md:p-8 bg-white shadow-2xl rounded-lg">
+
+        <!-- 1. 메인 화면 -->
+        <div id="main-screen" class="screen active text-center">
+            <h1 class="text-3xl font-bold text-blue-600 mb-6">한국어 어휘 퀴즈</h1>
+            <p class="text-lg text-gray-700 mb-8">연습 1~3에 나온 어휘를 복습해 봅시다.</p>
+            <button id="start-quiz-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl transition duration-300 shadow-md">
+                퀴즈 시작하기
+            </button>
+            <button id="show-history-btn" class="w-full mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg text-xl transition duration-300">
+                퀴즈 기록 보기
+            </button>
+            <div id="history-container" class="mt-6 text-left hidden">
+                <h2 class="text-2xl font-semibold mb-4 text-center">퀴즈 기록</h2>
+                <div id="history-list" class="space-y-3 max-h-64 overflow-y-auto">
+                    <!-- 기록이 여기에 동적으로 추가됩니다 -->
+                </div>
+                <button id="clear-history-btn" class="w-full mt-4 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                    기록 모두 삭제
+                </button>
+            </div>
+            <!-- 상세 기록 모달 -->
+            <div id="history-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+                <div class="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[80vh] overflow-hidden">
+                    <div class="flex justify-between items-center p-4 border-b">
+                        <h3 class="text-xl font-bold">상세 기록</h3>
+                        <button id="close-modal-btn" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+                    </div>
+                    <div id="modal-content" class="p-6 overflow-y-auto max-h-[calc(80vh-120px)]">
+                        <!-- 상세 피드백이 여기에 표시됩니다 -->
+                    </div>
+                    <div class="p-4 border-t bg-gray-50 text-right">
+                        <button id="close-modal-btn-bottom" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">
+                            닫기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 퀴즈 화면 -->
+        <div id="quiz-screen" class="screen">
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-lg font-semibold text-blue-600">문제 <span id="question-number">1</span> / <span id="total-questions">18</span></span>
+                    <!-- 힌트 버튼과 텍스트가 표시될 영역 -->
+                    <div class="text-right">
+                        <button id="hint-btn" class="text-sm font-medium bg-yellow-300 hover:bg-yellow-400 text-yellow-800 px-3 py-1 rounded-full transition duration-300 shadow-sm">
+                            💡 힌트 보기
+                        </button>
+                        <span id="hint-text" class="hidden text-sm font-semibold text-yellow-800 bg-yellow-100 px-3 py-1 rounded-full ml-2"></span>
+                    </div>
+                </div>
+                <!-- 진행률 바 -->
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div id="progress-bar" class="bg-blue-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <h2 id="question-text" class="text-xl md:text-2xl font-semibold text-gray-900 mb-6 min-h-[60px]"></h2>
+            
+            <!-- 선택지 영역 -->
+            <div id="options-container" class="space-y-3">
+                <!-- 선택지가 여기에 동적으로 추가됩니다 -->
+            </div>
+
+            <!-- O/X 선택지 영역 -->
+            <div id="ox-options-container" class="flex space-x-4 mt-4">
+                <!-- O/X 버튼이 여기에 동적으로 추가됩니다 -->
+            </div>
+
+            <button id="next-question-btn" class="w-full mt-8 bg-gray-300 text-gray-500 font-bold py-3 px-6 rounded-lg text-lg transition duration-300 cursor-not-allowed" disabled>
+                다음
+            </button>
+        </div>
+
+        <!-- 3. 결과 화면 -->
+        <div id="results-screen" class="screen text-center">
+            <h1 class="text-3xl font-bold text-blue-600 mb-4">퀴즈 완료!</h1>
+            <div class="bg-blue-50 p-6 rounded-lg shadow-inner mb-6">
+                <h2 class="text-2xl font-semibold mb-2">당신의 점수</h2>
+                <p class="text-5xl font-bold text-blue-600"><span id="score">0</span> / <span id="total-score">18</span></p>
+            </div>
+            
+            <div class="text-left mb-6">
+                <h3 class="text-2xl font-semibold mb-4">상세 피드백</h3>
+                <div id="feedback-container" class="space-y-4 max-h-80 overflow-y-auto p-4 bg-gray-50 rounded-lg border">
+                    <!-- 피드백이 여기에 동적으로 추가됩니다 -->
+                </div>
+            </div>
+
+            <button id="save-results-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300 shadow-md">
+                결과 저장하기
+            </button>
+            <button id="restart-quiz-btn" class="w-full mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300">
+                다시 풀기
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. 퀴즈 데이터 ---
+        // 새로운 어휘 18개로 구성된 문제
+        const questions = [
+            // 연습 1 어휘 (7개)
+            {
+                vocab: '소문이 나다',
+                type: 'dialogue',
+                question: 'A: 민호 씨가 학교를 그만둔대요.\nB: 네? 그게 무슨 말이에요? 어디서 그런 ________?',
+                options: ['소문이 났어요', '소문을 퍼뜨렸어요', '오해를 풀었어요', '믿어지지 않아요'],
+                answer: '소문이 났어요'
+            },
+            {
+                vocab: '소문을 퍼뜨리다',
+                type: 'mc',
+                question: '정확하지 않은 이야기를 다른 사람에게 전하는 것을 \'________\'-(이)라고 해요.',
+                options: ['소문을 퍼뜨리다', '소문이 나다', '오해를 풀다', '화해하다'],
+                answer: '소문을 퍼뜨리다'
+            },
+            {
+                vocab: '그럴 리가 없다',
+                type: 'dialogue',
+                question: 'A: 영수 씨가 복권에 당첨됐대요.\nB: 에이, ________. 거짓말일 거예요.',
+                options: ['그럴 리가 없어요', '틀림없어요', '그럴 수 있어요', '믿어지지 않아요'],
+                answer: '그럴 리가 없어요'
+            },
+            {
+                vocab: '틀림없다',
+                type: 'ox',
+                question: '문장이 바릅니까?: "하늘에 구름이 잔뜩 낀 걸 보니, 비가 안 오는 게 틀림없다."',
+                hint: "'틀림없다'는 '확실하다'는 의미입니다.",
+                answer: 'x'
+            },
+            {
+                vocab: '그럴 수 있다',
+                type: 'mc',
+                question: '친구가 약속을 잊어버렸지만, 바쁘다 보면 ________고 생각하며 이해했다.',
+                options: ['그럴 수 있다', '그럴 리가 없다', '틀림없다', '믿어지지 않다'],
+                answer: '그럴 수 있다'
+            },
+            {
+                vocab: '믿어지지 않다',
+                type: 'mc',
+                question: '열심히 노력한 시험에서 1등을 했다니, 정말 ________.',
+                options: ['믿어지지 않아요', '실망했어요', '다퉜어요', '오해했어요'],
+                answer: '믿어지지 않아요'
+            },
+            {
+                vocab: '사표를 내다',
+                type: 'dialogue',
+                question: 'A: 마리코 씨가 왜 회사를 그만뒀어요?\nB: 글쎄요, 갑자기 ________.',
+                options: ['사표를 냈어요', '소문이 났어요', '화해했어요', '오해했어요'],
+                answer: '사표를 냈어요'
+            },
+            // 연습 2 어휘 (4개)
+            {
+                vocab: '우연히',
+                type: 'mc',
+                question: '길을 걷다가 ________ 초등학교 친구를 만났다.',
+                options: ['우연히', '자세히', '솔직히', '분명히'],
+                answer: '우연히'
+            },
+            {
+                vocab: '분명히',
+                type: 'ox',
+                question: '문장이 바릅니까?: "내가 어제 분명히 책상 위에 지갑을 뒀는데 없어졌다."',
+                answer: 'o'
+            },
+            {
+                vocab: '자세히',
+                type: 'dialogue',
+                question: 'A: 무슨 일인지 ________ 이야기해 주세요.\nB: 네, 처음부터 다 말씀드릴게요.',
+                options: ['자세히', '솔직히', '우연히', '분명히'],
+                answer: '자세히'
+            },
+            {
+                vocab: '솔직히',
+                type: 'mc',
+                question: '거짓말하지 말고 ________ 말해 봐.',
+                options: ['솔직히', '우연히', '자세히', '분명히'],
+                answer: '솔직히'
+            },
+            // 연습 3 어휘 (5개)
+            {
+                vocab: '실망하다',
+                type: 'ox',
+                question: '문장이 바릅니까?: "친구가 약속을 잘 지켜서 실망했다."',
+                hint: "'실망하다'는 기대와 달라 속상할 때 씁니다.",
+                answer: 'x'
+            },
+            {
+                vocab: '오해하다',
+                type: 'mc',
+                question: 'A: 제가 그런 뜻으로 말한 게 아닌데...\nB: 아, 제가 ________-(었)군요. 미안합니다.',
+                options: ['오해했', '화해했', '다퉜', '실망했'],
+                answer: '오해했'
+            },
+            {
+                vocab: '다투다',
+                type: 'dialogue',
+                question: 'A: 어제 동생이랑 싸웠어요.\nB: 왜 ________?',
+                options: ['다퉜어요', '화해했어요', '오해를 풀었어요', '실망했어요'],
+                answer: '다퉜어요'
+            },
+            {
+                vocab: '오해를 풀다',
+                type: 'mc',
+                question: '서로 대화를 나누고 ________.',
+                options: ['오해를 풀었어요', '소문을 퍼뜨렸어요', '사표를 냈어요', '실망했어요'],
+                answer: '오해를 풀었어요'
+            },
+            {
+                vocab: '화해하다',
+                type: 'dialogue',
+                question: 'A: 친구랑 싸우고 아직 말 안 해요?\nB: 아니요, 어제 ________.',
+                options: ['화해했어요', '다퉜어요', '오해했어요', '실망했어요'],
+                answer: '화해했어요'
+            },
+            // 추가 어휘 (2개)
+            {
+                vocab: '정들다',
+                type: 'mc',
+                question: '이 동네에서 10년이나 살아서 ________.',
+                options: ['정들었어요', '다퉜어요', '오해했어요', '사표를 냈어요'],
+                answer: '정들었어요'
+            },
+            {
+                vocab: '어쨌든',
+                type: 'mc',
+                question: '과정은 힘들었지만, ________ 결과가 좋아서 다행이다.',
+                options: ['어쨌든', '솔직히', '우연히', '분명히'],
+                answer: '어쨌든'
+            }
+        ];
+
+        // --- 2. 전역 변수 ---
+        const mainScreen = document.getElementById('main-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const screens = [mainScreen, quizScreen, resultsScreen];
+
+        const startQuizBtn = document.getElementById('start-quiz-btn');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const restartQuizBtn = document.getElementById('restart-quiz-btn');
+        const saveResultsBtn = document.getElementById('save-results-btn');
+        const showHistoryBtn = document.getElementById('show-history-btn');
+        const historyContainer = document.getElementById('history-container');
+        const historyList = document.getElementById('history-list');
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+
+        const historyModal = document.getElementById('history-modal');
+        const modalContent = document.getElementById('modal-content');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const closeModalBtnBottom = document.getElementById('close-modal-btn-bottom');
+
+        const questionNumberEl = document.getElementById('question-number');
+        const totalQuestionsEl = document.getElementById('total-questions');
+        const hintBtn = document.getElementById('hint-btn');
+        const hintTextEl = document.getElementById('hint-text');
+        const progressBar = document.getElementById('progress-bar');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const oxOptionsContainer = document.getElementById('ox-options-container');
+
+        const scoreEl = document.getElementById('score');
+        const totalScoreEl = document.getElementById('total-score');
+        const feedbackContainer = document.getElementById('feedback-container');
+
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let score = 0;
+        let feedbackDetails = [];
+
+        // --- 3. 화면 전환 함수 ---
+        function showScreen(screenId) {
+            screens.forEach(screen => {
+                if (screen.id === screenId) {
+                    screen.classList.add('active');
+                } else {
+                    screen.classList.remove('active');
+                }
+            });
+        }
+
+        // --- 4. 퀴즈 로직 함수 ---
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            score = 0;
+            feedbackDetails = [];
+            // 총 문항 수를 questions.length로 설정
+            totalQuestionsEl.textContent = questions.length;
+            totalScoreEl.textContent = questions.length;
+            
+            // '결과 저장하기' 버튼 초기화
+            saveResultsBtn.textContent = '결과 저장하기';
+            saveResultsBtn.disabled = false;
+            saveResultsBtn.classList.replace('bg-gray-400', 'bg-green-500');
+
+            showScreen('quiz-screen');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            // 이전 선택지 초기화
+            optionsContainer.innerHTML = '';
+            oxOptionsContainer.innerHTML = '';
+            
+            // 다음 버튼 비활성화
+            disableNextButton();
+
+            if (currentQuestionIndex >= questions.length) {
+                showResults();
+                return;
+            }
+
+            // 힌트 버튼과 텍스트 초기화
+            hintTextEl.classList.add('hidden'); // 힌트 숨기기
+            hintTextEl.textContent = ''; // 힌트 내용 지우기
+            hintBtn.classList.remove('hidden'); // 힌트 버튼 보이기
+
+            const question = questions[currentQuestionIndex];
+            
+            // 질문 정보 업데이트
+            questionNumberEl.textContent = currentQuestionIndex + 1;
+            questionTextEl.innerHTML = question.question.replace(/\n/g, '<br>'); // 줄바꿈 처리
+            
+            // 힌트 내용 설정
+            let hint = question.vocab; // 기본 힌트는 어휘
+            if (question.hint) { // 'hint' 속성이 따로 있으면 그것을 사용
+                hint = question.hint;
+            }
+            hintTextEl.textContent = hint; // 힌트 텍스트 설정
+
+            // 진행률 바 업데이트
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // 문제 유형에 따라 선택지 생성
+            if (question.type === 'mc' || question.type === 'dialogue') {
+                oxOptionsContainer.style.display = 'none';
+                optionsContainer.style.display = 'block';
+                
+                // 선택지 순서 섞기 (Fisher-Yates shuffle)
+                const shuffledOptions = [...question.options].sort(() => Math.random() - 0.5);
+
+                shuffledOptions.forEach(option => {
+                    const optionId = `q${currentQuestionIndex}_${option.replace(/\s+/g, '_')}`;
+                    const optionElement = `
+                        <div>
+                            <input type="radio" name="option" id="${optionId}" value="${option}" class="option-input hidden">
+                            <label for="${optionId}" class="option-label block w-full text-left p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                                ${option}
+                            </label>
+                        </div>
+                    `;
+                    optionsContainer.innerHTML += optionElement;
+                });
+            } else if (question.type === 'ox') {
+                optionsContainer.style.display = 'none';
+                oxOptionsContainer.style.display = 'flex';
+
+                const options = ['o', 'x'];
+                options.forEach(option => {
+                    const optionId = `q${currentQuestionIndex}_${option}`;
+                    const optionText = option === 'o' ? 'O (맞다)' : 'X (틀리다)';
+                    const optionElement = `
+                        <div class="flex-1">
+                            <input type="radio" name="option" id="${optionId}" value="${option}" class="option-input hidden">
+                            <label for="${optionId}" class="option-label block w-full text-center p-4 border-2 ${option === 'o' ? 'border-blue-400' : 'border-red-400'} rounded-lg cursor-pointer hover:bg-gray-50 text-xl font-bold">
+                                ${optionText}
+                            </label>
+                        </div>
+                    `;
+                    oxOptionsContainer.innerHTML += optionElement;
+                });
+            }
+
+            // 생성된 라디오 버튼에 이벤트 리스너 추가
+            document.querySelectorAll('input[name="option"]').forEach(input => {
+                input.addEventListener('change', () => {
+                    userAnswers[currentQuestionIndex] = input.value;
+                    enableNextButton();
+                });
+            });
+        }
+
+        function enableNextButton() {
+            nextQuestionBtn.disabled = false;
+            nextQuestionBtn.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+            nextQuestionBtn.classList.add('bg-blue-500', 'hover:bg-blue-600', 'text-white');
+            if (currentQuestionIndex === questions.length - 1) {
+                nextQuestionBtn.textContent = '결과 보기';
+            } else {
+                nextQuestionBtn.textContent = '다음';
+            }
+        }
+
+        function disableNextButton() {
+            nextQuestionBtn.disabled = true;
+            nextQuestionBtn.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+            nextQuestionBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600', 'text-white');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResults() {
+            score = 0;
+            feedbackDetails = []; // 피드백 초기화
+            feedbackContainer.innerHTML = ''; // 피드백 컨테이너 초기화
+
+            questions.forEach((q, index) => {
+                const userAnswer = userAnswers[index];
+                const correctAnswer = q.answer;
+                const isCorrect = userAnswer === correctAnswer;
+
+                if (isCorrect) {
+                    score++;
+                }
+
+                // 피드백 상세 정보 생성
+                const feedback = {
+                    question: q.question,
+                    vocab: q.vocab,
+                    userAnswer: userAnswer,
+                    correctAnswer: correctAnswer,
+                    isCorrect: isCorrect
+                };
+                feedbackDetails.push(feedback); // 상세 피드백 저장
+
+                // 피드백 UI 생성
+                const feedbackElement = document.createElement('div');
+                feedbackElement.className = `p-4 rounded-lg ${isCorrect ? 'feedback-correct' : 'feedback-incorrect'}`;
+                
+                let answerText = correctAnswer;
+                if (q.type === 'ox') {
+                    answerText = correctAnswer === 'o' ? 'O (맞다)' : 'X (틀리다)';
+                }
+                let userAnswerText = userAnswer;
+                if (q.type === 'ox') {
+                    userAnswerText = userAnswer === 'o' ? 'O (맞다)' : 'X (틀리다)';
+                }
+
+                feedbackElement.innerHTML = `
+                    <p class="font-semibold text-gray-800">${index + 1}. [${q.vocab}] ${q.question.replace(/\n/g, '<br>')}</p>
+                    <p class="mt-2 text-sm"><strong>정답:</strong> ${answerText}</p>
+                    <p class="text-sm"><strong>선택:</strong> ${userAnswerText} ${isCorrect ? '👍' : '👎'}</p>
+                `;
+                feedbackContainer.appendChild(feedbackElement);
+            });
+
+            scoreEl.textContent = score;
+            showScreen('results-screen');
+        }
+
+        function restartQuiz() {
+            showScreen('main-screen');
+        }
+
+        // --- 5. 기록 저장/불러오기 함수 ---
+
+        function saveResults() {
+            const history = JSON.parse(localStorage.getItem('quizHistory_v2') || '[]'); // v2로 키 변경
+            const resultData = {
+                date: new Date().toLocaleString('ko-KR'),
+                score: score,
+                total: questions.length,
+                feedback: feedbackDetails // 상세 피드백 정보 포함
+            };
+            history.push(resultData);
+            localStorage.setItem('quizHistory_v2', JSON.stringify(history));
+            
+            saveResultsBtn.textContent = '저장 완료!';
+            saveResultsBtn.disabled = true;
+            saveResultsBtn.classList.replace('bg-green-500', 'bg-gray-400');
+            
+            // 기록 목록 즉시 갱신
+            loadHistory();
+        }
+
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('quizHistory_v2') || '[]'); // v2로 키 변경
+            historyList.innerHTML = ''; // 목록 초기화
+
+            if (history.length === 0) {
+                historyList.innerHTML = '<p class="text-gray-500 text-center">저장된 기록이 없습니다.</p>';
+                historyContainer.classList.add('hidden');
+                return;
+            }
+
+            historyContainer.classList.remove('hidden');
+            
+            history.reverse().forEach((record, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'p-3 bg-white border rounded-lg flex justify-between items-center cursor-pointer hover:bg-gray-50';
+                historyItem.innerHTML = `
+                    <span>
+                        <span class="font-semibold">${record.date}</span>
+                        <span class="ml-2 text-blue-600 font-bold">${record.score} / ${record.total} 점</span>
+                    </span>
+                    <span class="text-sm text-gray-500">상세보기 &gt;</span>
+                `;
+                // 클릭 시 상세 모달 열기
+                historyItem.addEventListener('click', () => showHistoryDetail(record));
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        function showHistoryDetail(record) {
+            modalContent.innerHTML = ''; // 모달 내용 초기화
+            
+            const header = document.createElement('div');
+            header.className = 'mb-4';
+            header.innerHTML = `
+                <h4 class="text-lg font-bold">${record.date}</h4>
+                <p class="text-2xl font-bold text-blue-600">총점: ${record.score} / ${record.total}</p>
+            `;
+            modalContent.appendChild(header);
+
+            record.feedback.forEach((fb, index) => {
+                const feedbackElement = document.createElement('div');
+                feedbackElement.className = `p-4 rounded-lg mb-3 ${fb.isCorrect ? 'feedback-correct' : 'feedback-incorrect'}`;
+                
+                let answerText = fb.correctAnswer;
+                let userAnswerText = fb.userAnswer;
+                
+                // O/X 답변 처리
+                // 질문 데이터에서 타입 찾기 (기록된 어휘를 기반으로)
+                const questionData = questions.find(q => q.vocab === fb.vocab && q.question === fb.question);
+                const questionType = questionData ? questionData.type : null;
+
+                if (questionType === 'ox') {
+                    answerText = fb.correctAnswer === 'o' ? 'O (맞다)' : 'X (틀리다)';
+                    userAnswerText = fb.userAnswer === 'o' ? 'O (맞다)' : 'X (틀리다)';
+                }
+
+                feedbackElement.innerHTML = `
+                    <p class="font-semibold text-gray-800">${index + 1}. [${fb.vocab}] ${fb.question.replace(/\n/g, '<br>')}</p>
+                    <p class="mt-2 text-sm"><strong>정답:</strong> ${answerText}</p>
+                    <p class="text-sm"><strong>선택:</strong> ${userAnswerText} ${fb.isCorrect ? '👍' : '👎'}</p>
+                `;
+                modalContent.appendChild(feedbackElement);
+            });
+
+            historyModal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            historyModal.classList.add('hidden');
+        }
+
+        function clearHistory() {
+            // confirm 대신 커스텀 모달을 사용하는 것이 좋으나, 간단하게 confirm을 유지합니다.
+            // 실제 iframe 환경에서는 alert/confirm이 작동하지 않을 수 있습니다.
+            // 여기서는 브라우저 기본 기능을 사용합니다.
+            if (window.confirm('정말로 모든 기록을 삭제하시겠습니까?')) {
+                localStorage.removeItem('quizHistory_v2'); // v2로 키 변경
+                loadHistory(); // 목록 갱신
+            }
+        }
+
+        // --- 6. 이벤트 리스너 연결 ---
+        startQuizBtn.addEventListener('click', startQuiz);
+        nextQuestionBtn.addEventListener('click', nextQuestion);
+        restartQuizBtn.addEventListener('click', restartQuiz);
+        saveResultsBtn.addEventListener('click', saveResults);
+        
+        showHistoryBtn.addEventListener('click', () => {
+            loadHistory();
+            historyContainer.classList.toggle('hidden');
+        });
+        
+        clearHistoryBtn.addEventListener('click', clearHistory);
+        
+        closeModalBtn.addEventListener('click', closeModal);
+        closeModalBtnBottom.addEventListener('click', closeModal);
+
+        hintBtn.addEventListener('click', () => {
+            hintTextEl.classList.remove('hidden'); // 힌트 표시
+            hintBtn.classList.add('hidden'); // 힌트 버튼 숨기기
+        });
+
+        // 초기 화면 설정
+        showScreen('main-screen');
+    </script>
+</body>
+</html>
