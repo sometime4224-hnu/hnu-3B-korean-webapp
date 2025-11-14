@@ -23,7 +23,7 @@
             width: 100%;
             max-width: 700px;
             margin: 20px;
-            padding: 30px;
+            padding: 40px 30px;
             background-color: #ffffff;
             border-radius: 12px;
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
@@ -33,8 +33,29 @@
         h1 {
             text-align: center;
             color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
             margin-bottom: 30px;
-            font-size: 2em; /* 2em = 32px */
+            font-size: 1.1em;
+        }
+
+        /* --- 섹션 구분 헤더 --- */
+        h2 {
+            font-size: 1.3em;
+            color: #34495e;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        
+        h2:first-of-type {
+            margin-top: 10px; /* 첫 번째 헤더는 상단 여백 줄임 */
         }
 
         /* --- 과(Lesson) 목록 --- */
@@ -47,122 +68,128 @@
         /* --- 각 과(Lesson) 항목 --- */
         .lesson-item {
             display: flex;
-            justify-content: space-between; /* 좌우로 정렬 */
-            align-items: center; /* 세로 중앙 정렬 */
-            padding: 20px 25px;
-            margin-bottom: 15px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            margin-bottom: 12px;
             border: 1px solid #e0e0e0;
             border-radius: 10px;
             background-color: #fafafa;
-            transition: box-shadow 0.2s ease-in-out;
+            transition: all 0.2s ease;
         }
 
         .lesson-item:hover {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
         }
 
-        /* --- 과 제목 (예: 14과) --- */
         .lesson-title {
-            font-size: 1.75em; /* 1.75em = 28px */
+            font-size: 1.4em;
             font-weight: 600;
             color: #34495e;
-        }
-
-        /* --- 버튼 그룹 (가로 정렬용) --- */
-        .button-group {
-            display: flex;
-            gap: 12px; /* 버튼 사이 간격 */
         }
 
         /* --- 공통 버튼 스타일 --- */
         .button {
             display: inline-block;
-            padding: 12px 22px;
+            padding: 10px 20px;
             border: none;
             border-radius: 8px;
-            font-size: 1em; /* 1em = 16px */
-            font-weight: 500;
+            font-size: 0.95em;
+            font-weight: 600;
             text-decoration: none;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s ease;
-            min-width: 100px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        /* --- 어휘 복습 버튼 --- */
+        /* --- 어휘 버튼 스타일 --- */
         .btn-vocab {
-            background-color: #3498db; /* 파란색 계열 */
+            background-color: #3498db;
             color: white;
+            min-width: 100px;
         }
 
         .btn-vocab:hover {
             background-color: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
-        /* --- 읽기 복습 버튼 (기존 문법에서 변경됨) --- */
+        /* --- 읽기 복습 영역 스타일 --- */
+        .reading-section {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap; /* 화면이 좁으면 줄바꿈 */
+            background-color: #fdf6e3; /* 살짝 다른 배경색으로 구분 */
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #f1e3c4;
+        }
+
+        /* --- 읽기 버튼 스타일 --- */
         .btn-reading {
-            background-color: #e67e22; /* 읽기는 주황색 계열로 변경 (구분을 위해) */
+            background-color: #e67e22;
             color: white;
+            padding: 15px 30px; /* 조금 더 크게 */
+            font-size: 1.1em;
+            flex: 1; /* 버튼 크기 균등 분배 */
+            min-width: 140px;
+            max-width: 200px;
         }
 
         .btn-reading:hover {
             background-color: #d35400;
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
+
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- 제목 변경: 문법 -> 읽기 -->
-        <h1>14과~18과 어휘, 읽기 복습</h1>
-        
+        <h1>종합 복습</h1>
+        <p class="subtitle">14과 ~ 18과</p>
+
+        <!-- 섹션 1: 과별 어휘 복습 -->
+        <h2>📚 과별 어휘 복습</h2>
         <ul class="lesson-list">
             <li class="lesson-item">
                 <span class="lesson-title">14과</span>
-                <div class="button-group">
-                    <a href="14vocar.html" class="button btn-vocab">어휘 복습</a>
-                    <!-- 링크 및 텍스트 변경 -->
-                    <a href="14read.html" class="button btn-reading">읽기 복습</a>
-                </div>
+                <a href="14vocar.html" class="button btn-vocab">어휘 복습</a>
             </li>
 
             <li class="lesson-item">
                 <span class="lesson-title">15과</span>
-                <div class="button-group">
-                    <a href="15vocar.html" class="button btn-vocab">어휘 복습</a>
-                    <a href="15read.html" class="button btn-reading">읽기 복습</a>
-                </div>
+                <a href="15vocar.html" class="button btn-vocab">어휘 복습</a>
             </li>
 
             <li class="lesson-item">
                 <span class="lesson-title">16과</span>
-                <div class="button-group">
-                    <a href="16vocar.html" class="button btn-vocab">어휘 복습</a>
-                    <a href="16read.html" class="button btn-reading">읽기 복습</a>
-                </div>
+                <a href="16vocar.html" class="button btn-vocab">어휘 복습</a>
             </li>
 
             <li class="lesson-item">
                 <span class="lesson-title">17과</span>
-                <div class="button-group">
-                    <a href="17vocar.html" class="button btn-vocab">어휘 복습</a>
-                    <a href="17read.html" class="button btn-reading">읽기 복습</a>
-                </div>
+                <a href="17vocar.html" class="button btn-vocab">어휘 복습</a>
             </li>
 
             <li class="lesson-item">
                 <span class="lesson-title">18과</span>
-                <div class="button-group">
-                    <a href="18vocar.html" class="button btn-vocab">어휘 복습</a>
-                    <a href="18read.html" class="button btn-reading">읽기 복습</a>
-                </div>
+                <a href="18vocar.html" class="button btn-vocab">어휘 복습</a>
             </li>
         </ul>
+
+        <!-- 섹션 2: 읽기 복습 (통합) -->
+        <h2>📖 읽기 복습</h2>
+        <div class="reading-section">
+            <!-- 파일명은 예시로 read1.html 등으로 지정했습니다. 실제 파일명에 맞춰 수정하세요 -->
+            <a href="read1.html" class="button btn-reading">읽기 복습 1</a>
+            <a href="read2.html" class="button btn-reading">읽기 복습 2</a>
+            <a href="read3.html" class="button btn-reading">읽기 복습 3</a>
+        </div>
     </div>
 
 </body>
