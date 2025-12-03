@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- Google Tag Manager -->
+<!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
@@ -10,11 +10,35 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>10과 학습 활동</title>
+    <title>10과 결혼하려면 아직 멀었어요</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-sub: #6b7280;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            
+            /* Category Colors */
+            --vocab-bg: #e0e7ff;
+            --vocab-text: #3730a3;
+            --grammar-bg: #dcfce7;
+            --grammar-text: #166534;
+            --speaking-bg: #ffedd5;
+            --speaking-text: #9a3412;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f0f4f7;
+            background-color: var(--bg-color);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -22,144 +46,255 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             min-height: 100vh;
             margin: 0;
             padding: 20px;
+            color: var(--text-main);
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 3rem;
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 700px;
+            transition: transform 0.3s ease;
+        }
+
+        header {
+            margin-bottom: 2.5rem;
+            text-align: center;
+            border-bottom: 2px solid #f3f4f6;
+            padding-bottom: 2rem;
+        }
+
+        .chapter-num {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
         }
 
         h1 {
-            color: #333;
+            color: var(--text-main);
             font-size: 2em;
-            margin-bottom: 40px;
+            font-weight: 700;
+            margin: 10px 0;
+            word-break: keep-all;
+            line-height: 1.3;
         }
 
-        .button-container {
-            display: grid;
-            gap: 20px;
+        p.subtitle {
+            color: var(--text-sub);
+            margin: 0;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+        
+        /* 목록형 레이아웃으로 변경하여 긴 텍스트 수용 */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
             width: 100%;
-            max-width: 500px;
         }
 
-        .activity-button {
-            display: block;
+        .activity-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             padding: 20px;
-            font-size: 1.2em;
-            font-weight: bold;
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
             text-decoration: none;
-            color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s, background-color 0.2s;
-            text-align: center;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .activity-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.1), 0 2px 4px -1px rgba(79, 70, 229, 0.06);
+            transform: translateY(-2px);
+        }
+
+        .activity-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .activity-type {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 4px 8px;
+            border-radius: 6px;
+            width: fit-content;
         }
         
-        /* 어휘 버튼 스타일 */
-        .btn-vocabulary {
-            background-color: #007BFF;
+        .type-vocab { background-color: var(--vocab-bg); color: var(--vocab-text); }
+        .type-grammar { background-color: var(--grammar-bg); color: var(--grammar-text); }
+        .type-speaking { background-color: var(--speaking-bg); color: var(--speaking-text); }
+
+        .activity-title {
+            font-size: 1.125em;
+            font-weight: 600;
         }
 
-        .btn-vocabulary:hover {
-            background-color: #0056b3;
-            transform: translateY(-3px);
+        .activity-arrow {
+            color: var(--text-sub);
+            transition: transform 0.2s ease, color 0.2s ease;
         }
 
-        /* 문법 버튼 스타일 (각기 다른 조도) */
-        .btn-grammar-1 {
-            background-color: #28a745;
-        }
-
-        .btn-grammar-1:hover {
-            background-color: #1e7e34;
-            transform: translateY(-3px);
-        }
-
-        .btn-grammar-2 {
-            background-color: #20c997;
-        }
-
-        .btn-grammar-2:hover {
-            background-color: #199469;
-            transform: translateY(-3px);
-        }
-
-        .btn-grammar-3 {
-            background-color: #17a2b8;
-        }
-
-        .btn-grammar-3:hover {
-            background-color: #117a8b;
-            transform: translateY(-3px);
-        }
-
-        .btn-grammar-4 {
-            background-color: #4CAF50;
-        }
-
-        .btn-grammar-4:hover {
-            background-color: #45a049;
-            transform: translateY(-3px);
-        }
-        
-        /* 말하기 버튼 스타일 */
-        .btn-conversation-1 {
-            background-color: #e44d26;
-        }
-
-        .btn-conversation-1:hover {
-            background-color: #c73c1d;
-            transform: translateY(-3px);
-        }
-
-        .btn-conversation-2 {
-            background-color: #f39c12;
-        }
-
-        .btn-conversation-2:hover {
-            background-color: #d68910;
-            transform: translateY(-3px);
+        .activity-item:hover .activity-arrow {
+            transform: translateX(4px);
+            color: var(--primary-color);
         }
 
         /* 비활성화된 버튼 스타일 */
-        .activity-button.disabled {
-            background-color: #a0a0a0;
+        .activity-item.disabled {
+            background-color: #f9fafb;
+            border-color: #f3f4f6;
             cursor: not-allowed;
             pointer-events: none;
-            opacity: 0.6;
+            opacity: 0.7;
         }
-
-        .activity-button.disabled:hover {
-            background-color: #a0a0a0;
-            transform: none;
+        
+        .activity-item.disabled .activity-title,
+        .activity-item.disabled .activity-arrow {
+            color: #d1d5db;
         }
 
         @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
             h1 {
                 font-size: 1.5em;
-                margin-bottom: 20px;
             }
-            .activity-button {
+
+            .activity-item {
+                padding: 16px;
+            }
+
+            .activity-title {
                 font-size: 1em;
-                padding: 15px;
             }
         }
     </style>
 </head>
 <body>
-    <h1>10과 활동을 선택하세요</h1>
-    <div class="button-container">
-        <a href="vocabulary.html" class="activity-button btn-vocabulary" data-target="vocabulary.html">어휘</a>
-        <a href="grammar1.html" class="activity-button btn-grammar-1" data-target="grammar1.html">문법 1</a>
-        <a href="grammar2.html" class="activity-button btn-grammar-2" data-target="grammar2.html">문법 2</a>
-        <a href="grammar3.html" class="activity-button btn-grammar-3" data-target="grammar3.html">문법 3</a>
-        <a href="grammar4.html" class="activity-button btn-grammar-4" data-target="grammar4.html">문법 4</a>
-        <a href="conv1.html" class="activity-button btn-conversation-1" data-target="conv1.html">말하기 1</a>
-        <a href="conv2.html" class="activity-button btn-conversation-2" data-target="conv2.html">말하기 2</a>
+    <div class="container">
+        <header>
+            <span class="chapter-num">Chapter 10</span>
+            <h1>결혼하려면 아직 멀었어요</h1>
+            <p class="subtitle">It will be a long time before I get married</p>
+        </header>
+        
+        <div class="activity-list">
+            <!-- 어휘 -->
+            <a href="vocabulary.html" class="activity-item">
+                <div class="activity-content">
+                    <span class="activity-type type-vocab">어휘 Vocabulary</span>
+                    <span class="activity-title">연애와 결혼</span>
+                </div>
+                <svg class="activity-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 5L16 12L9 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+
+            <!-- 문법 1 -->
+            <a href="grammar1.html" class="activity-item">
+                <div class="activity-content">
+                    <span class="activity-type type-grammar">문법 Grammar 1</span>
+                    <span class="activity-title">A/V-던</span>
+                </div>
+                <svg class="activity-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 5L16 12L9 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+
+            <!-- 문법 2 -->
+            <a href="grammar2.html" class="activity-item">
+                <div class="activity-content">
+                    <span class="activity-type type-grammar">문법 Grammar 2</span>
+                    <span class="activity-title">A/V-잖아(요)</span>
+                </div>
+                <svg class="activity-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 5L16 12L9 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+
+            <!-- 말하기 1 -->
+            <a href="conv1.html" class="activity-item">
+                <div class="activity-content">
+                    <span class="activity-type type-speaking">말하기 Speaking 1</span>
+                    <span class="activity-title">연애 과정 회상하기</span>
+                </div>
+                <svg class="activity-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 5L16 12L9 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+
+            <!-- 문법 3 -->
+            <a href="grammar3.html" class="activity-item">
+                <div class="activity-content">
+                    <span class="activity-type type-grammar">문법 Grammar 3</span>
+                    <span class="activity-title">V-(으)ㄹ 생각[계획, 예정]이다</span>
+                </div>
+                <svg class="activity-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 5L16 12L9 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+
+            <!-- 문법 4 -->
+            <a href="grammar4.html" class="activity-item">
+                <div class="activity-content">
+                    <span class="activity-type type-grammar">문법 Grammar 4</span>
+                    <span class="activity-title">V-(으)려면 멀었다</span>
+                </div>
+                <svg class="activity-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 5L16 12L9 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+
+            <!-- 말하기 2 -->
+            <a href="conv2.html" class="activity-item">
+                <div class="activity-content">
+                    <span class="activity-type type-speaking">말하기 Speaking 2</span>
+                    <span class="activity-title">준비 과정 설명하기</span>
+                </div>
+                <svg class="activity-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 5L16 12L9 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+        </div>
+        
+        <div style="margin-top: 2rem; text-align: center;">
+            <a href="../index.html" style="color: var(--text-sub); text-decoration: none; font-size: 0.9em; display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                목록으로 돌아가기
+            </a>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const buttons = document.querySelectorAll('.activity-button');
+            const buttons = document.querySelectorAll('.activity-item');
             
             buttons.forEach(button => {
                 const fileUrl = button.getAttribute('href');
                 
+                // GitHub Pages는 CORS 정책으로 인해 로컬 파일 시스템의 유효성을 검사할 수 없으므로,
+                // GitHub Pages의 URL 구조를 기반으로 유효성을 확인해야 합니다.
+                // 여기서는 간단한 fetch 요청으로 파일 존재 여부를 확인합니다.
                 fetch(fileUrl, { method: 'HEAD' })
                     .then(response => {
                         if (!response.ok) {
@@ -168,6 +303,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         }
                     })
                     .catch(error => {
+                        // 네트워크 오류 등으로 인해 파일을 확인할 수 없을 때
                         button.classList.add('disabled');
                         button.setAttribute('title', '오류가 발생했습니다.');
                     });
@@ -176,4 +312,3 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </script>
 </body>
 </html>
-
