@@ -165,7 +165,6 @@
             <div class="flex flex-wrap gap-2 mb-4">
                 <button onclick="setExample('basic')" class="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-green-50 text-sm" data-i18n="btnBasic">기본 문단 예시</button>
                 <button onclick="setExample('number')" class="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-green-50 text-sm" data-i18n="btnNumber">숫자와 영어 예시</button>
-                <button onclick="setExample('dialogue')" class="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-green-50 text-sm" data-i18n="btnDialogue">대화글(따옴표) 예시</button>
                 <button onclick="setExample('punctuation')" class="px-3 py-1 bg-white border border-green-300 text-green-800 rounded hover:bg-green-50 text-sm" data-i18n="btnPunctuation">부호 위치 확인 예시</button>
                 <button onclick="clearText()" class="px-3 py-1 bg-red-100 border border-red-200 text-red-700 rounded hover:bg-red-200 text-sm ml-auto" data-i18n="btnClear">지우기</button>
             </div>
@@ -217,7 +216,6 @@
                 practiceSubtitle: "아래에 글을 쓰면 원고지에 나타납니다.",
                 btnBasic: "기본 문단 예시",
                 btnNumber: "숫자와 영어 예시",
-                btnDialogue: "대화글(따옴표) 예시",
                 btnPunctuation: "부호 위치/줄바꿈 확인",
                 btnClear: "지우기",
                 placeholder: "여기에 글을 입력하세요. 문단 바꿈(엔터)도 반영됩니다.",
@@ -245,7 +243,6 @@
                 practiceSubtitle: "Viết xuống dưới, chữ sẽ hiện lên giấy kẻ ô.",
                 btnBasic: "Ví dụ đoạn văn cơ bản",
                 btnNumber: "Ví dụ số và tiếng Anh",
-                btnDialogue: "Ví dụ hội thoại",
                 btnPunctuation: "Ví dụ dấu câu",
                 btnClear: "Xóa",
                 placeholder: "Nhập văn bản vào đây. Nhấn Enter để xuống dòng.",
@@ -295,12 +292,11 @@
                 text = "학교 가는 길은 언제나 즐겁습니다.\n친구들을 만나서 이야기를 나눌 수 있기 때문입니다. 오늘 아침에는 날씨도 참 맑았습니다.";
             } else if (type === 'number') {
                 text = "저는 2024년에 12살이 됩니다. My name is Gildong.\n영어 단어 apple은 사과라는 뜻입니다. ABC 초콜릿을 먹었습니다.";
-            } else if (type === 'dialogue') {
-                text = "철수가 물었습니다.\n\"너, 숙제 다 했니?\"\n나는 고개를 끄덕이며 대답했습니다.\n\"응, 어제 다 끝냈어.\"";
             } else if (type === 'punctuation') {
                 // 부호 위치(줄바꿈) 및 마침표 뒤 자동 붙임 테스트
                 text = "1. 줄바꿈 테스트(부호가 맨 앞에 안 옴): 가나다라마바사아자차카타파하가나다라마바사아.\n" + 
-                       "2. 붙여쓰기 테스트: 마침표 뒤에 공백을 넣어도 붙습니다. 이렇게.  보이시나요? 물음표는 띄어집니다.";
+                       "2. 붙여쓰기 테스트: 마침표 뒤에 공백을 넣어도 붙습니다. 이렇게.  보이시나요? 물음표는 띄어집니다.\n" +
+                       "3. 줄 맨 앞 띄어쓰기 무시: 가나다라마바사아자차카타파하가나다라마바사 다음칸";
             }
             inputText.value = text;
             renderGrid(text);
@@ -351,7 +347,15 @@
                         consumed = 2;
                     }
 
-                    // *** 핵심 로직: 부호 줄바꿈 방지 ***
+                    // *** 핵심 로직 3: 줄 첫 칸 띄어쓰기 무시 ***
+                    // 줄이 바뀌어 첫 칸(mod 20 === 0)에 띄어쓰기가 오게 되면 이를 건너뜁니다.
+                    // (단, 문단 시작 시의 인덴트는 위에서 이미 처리되었으므로 영향을 받지 않습니다)
+                    if (chunk === ' ' && totalCells.length % CELLS_PER_LINE === 0) {
+                        i += consumed;
+                        continue;
+                    }
+
+                    // *** 핵심 로직 1: 부호 줄바꿈 방지 ***
                     // 마침표나 쉼표가 줄의 맨 첫 칸(index % 20 === 0)에 오게 될 경우
                     // 새로운 칸을 만드는 대신, 이전 칸에 합친다.
                     const isPunctuation = (chunk === '.' || chunk === ',');
