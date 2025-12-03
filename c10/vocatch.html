@@ -88,10 +88,10 @@
             <div id="progress-bar" class="h-full bg-yellow-400 transition-all duration-500 shadow-[0_0_10px_rgba(250,204,21,0.7)]" style="width: 0%"></div>
         </div>
 
-        <!-- 구술 유도 문구 (좌상단 추가) -->
-        <div class="absolute top-8 left-8 flex items-center gap-4 bg-black/25 text-white px-8 py-4 rounded-full border-2 border-white/20 backdrop-blur-md shadow-xl">
+        <!-- 구술 유도 문구 (좌상단 추가) - 클릭 시 언어 변경 기능 추가 -->
+        <div onclick="toggleInstruction()" class="absolute top-8 left-8 flex items-center gap-4 bg-black/25 text-white px-8 py-4 rounded-full border-2 border-white/20 backdrop-blur-md shadow-xl cursor-pointer hover:bg-black/30 transition-all active:scale-95 select-none" title="터치하여 번역 보기">
             <i class="ph-fill ph-chat-teardrop-dots text-5xl text-yellow-300 animate-pulse"></i>
-            <span class="text-3xl font-black tracking-wide drop-shadow-md">Hãy nói bằng tiếng Hàn!</span>
+            <span id="instruction-text" class="text-3xl font-black tracking-wide drop-shadow-md">한국어로 말해보세요!</span>
         </div>
 
         <!-- 문제 (베트남어) -->
@@ -337,6 +337,17 @@
         function resetGame() {
             if(confirm('퀴즈 순서를 섞고 1번부터 다시 시작할까요?')) {
                 initGame();
+            }
+        }
+
+        // 구술 유도 문구 언어 토글 함수
+        function toggleInstruction() {
+            const textElement = document.getElementById('instruction-text');
+            // 현재 텍스트가 한국어면 베트남어로, 아니면 다시 한국어로 변경
+            if (textElement.textContent.includes("한국어")) {
+                textElement.textContent = "Hãy nói bằng tiếng Hàn!";
+            } else {
+                textElement.textContent = "한국어로 말해보세요!";
             }
         }
 
