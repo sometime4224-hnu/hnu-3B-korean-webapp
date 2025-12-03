@@ -46,6 +46,14 @@
         .cell:nth-child(20n) {
             border-right-width: 1px; 
         }
+
+        /* 3번 규칙: 마침표/쉼표 위치 교정 (왼쪽 아래) */
+        .cell.bottom-left {
+            justify-content: flex-start;
+            align-items: flex-end;
+            padding-left: 4px;
+            padding-bottom: 4px;
+        }
         
         .rules-box {
             background-color: #fff;
@@ -158,6 +166,7 @@
                 <button onclick="setExample('basic')" class="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-green-50 text-sm" data-i18n="btnBasic">기본 문단 예시</button>
                 <button onclick="setExample('number')" class="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-green-50 text-sm" data-i18n="btnNumber">숫자와 영어 예시</button>
                 <button onclick="setExample('dialogue')" class="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-green-50 text-sm" data-i18n="btnDialogue">대화글(따옴표) 예시</button>
+                <button onclick="setExample('punctuation')" class="px-3 py-1 bg-white border border-green-300 text-green-800 rounded hover:bg-green-50 text-sm" data-i18n="btnPunctuation">부호 위치 확인 예시</button>
                 <button onclick="clearText()" class="px-3 py-1 bg-red-100 border border-red-200 text-red-700 rounded hover:bg-red-200 text-sm ml-auto" data-i18n="btnClear">지우기</button>
             </div>
 
@@ -209,6 +218,7 @@
                 btnBasic: "기본 문단 예시",
                 btnNumber: "숫자와 영어 예시",
                 btnDialogue: "대화글(따옴표) 예시",
+                btnPunctuation: "부호 위치/줄바꿈 확인",
                 btnClear: "지우기",
                 placeholder: "여기에 글을 입력하세요. 문단 바꿈(엔터)도 반영됩니다.",
                 disclaimer: "* 이 시뮬레이터는 학습용이며, 실제 원고지 규칙(특히 줄 끝 부호 처리 등)을 100% 완벽하게 구현하지는 못할 수 있습니다."
@@ -236,17 +246,16 @@
                 btnBasic: "Ví dụ đoạn văn cơ bản",
                 btnNumber: "Ví dụ số và tiếng Anh",
                 btnDialogue: "Ví dụ hội thoại",
+                btnPunctuation: "Ví dụ dấu câu",
                 btnClear: "Xóa",
                 placeholder: "Nhập văn bản vào đây. Nhấn Enter để xuống dòng.",
                 disclaimer: "* Trình mô phỏng này chỉ dành cho mục đích học tập và có thể không hoàn toàn chính xác 100% so với quy tắc thực tế."
             }
         };
 
-        // 언어 변경 함수
         function changeLanguage(lang) {
             const data = translations[lang];
             
-            // 텍스트 업데이트
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (data[key]) {
@@ -254,39 +263,32 @@
                 }
             });
 
-            // 플레이스홀더 업데이트
             document.getElementById('input-text').placeholder = data.placeholder;
 
-            // 버튼 스타일 업데이트
             const btnKo = document.getElementById('btn-ko');
             const btnVi = document.getElementById('btn-vi');
             
             if (lang === 'ko') {
                 btnKo.classList.add('active', 'bg-white', 'text-green-800', 'shadow-sm');
                 btnKo.classList.remove('text-white', 'hover:bg-green-600');
-                
                 btnVi.classList.remove('active', 'bg-white', 'text-green-800', 'shadow-sm');
                 btnVi.classList.add('text-white', 'hover:bg-green-600');
             } else {
                 btnVi.classList.add('active', 'bg-white', 'text-green-800', 'shadow-sm');
                 btnVi.classList.remove('text-white', 'hover:bg-green-600');
-                
                 btnKo.classList.remove('active', 'bg-white', 'text-green-800', 'shadow-sm');
                 btnKo.classList.add('text-white', 'hover:bg-green-600');
             }
         }
 
-        // 초기화
         function initGrid() {
             renderGrid('');
         }
 
-        // 텍스트 변경 감지
         inputText.addEventListener('input', () => {
             renderGrid(inputText.value);
         });
 
-        // 예시 텍스트 설정
         function setExample(type) {
             let text = "";
             if (type === 'basic') {
@@ -295,6 +297,10 @@
                 text = "저는 2024년에 12살이 됩니다. My name is Gildong.\n영어 단어 apple은 사과라는 뜻입니다. ABC 초콜릿을 먹었습니다.";
             } else if (type === 'dialogue') {
                 text = "철수가 물었습니다.\n\"너, 숙제 다 했니?\"\n나는 고개를 끄덕이며 대답했습니다.\n\"응, 어제 다 끝냈어.\"";
+            } else if (type === 'punctuation') {
+                // 부호 위치(줄바꿈) 및 마침표 뒤 자동 붙임 테스트
+                text = "1. 줄바꿈 테스트(부호가 맨 앞에 안 옴): 가나다라마바사아자차카타파하가나다라마바사아.\n" + 
+                       "2. 붙여쓰기 테스트: 마침표 뒤에 공백을 넣어도 붙습니다. 이렇게.  보이시나요? 물음표는 띄어집니다.";
             }
             inputText.value = text;
             renderGrid(text);
@@ -305,11 +311,9 @@
             renderGrid('');
         }
 
-        // 핵심 로직: 텍스트를 원고지 셀 데이터로 변환
         function renderGrid(rawText) {
-            gridOutput.innerHTML = ''; // 초기화
+            gridOutput.innerHTML = ''; 
             
-            // 입력이 없으면 빈 원고지 10줄 생성
             if (!rawText) {
                 createEmptyRows(5);
                 return;
@@ -319,8 +323,8 @@
             let totalCells = [];
 
             paragraphs.forEach((para, pIndex) => {
+                // 문단 바꿈 시 줄바꿈 처리
                 if (pIndex > 0) {
-                    // 문단이 바뀌면 줄바꿈 처리 (남은 칸을 빈 칸으로 채워 다음 줄로 넘김)
                     const remainder = totalCells.length % CELLS_PER_LINE;
                     if (remainder > 0) {
                         const cellsToFill = CELLS_PER_LINE - remainder;
@@ -328,42 +332,57 @@
                     }
                 }
 
-                // 문단 첫 칸 비우기 (내용이 있는 문단인 경우)
+                // 문단 첫 칸 비우기
                 if (para.length > 0) {
                     totalCells.push(''); 
                 }
 
-                // 문자 파싱 (숫자/영어소문자 2자 처리)
                 let i = 0;
                 while (i < para.length) {
                     const char = para[i];
                     const nextChar = para[i+1];
+                    let chunk = char;
+                    let consumed = 1;
 
-                    // 숫자이거나 영어 소문자인지 확인 (간단한 정규식)
-                    // ASCII 숫자(0-9) 및 소문자(a-z)
+                    // 숫자/소문자 2자 처리
                     const isHalfWidth = (c) => /^[0-9a-z]$/.test(c);
-
                     if (isHalfWidth(char) && nextChar && isHalfWidth(nextChar)) {
-                        // 현재 글자와 다음 글자 모두 반각(숫자/소문자)이면 한 칸에 뭉침
-                        totalCells.push(char + nextChar);
-                        i += 2;
-                    } else {
-                        // 그 외(한글, 대문자, 특수기호 등)는 한 칸 차지
-                        totalCells.push(char);
-                        i++;
+                        chunk = char + nextChar;
+                        consumed = 2;
                     }
+
+                    // *** 핵심 로직: 부호 줄바꿈 방지 ***
+                    // 마침표나 쉼표가 줄의 맨 첫 칸(index % 20 === 0)에 오게 될 경우
+                    // 새로운 칸을 만드는 대신, 이전 칸에 합친다.
+                    const isPunctuation = (chunk === '.' || chunk === ',');
+                    const isNextCellStartOfLine = (totalCells.length % CELLS_PER_LINE === 0);
+                    
+                    if (isPunctuation && isNextCellStartOfLine && totalCells.length > 0) {
+                        // 이전 칸에 덧붙이기 (예: "다" -> "다.")
+                        totalCells[totalCells.length - 1] += chunk;
+                    } else {
+                        // 일반적인 경우
+                        totalCells.push(chunk);
+                    }
+
+                    // *** 핵심 로직 2: 마침표/쉼표 뒤 공백 제거 ***
+                    // 마침표나 쉼표가 오고 그 바로 다음이 공백(' ')이면 해당 공백을 무시합니다.
+                    // chunk가 '.' 또는 ',' 인 경우 consumed는 항상 1입니다.
+                    if ((chunk === '.' || chunk === ',') && para[i + consumed] === ' ') {
+                        consumed++; // 공백(1글자)을 건너뛰도록 처리
+                    }
+
+                    i += consumed;
                 }
             });
 
-            // 그리드 생성
-            // 최소 5줄은 보여주기
+            // 그리드 채우기
             const minCells = CELLS_PER_LINE * 5;
             if (totalCells.length < minCells) {
                 const fill = minCells - totalCells.length;
                 for(let k=0; k<fill; k++) totalCells.push('');
             }
 
-            // 나머지 줄 채우기 (마지막 줄이 꽉 차지 않았을 때)
             const finalRemainder = totalCells.length % CELLS_PER_LINE;
             if (finalRemainder > 0) {
                 for(let k=0; k < (CELLS_PER_LINE - finalRemainder); k++) totalCells.push('');
@@ -375,10 +394,16 @@
                 cellDiv.className = 'cell';
                 cellDiv.textContent = content;
                 
-                // 2글자가 들어간 경우(숫자 등) 글자 크기 조정
+                // 글자 크기 조정
                 if (content.length > 1) {
                     cellDiv.style.fontSize = '12px';
                     cellDiv.style.letterSpacing = '-1px';
+                }
+
+                // *** 핵심 CSS: 마침표/쉼표 위치 교정 (왼쪽 아래) ***
+                // 단, 다른 글자와 합쳐진 경우("다.")가 아니라, 단독으로 있는 경우(".")에만 적용
+                if (content === '.' || content === ',') {
+                    cellDiv.classList.add('bottom-left');
                 }
                 
                 gridOutput.appendChild(cellDiv);
@@ -393,7 +418,6 @@
             }
         }
 
-        // 시작 시 실행
         initGrid();
 
     </script>
