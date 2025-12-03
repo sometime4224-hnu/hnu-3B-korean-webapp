@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>원고지 작성 기초 도우미</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Gaegu&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Serif KR', serif;
+            background-color: #fdfbf7; /* 종이 질감 색상 */
+        }
+        .handwriting {
+            font-family: 'Gaegu', cursive;
+        }
+        /* 원고지 그리드 스타일 */
+        .wongoji-container {
+            overflow-x: auto;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+        .wongoji-grid {
+            display: grid;
+            grid-template-columns: repeat(20, minmax(24px, 1fr)); /* 한 줄에 20칸 */
+            gap: 0;
+            border-top: 1px solid #ff5252;
+            border-left: 1px solid #ff5252;
+            width: fit-content;
+            min-width: 600px; /* 모바일에서도 가로 스크롤로 원형 유지 */
+        }
+        .cell {
+            width: 30px;
+            height: 30px;
+            border-right: 1px solid #ff5252;
+            border-bottom: 1px solid #ff5252;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #333;
+            position: relative;
+        }
+        .cell:nth-child(20n) {
+            border-right-width: 1px; 
+        }
+        
+        .rules-box {
+            background-color: #fff;
+            border-left: 5px solid #4CAF50;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .number-badge {
+            background-color: #4CAF50;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            margin-right: 8px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+            ring: 2px solid #4CAF50;
+        }
+
+        /* 언어 전환 버튼 스타일 */
+        .lang-btn {
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .lang-btn.active {
+            opacity: 1;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="text-gray-800 pb-20">
+
+    <!-- 헤더 -->
+    <header class="bg-green-600 text-white p-4 shadow-md flex justify-between items-center flex-wrap gap-4">
+        <div>
+            <h1 class="text-2xl font-bold" data-i18n="appTitle">📝 원고지 작성 기초</h1>
+            <p class="text-sm opacity-90 mt-1" data-i18n="appSubtitle">학생들을 위한 쉬운 가이드</p>
+        </div>
+        
+        <!-- 언어 전환 토글 -->
+        <div class="bg-green-700 rounded-lg p-1 flex space-x-2 text-sm">
+            <button onclick="changeLanguage('ko')" id="btn-ko" class="lang-btn active px-3 py-1 rounded bg-white text-green-800 shadow-sm">한국어</button>
+            <button onclick="changeLanguage('vi')" id="btn-vi" class="lang-btn px-3 py-1 rounded text-white hover:bg-green-600">Tiếng Việt</button>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4">
+
+        <!-- 규칙 섹션 -->
+        <section class="mb-8">
+            <h2 class="text-xl font-bold mb-4 border-b-2 border-green-600 inline-block pb-1" data-i18n="sectionRules">핵심 규칙 정리</h2>
+            
+            <div class="rules-box">
+                <h3 class="font-bold text-lg mb-2 flex items-center"><span class="number-badge">1</span> <span data-i18n="rule1Title">본문(내용) 쓰기</span></h3>
+                <ul class="list-disc list-inside space-y-1 ml-2 text-gray-700">
+                    <li data-i18n="rule1-1"><span class="bg-yellow-100 font-bold text-black px-1">첫 칸 비우기:</span> 문단을 처음 시작할 때만 첫 번째 칸을 비웁니다.</li>
+                    <li data-i18n="rule1-2"><span class="bg-yellow-100 font-bold text-black px-1">줄 바꿈:</span> 문단이 바뀔 때만 줄을 바꿉니다. 문장이 길어져서 줄이 넘어가는 것은 괜찮습니다.</li>
+                </ul>
+            </div>
+
+            <div class="rules-box">
+                <h3 class="font-bold text-lg mb-2 flex items-center"><span class="number-badge">2</span> <span data-i18n="rule2Title">띄어쓰기 규칙</span></h3>
+                <ul class="list-disc list-inside space-y-1 ml-2 text-gray-700">
+                    <li data-i18n="rule2-1">띄어쓰기를 할 때는 <strong>한 칸</strong>을 비워 둡니다.</li>
+                    <li data-i18n="rule2-2"><strong>주의!</strong> 줄의 맨 앞 칸은 문단을 시작할 때가 아니면 절대 비우지 않습니다. (앞 줄 끝에서 띄어 쓸 차례라도 첫 칸은 채워서 씁니다.)</li>
+                </ul>
+            </div>
+
+            <div class="rules-box">
+                <h3 class="font-bold text-lg mb-2 flex items-center"><span class="number-badge">3</span> <span data-i18n="rule3Title">문장부호 쓰기</span></h3>
+                <ul class="list-disc list-inside space-y-1 ml-2 text-gray-700">
+                    <li data-i18n="rule3-1"><strong>마침표(.), 쉼표(,):</strong> 칸의 왼쪽 아래에 씁니다. 다음 칸은 비우지 않습니다.</li>
+                    <li data-i18n="rule3-2"><strong>물음표(?), 느낌표(!):</strong> 칸의 가운데에 씁니다. 뒤에는 한 칸을 비웁니다.</li>
+                    <li data-i18n="rule3-3"><strong>줄 첫 칸 금지:</strong> 마침표나 쉼표가 줄 맨 앞에 오게 될 경우, 앞 줄 마지막 칸에 글자와 함께 넣습니다.</li>
+                </ul>
+            </div>
+
+            <div class="rules-box">
+                <h3 class="font-bold text-lg mb-2 flex items-center"><span class="number-badge">4</span> <span data-i18n="rule4Title">숫자와 영어 알파벳</span></h3>
+                <ul class="list-disc list-inside space-y-1 ml-2 text-gray-700">
+                    <li data-i18n="rule4-1"><strong>숫자:</strong> 한 칸에 <strong>2자</strong>씩 씁니다. (예: 20 / 23)</li>
+                    <li data-i18n="rule4-2"><strong>영어 소문자:</strong> 한 칸에 <strong>2자</strong>씩 씁니다. (예: go / od)</li>
+                    <li data-i18n="rule4-3"><strong>영어 대문자:</strong> 한 칸에 <strong>1자</strong>씩 씁니다. (예: K / O / R)</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 연습 섹션 -->
+        <section class="bg-gray-50 p-6 rounded-lg shadow-inner border border-gray-200">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <span>✍️ </span><span data-i18n="practiceTitle" class="ml-1">직접 연습해보기</span>
+                <span class="ml-auto text-sm font-normal text-gray-500 text-right" data-i18n="practiceSubtitle">아래에 글을 쓰면 원고지에 나타납니다.</span>
+            </h2>
+
+            <!-- 예시 버튼들 -->
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button onclick="setExample('basic')" class="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-green-50 text-sm" data-i18n="btnBasic">기본 문단 예시</button>
+                <button onclick="setExample('number')" class="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-green-50 text-sm" data-i18n="btnNumber">숫자와 영어 예시</button>
+                <button onclick="setExample('dialogue')" class="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-green-50 text-sm" data-i18n="btnDialogue">대화글(따옴표) 예시</button>
+                <button onclick="clearText()" class="px-3 py-1 bg-red-100 border border-red-200 text-red-700 rounded hover:bg-red-200 text-sm ml-auto" data-i18n="btnClear">지우기</button>
+            </div>
+
+            <!-- 입력창 -->
+            <textarea id="input-text" class="w-full h-32 p-3 border rounded mb-4 resize-y" placeholder="여기에 글을 입력하세요. 문단 바꿈(엔터)도 반영됩니다."></textarea>
+
+            <!-- 원고지 뷰어 -->
+            <div class="wongoji-container">
+                <div id="grid-output" class="wongoji-grid">
+                    <!-- 자바스크립트로 셀이 생성됩니다 -->
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-2 text-right" data-i18n="disclaimer">* 이 시뮬레이터는 학습용이며, 실제 원고지 규칙을 100% 완벽하게 구현하지는 못할 수 있습니다.</p>
+        </section>
+
+    </main>
+
+    <footer class="text-center text-gray-400 text-sm py-6">
+        <span data-i18n="appTitle">원고지 작성 도우미</span>
+    </footer>
+
+    <script>
+        const inputText = document.getElementById('input-text');
+        const gridOutput = document.getElementById('grid-output');
+        const CELLS_PER_LINE = 20;
+
+        // 번역 데이터 (Dictionary)
+        const translations = {
+            ko: {
+                appTitle: "📝 원고지 작성 기초",
+                appSubtitle: "학생들을 위한 쉬운 가이드",
+                sectionRules: "핵심 규칙 정리",
+                rule1Title: "본문(내용) 쓰기",
+                "rule1-1": "<span class='bg-yellow-100 font-bold text-black px-1'>첫 칸 비우기:</span> 문단을 처음 시작할 때만 첫 번째 칸을 비웁니다.",
+                "rule1-2": "<span class='bg-yellow-100 font-bold text-black px-1'>줄 바꿈:</span> 문단이 바뀔 때만 줄을 바꿉니다. 문장이 길어져서 줄이 넘어가는 것은 괜찮습니다.",
+                rule2Title: "띄어쓰기 규칙",
+                "rule2-1": "띄어쓰기를 할 때는 <strong>한 칸</strong>을 비워 둡니다.",
+                "rule2-2": "<strong>주의!</strong> 줄의 맨 앞 칸은 문단을 시작할 때가 아니면 절대 비우지 않습니다. (앞 줄 끝에서 띄어 쓸 차례라도 첫 칸은 채워서 씁니다.)",
+                rule3Title: "문장부호 쓰기",
+                "rule3-1": "<strong>마침표(.), 쉼표(,):</strong> 칸의 왼쪽 아래에 씁니다. 다음 칸은 비우지 않습니다.",
+                "rule3-2": "<strong>물음표(?), 느낌표(!):</strong> 칸의 가운데에 씁니다. 뒤에는 한 칸을 비웁니다.",
+                "rule3-3": "<strong>줄 첫 칸 금지:</strong> 마침표나 쉼표가 줄 맨 앞에 오게 될 경우, 앞 줄 마지막 칸에 글자와 함께 넣습니다.",
+                rule4Title: "숫자와 영어 알파벳",
+                "rule4-1": "<strong>숫자:</strong> 한 칸에 <strong>2자</strong>씩 씁니다. (예: 20 / 23)",
+                "rule4-2": "<strong>영어 소문자:</strong> 한 칸에 <strong>2자</strong>씩 씁니다. (예: go / od)",
+                "rule4-3": "<strong>영어 대문자:</strong> 한 칸에 <strong>1자</strong>씩 씁니다. (예: K / O / R)",
+                practiceTitle: "직접 연습해보기",
+                practiceSubtitle: "아래에 글을 쓰면 원고지에 나타납니다.",
+                btnBasic: "기본 문단 예시",
+                btnNumber: "숫자와 영어 예시",
+                btnDialogue: "대화글(따옴표) 예시",
+                btnClear: "지우기",
+                placeholder: "여기에 글을 입력하세요. 문단 바꿈(엔터)도 반영됩니다.",
+                disclaimer: "* 이 시뮬레이터는 학습용이며, 실제 원고지 규칙(특히 줄 끝 부호 처리 등)을 100% 완벽하게 구현하지는 못할 수 있습니다."
+            },
+            vi: {
+                appTitle: "📝 Cơ bản về viết giấy kẻ ô (Wongoji)",
+                appSubtitle: "Hướng dẫn đơn giản cho học sinh",
+                sectionRules: "Tóm tắt các quy tắc chính",
+                rule1Title: "Viết nội dung",
+                "rule1-1": "<span class='bg-yellow-100 font-bold text-black px-1'>Chừa ô đầu tiên:</span> Chỉ để trống ô đầu tiên khi bắt đầu một đoạn văn mới.",
+                "rule1-2": "<span class='bg-yellow-100 font-bold text-black px-1'>Xuống dòng:</span> Chỉ xuống dòng khi thay đổi đoạn văn. Nếu câu dài quá dòng thì cứ viết tiếp xuống dưới.",
+                rule2Title: "Quy tắc giãn cách (dấu cách)",
+                "rule2-1": "Khi cần giãn cách (dấu cách), hãy để trống <strong>một ô</strong>.",
+                "rule2-2": "<strong>Chú ý!</strong> Không bao giờ để trống ô đầu dòng trừ khi bắt đầu đoạn mới. (Ngay cả khi cần giãn cách ở cuối dòng trước, hãy viết vào ô đầu dòng này.)",
+                rule3Title: "Viết dấu câu",
+                "rule3-1": "<strong>Dấu chấm (.), phẩy (,):</strong> Viết ở góc dưới bên trái ô. Không để trống ô tiếp theo.",
+                "rule3-2": "<strong>Dấu chấm hỏi (?), than (!):</strong> Viết ở giữa ô. Để trống một ô phía sau.",
+                "rule3-3": "<strong>Cấm viết ô đầu dòng:</strong> Nếu dấu chấm hoặc phẩy rơi vào ô đầu dòng, hãy viết nó cùng với chữ ở ô cuối dòng trước.",
+                rule4Title: "Số và chữ cái tiếng Anh",
+                "rule4-1": "<strong>Số:</strong> Viết <strong>2 chữ số</strong> trong một ô. (Ví dụ: 20 / 23)",
+                "rule4-2": "<strong>Chữ thường tiếng Anh:</strong> Viết <strong>2 chữ cái</strong> trong một ô. (Ví dụ: go / od)",
+                "rule4-3": "<strong>Chữ hoa tiếng Anh:</strong> Viết <strong>1 chữ cái</strong> trong một ô. (Ví dụ: K / O / R)",
+                practiceTitle: "Tự luyện tập",
+                practiceSubtitle: "Viết xuống dưới, chữ sẽ hiện lên giấy kẻ ô.",
+                btnBasic: "Ví dụ đoạn văn cơ bản",
+                btnNumber: "Ví dụ số và tiếng Anh",
+                btnDialogue: "Ví dụ hội thoại",
+                btnClear: "Xóa",
+                placeholder: "Nhập văn bản vào đây. Nhấn Enter để xuống dòng.",
+                disclaimer: "* Trình mô phỏng này chỉ dành cho mục đích học tập và có thể không hoàn toàn chính xác 100% so với quy tắc thực tế."
+            }
+        };
+
+        // 언어 변경 함수
+        function changeLanguage(lang) {
+            const data = translations[lang];
+            
+            // 텍스트 업데이트
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (data[key]) {
+                    el.innerHTML = data[key];
+                }
+            });
+
+            // 플레이스홀더 업데이트
+            document.getElementById('input-text').placeholder = data.placeholder;
+
+            // 버튼 스타일 업데이트
+            const btnKo = document.getElementById('btn-ko');
+            const btnVi = document.getElementById('btn-vi');
+            
+            if (lang === 'ko') {
+                btnKo.classList.add('active', 'bg-white', 'text-green-800', 'shadow-sm');
+                btnKo.classList.remove('text-white', 'hover:bg-green-600');
+                
+                btnVi.classList.remove('active', 'bg-white', 'text-green-800', 'shadow-sm');
+                btnVi.classList.add('text-white', 'hover:bg-green-600');
+            } else {
+                btnVi.classList.add('active', 'bg-white', 'text-green-800', 'shadow-sm');
+                btnVi.classList.remove('text-white', 'hover:bg-green-600');
+                
+                btnKo.classList.remove('active', 'bg-white', 'text-green-800', 'shadow-sm');
+                btnKo.classList.add('text-white', 'hover:bg-green-600');
+            }
+        }
+
+        // 초기화
+        function initGrid() {
+            renderGrid('');
+        }
+
+        // 텍스트 변경 감지
+        inputText.addEventListener('input', () => {
+            renderGrid(inputText.value);
+        });
+
+        // 예시 텍스트 설정
+        function setExample(type) {
+            let text = "";
+            if (type === 'basic') {
+                text = "학교 가는 길은 언제나 즐겁습니다.\n친구들을 만나서 이야기를 나눌 수 있기 때문입니다. 오늘 아침에는 날씨도 참 맑았습니다.";
+            } else if (type === 'number') {
+                text = "저는 2024년에 12살이 됩니다. My name is Gildong.\n영어 단어 apple은 사과라는 뜻입니다. ABC 초콜릿을 먹었습니다.";
+            } else if (type === 'dialogue') {
+                text = "철수가 물었습니다.\n\"너, 숙제 다 했니?\"\n나는 고개를 끄덕이며 대답했습니다.\n\"응, 어제 다 끝냈어.\"";
+            }
+            inputText.value = text;
+            renderGrid(text);
+        }
+
+        function clearText() {
+            inputText.value = '';
+            renderGrid('');
+        }
+
+        // 핵심 로직: 텍스트를 원고지 셀 데이터로 변환
+        function renderGrid(rawText) {
+            gridOutput.innerHTML = ''; // 초기화
+            
+            // 입력이 없으면 빈 원고지 10줄 생성
+            if (!rawText) {
+                createEmptyRows(5);
+                return;
+            }
+
+            const paragraphs = rawText.split('\n');
+            let totalCells = [];
+
+            paragraphs.forEach((para, pIndex) => {
+                if (pIndex > 0) {
+                    // 문단이 바뀌면 줄바꿈 처리 (남은 칸을 빈 칸으로 채워 다음 줄로 넘김)
+                    const remainder = totalCells.length % CELLS_PER_LINE;
+                    if (remainder > 0) {
+                        const cellsToFill = CELLS_PER_LINE - remainder;
+                        for(let i=0; i<cellsToFill; i++) totalCells.push(''); 
+                    }
+                }
+
+                // 문단 첫 칸 비우기 (내용이 있는 문단인 경우)
+                if (para.length > 0) {
+                    totalCells.push(''); 
+                }
+
+                // 문자 파싱 (숫자/영어소문자 2자 처리)
+                let i = 0;
+                while (i < para.length) {
+                    const char = para[i];
+                    const nextChar = para[i+1];
+
+                    // 숫자이거나 영어 소문자인지 확인 (간단한 정규식)
+                    // ASCII 숫자(0-9) 및 소문자(a-z)
+                    const isHalfWidth = (c) => /^[0-9a-z]$/.test(c);
+
+                    if (isHalfWidth(char) && nextChar && isHalfWidth(nextChar)) {
+                        // 현재 글자와 다음 글자 모두 반각(숫자/소문자)이면 한 칸에 뭉침
+                        totalCells.push(char + nextChar);
+                        i += 2;
+                    } else {
+                        // 그 외(한글, 대문자, 특수기호 등)는 한 칸 차지
+                        totalCells.push(char);
+                        i++;
+                    }
+                }
+            });
+
+            // 그리드 생성
+            // 최소 5줄은 보여주기
+            const minCells = CELLS_PER_LINE * 5;
+            if (totalCells.length < minCells) {
+                const fill = minCells - totalCells.length;
+                for(let k=0; k<fill; k++) totalCells.push('');
+            }
+
+            // 나머지 줄 채우기 (마지막 줄이 꽉 차지 않았을 때)
+            const finalRemainder = totalCells.length % CELLS_PER_LINE;
+            if (finalRemainder > 0) {
+                for(let k=0; k < (CELLS_PER_LINE - finalRemainder); k++) totalCells.push('');
+            }
+
+            // DOM 생성
+            totalCells.forEach(content => {
+                const cellDiv = document.createElement('div');
+                cellDiv.className = 'cell';
+                cellDiv.textContent = content;
+                
+                // 2글자가 들어간 경우(숫자 등) 글자 크기 조정
+                if (content.length > 1) {
+                    cellDiv.style.fontSize = '12px';
+                    cellDiv.style.letterSpacing = '-1px';
+                }
+                
+                gridOutput.appendChild(cellDiv);
+            });
+        }
+
+        function createEmptyRows(rows) {
+            for (let i = 0; i < rows * CELLS_PER_LINE; i++) {
+                const cellDiv = document.createElement('div');
+                cellDiv.className = 'cell';
+                gridOutput.appendChild(cellDiv);
+            }
+        }
+
+        // 시작 시 실행
+        initGrid();
+
+    </script>
+</body>
+</html>
