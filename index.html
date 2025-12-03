@@ -10,11 +10,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>한국어 3B 학습 활동</title>
+    <title>한국어 3B반 학습 자료</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #4f46e5; /* Indigo 600 */
+            --primary-hover: #4338ca; /* Indigo 700 */
+            --bg-color: #f3f4f6;      /* Gray 100 */
+            --card-bg: #ffffff;
+            --text-main: #1f2937;     /* Gray 800 */
+            --text-sub: #6b7280;      /* Gray 500 */
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f0f4f7;
+            background-color: var(--bg-color);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -22,78 +38,174 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             min-height: 100vh;
             margin: 0;
             padding: 20px;
+            color: var(--text-main);
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 3rem;
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        header {
+            margin-bottom: 3rem;
         }
 
         h1 {
-            color: #333;
-            font-size: 2em;
-            margin-bottom: 40px;
+            color: var(--text-main);
+            font-size: 2.25em;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            letter-spacing: -0.025em;
         }
 
-        .button-container {
+        p.subtitle {
+            color: var(--text-sub);
+            margin: 0;
+            font-size: 1.1em;
+        }
+
+        .button-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 20px;
             width: 100%;
-            max-width: 600px;
         }
 
         .activity-button {
-            display: block;
-            padding: 20px;
-            font-size: 1.2em;
-            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px 15px;
+            font-size: 1.25em;
+            font-weight: 600;
             text-decoration: none;
             color: white;
-            background-color: #007BFF;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s, background-color 0.2s;
-            text-align: center;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
-        
+
+        .activity-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
         .activity-button:hover {
-            background-color: #0056b3;
-            transform: translateY(-3px);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            background: linear-gradient(135deg, var(--primary-hover), var(--primary-color));
+        }
+
+        .activity-button:hover::before {
+            opacity: 1;
+        }
+
+        .activity-button span {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 챕터 번호 강조 스타일 (선택 사항) */
+        .chapter-label {
+            font-size: 0.8em;
+            opacity: 0.9;
+            font-weight: 400;
+            margin-bottom: 4px;
         }
 
         /* 비활성화된 버튼 스타일 */
         .activity-button.disabled {
-            background-color: #a0a0a0;
+            background: #e5e7eb; /* Gray 200 */
+            color: #9ca3af;       /* Gray 400 */
             cursor: not-allowed;
             pointer-events: none;
-            opacity: 0.6;
-        }
-
-        .activity-button.disabled:hover {
-            background-color: #a0a0a0;
+            box-shadow: none;
             transform: none;
         }
-        
+
         @media (max-width: 600px) {
-            h1 {
-                font-size: 1.5em;
-                margin-bottom: 20px;
+            .container {
+                padding: 2rem 1.5rem;
             }
+            
+            h1 {
+                font-size: 1.75em;
+            }
+
+            .button-grid {
+                grid-template-columns: repeat(2, 1fr); /* 모바일에서는 2열로 고정 */
+                gap: 15px;
+            }
+
             .activity-button {
-                font-size: 1em;
-                padding: 15px;
+                font-size: 1.1em;
+                padding: 20px 10px;
             }
         }
     </style>
 </head>
 <body>
-    <h1>한국어 3B 학습 활동</h1>
-    <div class="button-container">
-        <a href="c10/index.html" class="activity-button">10과</a>
-        <a href="c11/index.html" class="activity-button">11과</a>
-        <a href="c12/index.html" class="activity-button">12과</a>
-        <a href="c13/index.html" class="activity-button">13과</a>
-        <a href="c14/index.html" class="activity-button">14과</a>
-        <a href="c15/index.html" class="activity-button">15과</a>
-        <a href="c16/index.html" class="activity-button">16과</a>
-        <a href="c17/index.html" class="activity-button">17과</a>
-        <a href="c18/index.html" class="activity-button">18과</a>
+    <div class="container">
+        <header>
+            <h1>한국어 3B반 학습 자료</h1>
+            <p class="subtitle">원하는 과를 선택하여 학습을 시작하세요</p>
+        </header>
+        
+        <div class="button-grid">
+            <a href="c10/index.html" class="activity-button">
+                <span class="chapter-label">Chapter</span>
+                <span>10과</span>
+            </a>
+            <a href="c11/index.html" class="activity-button">
+                <span class="chapter-label">Chapter</span>
+                <span>11과</span>
+            </a>
+            <a href="c12/index.html" class="activity-button">
+                <span class="chapter-label">Chapter</span>
+                <span>12과</span>
+            </a>
+            <a href="c13/index.html" class="activity-button">
+                <span class="chapter-label">Chapter</span>
+                <span>13과</span>
+            </a>
+            <a href="c14/index.html" class="activity-button">
+                <span class="chapter-label">Chapter</span>
+                <span>14과</span>
+            </a>
+            <a href="c15/index.html" class="activity-button">
+                <span class="chapter-label">Chapter</span>
+                <span>15과</span>
+            </a>
+            <a href="c16/index.html" class="activity-button">
+                <span class="chapter-label">Chapter</span>
+                <span>16과</span>
+            </a>
+            <a href="c17/index.html" class="activity-button">
+                <span class="chapter-label">Chapter</span>
+                <span>17과</span>
+            </a>
+            <a href="c18/index.html" class="activity-button">
+                <span class="chapter-label">Chapter</span>
+                <span>18과</span>
+            </a>
+        </div>
     </div>
 
     <script>
@@ -111,6 +223,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         if (!response.ok) {
                             button.classList.add('disabled');
                             button.setAttribute('title', '준비 중인 활동입니다.');
+                            // 선택적: 비활성화된 버튼의 텍스트 변경
+                            // const span = button.querySelector('span:last-child');
+                            // if(span) span.textContent += ' (준비중)';
                         }
                     })
                     .catch(error => {
