@@ -81,31 +81,34 @@
 <body class="flex w-screen h-screen bg-gray-100">
 
     <!-- 왼쪽: 문제 화면 (65%) -->
-    <div id="student-view" class="student-screen w-[65%] h-full flex flex-col items-center justify-center p-6 relative text-center border-r-4 border-white/20">
+    <div id="student-view" class="student-screen w-[65%] h-full flex flex-col items-center p-6 relative text-center border-r-4 border-white/20">
         
         <!-- 진행 상황 바 (상단) -->
-        <div class="absolute top-0 left-0 w-full h-3 bg-black/10">
+        <div class="absolute top-0 left-0 w-full h-3 bg-black/10 z-10">
             <div id="progress-bar" class="h-full bg-yellow-400 transition-all duration-500 shadow-[0_0_10px_rgba(250,204,21,0.7)]" style="width: 0%"></div>
         </div>
 
-        <!-- 구술 유도 문구 (좌상단 추가) - 클릭 시 언어 변경 기능 추가 -->
-        <div onclick="toggleInstruction()" class="absolute top-8 left-8 flex items-center gap-4 bg-black/25 text-white px-8 py-4 rounded-full border-2 border-white/20 backdrop-blur-md shadow-xl cursor-pointer hover:bg-black/30 transition-all active:scale-95 select-none" title="터치하여 번역 보기">
-            <i class="ph-fill ph-chat-teardrop-dots text-5xl text-yellow-300 animate-pulse"></i>
-            <span id="instruction-text" class="text-3xl font-black tracking-wide drop-shadow-md">한국어로 말해보세요!</span>
+        <!-- 구술 유도 문구 (좌상단 영역 확보) -->
+        <!-- absolute 제거 후 flex flow 내에 배치하여 겹침 방지 -->
+        <div class="w-full flex justify-start mb-4 mt-2 z-20">
+            <div onclick="toggleInstruction()" class="flex items-center gap-4 bg-black/25 text-white px-8 py-4 rounded-full border-2 border-white/20 backdrop-blur-md shadow-xl cursor-pointer hover:bg-black/30 transition-all active:scale-95 select-none" title="터치하여 번역 보기">
+                <i class="ph-fill ph-chat-teardrop-dots text-5xl text-yellow-300 animate-pulse"></i>
+                <span id="instruction-text" class="text-3xl font-black tracking-wide drop-shadow-md">한국어로 말해보세요!</span>
+            </div>
         </div>
 
         <!-- 문제 (베트남어) -->
-        <div class="flex-1 flex items-end justify-center pb-8 w-full">
+        <div class="flex-1 flex items-end justify-center pb-8 w-full z-0">
             <h1 id="question-text" class="text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black text-white leading-tight break-keep drop-shadow-lg tracking-tight">
                 <!-- 베트남어 문제 -->
             </h1>
         </div>
 
         <!-- 구분선 -->
-        <div class="w-48 h-2 bg-white/30 rounded-full my-6"></div>
+        <div class="w-48 h-2 bg-white/30 rounded-full my-6 shrink-0"></div>
 
         <!-- 정답 공개 영역 (한국어) -->
-        <div class="flex-1 flex items-start justify-center pt-2 w-full h-40">
+        <div class="flex-1 flex items-start justify-center pt-2 w-full h-40 z-0">
             <div id="answer-display" class="hidden text-6xl md:text-7xl font-black text-yellow-300 drop-shadow-md bg-black/25 px-10 py-6 rounded-3xl backdrop-blur-md border-2 border-white/20 transform scale-110">
                 <!-- 정답 한국어 -->
             </div>
@@ -115,7 +118,7 @@
         </div>
 
         <!-- 정답 아이콘 (애니메이션 변경됨: 등장 후 소멸) -->
-        <div id="correct-icon" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-yellow-300 pointer-events-none z-20">
+        <div id="correct-icon" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-yellow-300 pointer-events-none z-30">
             <i class="ph-fill ph-check-circle text-[25rem] drop-shadow-2xl"></i>
         </div>
     </div>
