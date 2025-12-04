@@ -1,367 +1,428 @@
-import React, { useState } from 'react';
-import { Book, Check, X, ArrowRight, RotateCcw, Volume2, HelpCircle, GraduationCap, Globe } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국어 문법 학습: -던</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col max-w-md mx-auto shadow-xl">
 
-const KoreanGrammarApp = () => {
-  const [activeTab, setActiveTab] = useState('learn');
-  const [showTranslation, setShowTranslation] = useState(false); // 번역 표시 여부 상태
-  const [quizScore, setQuizScore] = useState(0);
-  const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-
-  // 학습 데이터 (쉬운 한국어 + 베트남어 번역)
-  const grammarPoint = {
-    title: "A/V-던",
-    meaning_kr: "옛날에 자주 했어요 / 아직 안 끝났어요",
-    meaning_vn: "Đã từng (thói quen) / Đang ... (chưa hoàn thành)",
-    description_kr: "1. 옛날에 자주 했던 일을 말할 때 써요.\n2. 하다가 멈춘 일(아직 안 끝난 일)을 말할 때 써요.",
-    description_vn: "Dùng để hồi tưởng lại một hành động xảy ra thường xuyên trong quá khứ nhưng hiện tại đã chấm dứt, hoặc một hành động trong quá khứ chưa hoàn thành.",
-    examples: [
-      {
-        kr: "내가 마시던 커피가 어디 갔지?",
-        vn: "Cốc cà phê tôi đang uống dở đâu rồi?",
-        context_kr: "아직 다 안 마셨어요.",
-        context_vn: "Hành động chưa hoàn thành",
-        type: "dialogue"
-      },
-      {
-        kr: "어제까지 따뜻하던 날씨가 갑자기 추워졌어요.",
-        vn: "Thời tiết hôm qua còn ấm áp mà đột nhiên trở lạnh.",
-        context_kr: "어제 날씨를 생각해요.",
-        context_vn: "Hồi tưởng lại trạng thái trong quá khứ",
-        type: "sentence"
-      }
-    ]
-  };
-
-  // 연습 문제 데이터
-  const quizData = [
-    {
-      id: 1,
-      item: "자전거 (Xe đạp)",
-      icon: "🚲",
-      question: "형이 ______ 자전거를 받아서 타고 있어요.",
-      options: ["타는", "타던", "탄"],
-      correct: "타던",
-      explanation_kr: "형이 옛날에 자주 탔어요.",
-      explanation_vn: "Chiếc xe đạp mà anh trai đã từng đi thường xuyên trong quá khứ."
-    },
-    {
-      id: 2,
-      item: "청바지 (Quần bò)",
-      icon: "👖",
-      question: "언니가 ______ 청바지를 물려 입었어요.",
-      options: ["입던", "입은", "입는"],
-      correct: "입던",
-      explanation_kr: "언니가 옛날에 자주 입었어요.",
-      explanation_vn: "Chiếc quần bò mà chị gái đã từng mặc (thói quen trong quá khứ)."
-    },
-    {
-      id: 3,
-      item: "부츠 (Ủng)",
-      icon: "👢",
-      question: "이건 엄마가 젊었을 때 ______ 부츠예요.",
-      options: ["신는", "신던", "신은"],
-      correct: "신던",
-      explanation_kr: "엄마가 옛날에 신었어요.",
-      explanation_vn: "Đôi ủng mẹ đã từng đi khi còn trẻ (hồi tưởng quá khứ)."
-    },
-    {
-      id: 4,
-      item: "책 (Sách)",
-      icon: "📚",
-      question: "선배가 ______ 책으로 공부했어요.",
-      options: ["보던", "본", "보는"],
-      correct: "보던",
-      explanation_kr: "선배가 공부했던 책이에요.",
-      explanation_vn: "Cuốn sách mà tiền bối đã từng xem/học."
-    }
-  ];
-
-  const handleAnswerClick = (option) => {
-    setSelectedAnswer(option);
-    setShowResult(true);
-    if (option === quizData[currentQuizIndex].correct) {
-      setQuizScore(prev => prev + 1);
-    }
-  };
-
-  const nextQuiz = () => {
-    setSelectedAnswer(null);
-    setShowResult(false);
-    if (currentQuizIndex < quizData.length - 1) {
-      setCurrentQuizIndex(prev => prev + 1);
-    } else {
-      setCurrentQuizIndex('finished');
-    }
-  };
-
-  const resetQuiz = () => {
-    setCurrentQuizIndex(0);
-    setQuizScore(0);
-    setSelectedAnswer(null);
-    setShowResult(false);
-  };
-
-  // Components
-  const TabButton = ({ id, label, icon: Icon }) => (
-    <button
-      onClick={() => setActiveTab(id)}
-      className={`flex items-center justify-center flex-1 py-3 text-sm font-medium transition-colors duration-200 ${
-        activeTab === id
-          ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-          : 'text-gray-500 hover:text-gray-700'
-      }`}
-    >
-      <Icon className="w-4 h-4 mr-2" />
-      {label}
-    </button>
-  );
-
-  const LearnSection = () => (
-    <div className="space-y-6">
-      {/* Main Concept Box */}
-      <div className="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-xl p-6 shadow-sm">
-        <h2 className="text-2xl font-bold text-blue-800 mb-2">{grammarPoint.title}</h2>
-        <p className="text-gray-800 font-bold mb-1">{grammarPoint.meaning_kr}</p>
-        {showTranslation && (
-          <p className="text-blue-600 font-medium mb-4 text-sm animate-fade-in">
-            {grammarPoint.meaning_vn}
-          </p>
-        )}
-        
-        <div className="bg-white p-4 rounded-lg border border-blue-100 text-sm text-gray-700 leading-relaxed mt-2 whitespace-pre-line">
-          <p>{grammarPoint.description_kr}</p>
-          {showTranslation && (
-            <p className="text-blue-600 mt-2 pt-2 border-t border-blue-50">
-              {grammarPoint.description_vn}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Situational Example (Coffee) */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-        <div className="flex items-center mb-4">
-          <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mr-3">
-            <Volume2 className="w-5 h-5" />
-          </div>
-          <h3 className="font-bold text-gray-800">상황 1: 커피 (Cà phê)</h3>
-        </div>
-        
-        <div className="space-y-4">
-          <div className="bg-gray-50 p-4 rounded-lg relative">
-            <div className="absolute -left-2 top-4 w-1 h-8 bg-blue-500 rounded-r"></div>
-            <p className="text-lg font-bold text-gray-800 mb-1">
-              "내가 <span className="text-blue-600">마시던</span> 커피가 어디 갔지?"
-            </p>
-            {showTranslation && (
-              <p className="text-blue-600 text-sm mb-2">{grammarPoint.examples[0].vn}</p>
-            )}
-            
-            <div className="mt-3 text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded-full inline-block">
-              의미: {grammarPoint.examples[0].context_kr}
-              {showTranslation && <span className="block mt-1 pt-1 border-t border-blue-200 text-blue-700">{grammarPoint.examples[0].context_vn}</span>}
+    <!-- Header -->
+    <header class="bg-white px-6 py-4 shadow-sm border-b border-gray-100 sticky top-0 z-10">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-lg font-bold text-gray-900 flex items-center">
+                    <span class="bg-blue-600 text-white text-xs px-2 py-1 rounded mr-2">초급</span>
+                    한국어 문법
+                </h1>
+                <p class="text-xs text-gray-500 mt-1">1과: 옛날과 습관 (-던)</p>
             </div>
-          </div>
+            <button id="translation-btn" class="flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-gray-100 text-gray-500 border border-gray-200 cursor-pointer">
+                <i data-lucide="globe" class="w-3 h-3 mr-1"></i>
+                <span id="translation-text">Tiếng Việt OFF</span>
+            </button>
         </div>
-      </div>
+    </header>
 
-       {/* Construction Rule */}
-       <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-        <h3 className="font-bold text-gray-800 mb-4 flex items-center">
-           <GraduationCap className="w-5 h-5 mr-2 text-green-600"/>
-           만드는 법 (Quy tắc)
-        </h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-gray-50 p-3 rounded-lg text-center">
-            <span className="block text-xs text-gray-500 uppercase tracking-wide">기본형</span>
-            <span className="font-bold text-gray-800">마시다</span>
-            {showTranslation && <span className="block text-xs text-gray-400 mt-1">(uống)</span>}
-          </div>
-          <div className="flex items-center justify-center">
-            <ArrowRight className="text-gray-400" />
-          </div>
-          <div className="bg-blue-50 p-3 rounded-lg text-center border border-blue-100">
-            <span className="block text-xs text-blue-500 uppercase tracking-wide">'-던' 추가</span>
-            <span className="font-bold text-blue-800">마시던</span>
-            {showTranslation && <span className="block text-xs text-blue-400 mt-1">(đang uống dở)</span>}
-          </div>
-        </div>
-        <div className="mt-4 text-center text-sm text-gray-500">
-          '다' 없어요 + '던' 있어요
-          {showTranslation && <span className="block text-xs text-blue-400 mt-1">Bỏ '다' + Thêm '던'</span>}
-        </div>
-      </div>
+    <!-- Navigation Tabs -->
+    <div class="flex border-b border-gray-200 bg-white">
+        <button onclick="setTab('learn')" id="tab-learn" class="flex items-center justify-center flex-1 py-3 text-sm font-medium transition-colors duration-200 text-blue-600 border-b-2 border-blue-600 bg-blue-50">
+            <i data-lucide="book" class="w-4 h-4 mr-2"></i>
+            공부해요 (Học)
+        </button>
+        <button onclick="setTab('practice')" id="tab-practice" class="flex items-center justify-center flex-1 py-3 text-sm font-medium transition-colors duration-200 text-gray-500 hover:text-gray-700">
+            <i data-lucide="graduation-cap" class="w-4 h-4 mr-2"></i>
+            연습해요 (Luyện tập)
+        </button>
     </div>
-  );
 
-  const PracticeSection = () => {
-    if (currentQuizIndex === 'finished') {
-      return (
-        <div className="text-center py-12">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600">
-            <Check className="w-10 h-10" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">참 잘했어요!</h2>
-          {showTranslation && <p className="text-gray-500 text-sm mb-2">Làm tốt lắm!</p>}
-          <p className="text-gray-600 mb-8">점수: {quizScore} / {quizData.length}</p>
-          <button
-            onClick={resetQuiz}
-            className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center mx-auto"
-          >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            다시 하기
-          </button>
-        </div>
-      );
-    }
+    <!-- Main Content Area -->
+    <main id="app-content" class="flex-1 p-4 pb-12">
+        <!-- Content will be injected here by JavaScript -->
+    </main>
 
-    const currentQuiz = quizData[currentQuizIndex];
-
-    return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-500">문제 {currentQuizIndex + 1}/{quizData.length}</span>
-          <span className="text-sm font-medium text-blue-600">점수: {quizScore}</span>
-        </div>
-
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-          {/* Visual Aid */}
-          <div className="flex justify-center mb-6">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center text-5xl shadow-inner">
-              {currentQuiz.icon}
-            </div>
-          </div>
-          
-          <h3 className="text-center text-gray-500 text-sm mb-6 uppercase tracking-wide font-semibold">{currentQuiz.item}</h3>
-
-          {/* Question */}
-          <div className="mb-8 text-center">
-            <p className="text-lg font-medium leading-relaxed text-gray-800">
-              {currentQuiz.question.split('______').map((part, i) => (
-                <React.Fragment key={i}>
-                  {part}
-                  {i === 0 && (
-                    <span className="inline-block border-b-2 border-blue-400 px-2 min-w-[60px] text-blue-600 font-bold mx-1">
-                      {selectedAnswer || "______"}
-                    </span>
-                  )}
-                </React.Fragment>
-              ))}
-            </p>
-          </div>
-
-          {/* Options */}
-          <div className="grid grid-cols-1 gap-3">
-            {currentQuiz.options.map((option) => (
-              <button
-                key={option}
-                onClick={() => handleAnswerClick(option)}
-                disabled={showResult}
-                className={`p-4 rounded-lg border-2 text-left transition-all ${
-                  showResult
-                    ? option === currentQuiz.correct
-                      ? 'border-green-500 bg-green-50 text-green-700'
-                      : option === selectedAnswer
-                        ? 'border-red-300 bg-red-50 text-red-700'
-                        : 'border-gray-100 text-gray-400'
-                    : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                }`}
-              >
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">{option}</span>
-                  {showResult && option === currentQuiz.correct && <Check className="w-5 h-5 text-green-600" />}
-                  {showResult && option === selectedAnswer && option !== currentQuiz.correct && <X className="w-5 h-5 text-red-500" />}
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* Explanation & Next Button */}
-          {showResult && (
-            <div className="mt-6 animate-fade-in">
-              <div className="bg-blue-50 p-4 rounded-lg mb-4 text-sm text-blue-800 flex items-start flex-col">
-                <div className="flex items-start mb-2">
-                  <HelpCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
-                  <span>{currentQuiz.explanation_kr}</span>
-                </div>
-                {showTranslation && (
-                  <div className="pl-7 pt-2 border-t border-blue-200 text-blue-600 w-full">
-                    {currentQuiz.explanation_vn}
-                  </div>
-                )}
-              </div>
-              <button
-                onClick={nextQuiz}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center"
-              >
-                다음 문제
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex flex-col font-sans">
-      {/* Header */}
-      <header className="bg-white px-6 py-4 shadow-sm border-b border-gray-100 sticky top-0 z-10">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-lg font-bold text-gray-900 flex items-center">
-              <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded mr-2">초급</span>
-              한국어 문법
-            </h1>
-            <p className="text-xs text-gray-500 mt-1">1과: 옛날과 습관 (-던)</p>
-          </div>
-          <button
-            onClick={() => setShowTranslation(!showTranslation)}
-            className={`flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              showTranslation 
-                ? 'bg-blue-100 text-blue-700 border border-blue-200' 
-                : 'bg-gray-100 text-gray-500 border border-gray-200'
-            }`}
-          >
-            <Globe className="w-3 h-3 mr-1" />
-            {showTranslation ? 'Tiếng Việt ON' : 'Tiếng Việt OFF'}
-          </button>
-        </div>
-      </header>
-
-      {/* Navigation Tabs */}
-      <div className="flex border-b border-gray-200 bg-white">
-        <TabButton id="learn" label="공부해요 (Học)" icon={Book} />
-        <TabButton id="practice" label="연습해요 (Luyện tập)" icon={GraduationCap} />
-      </div>
-
-      {/* Content Area */}
-      <main className="flex-1 p-4 pb-12">
-        {activeTab === 'learn' && <LearnSection />}
-        {activeTab === 'practice' && <PracticeSection />}
-      </main>
-      
-      {/* Footer / Tip */}
-      {activeTab === 'learn' && (
-      <div className="px-4 pb-6">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h4 className="text-sm font-bold text-yellow-800 mb-1">💡 선생님의 팁</h4>
-            <p className="text-xs text-yellow-700 mb-2">
+    <!-- Footer Tip Area (Only for Learn Tab) -->
+    <div id="footer-tip" class="px-4 pb-6 hidden">
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <h4 class="text-sm font-bold text-yellow-800 mb-1">💡 선생님의 팁</h4>
+            <p class="text-xs text-yellow-700 mb-2">
                 <b>'-았/었-'</b>은 옛날에 끝난 일이에요. 하지만 <b>'-던'</b>은 옛날에 자주 했거나, 아직 안 끝난 일이에요.
             </p>
-            {showTranslation && (
-              <p className="text-xs text-yellow-600 border-t border-yellow-200 pt-2">
+            <div id="tip-translation" class="hidden text-xs text-yellow-600 border-t border-yellow-200 pt-2">
                 Khác với <b>-았/었던</b> (nhấn mạnh kinh nghiệm đã hoàn thành), <b>-던</b> thường ám chỉ hành động lặp đi lặp lại hoặc chưa hoàn thành.
-              </p>
-            )}
+            </div>
         </div>
-      </div>
-      )}
     </div>
-  );
-};
 
-export default KoreanGrammarApp;
+    <script>
+        // --- Data ---
+        const grammarPoint = {
+            title: "A/V-던",
+            meaning_kr: "옛날에 자주 했어요 / 아직 안 끝났어요",
+            meaning_vn: "Đã từng (thói quen) / Đang ... (chưa hoàn thành)",
+            description_kr: "1. 옛날에 자주 했던 일을 말할 때 써요.\n2. 하다가 멈춘 일(아직 안 끝난 일)을 말할 때 써요.",
+            description_vn: "Dùng để hồi tưởng lại một hành động xảy ra thường xuyên trong quá khứ nhưng hiện tại đã chấm dứt, hoặc một hành động trong quá khứ chưa hoàn thành.",
+            examples: [
+                {
+                    kr: "내가 마시던 커피가 어디 갔지?",
+                    vn: "Cốc cà phê tôi đang uống dở đâu rồi?",
+                    context_kr: "아직 다 안 마셨어요.",
+                    context_vn: "Hành động chưa hoàn thành",
+                    type: "dialogue"
+                },
+                {
+                    kr: "어제까지 따뜻하던 날씨가 갑자기 추워졌어요.",
+                    vn: "Thời tiết hôm qua còn ấm áp mà đột nhiên trở lạnh.",
+                    context_kr: "어제 날씨를 생각해요.",
+                    context_vn: "Hồi tưởng lại trạng thái trong quá khứ",
+                    type: "sentence"
+                }
+            ]
+        };
+
+        const quizData = [
+            {
+                id: 1,
+                item: "자전거 (Xe đạp)",
+                icon: "🚲",
+                question: "형이 ______ 자전거를 받아서 타고 있어요.",
+                options: ["타는", "타던", "탄"],
+                correct: "타던",
+                explanation_kr: "형이 옛날에 자주 탔어요.",
+                explanation_vn: "Chiếc xe đạp mà anh trai đã từng đi thường xuyên trong quá khứ."
+            },
+            {
+                id: 2,
+                item: "청바지 (Quần bò)",
+                icon: "👖",
+                question: "언니가 ______ 청바지를 물려 입었어요.",
+                options: ["입던", "입은", "입는"],
+                correct: "입던",
+                explanation_kr: "언니가 옛날에 자주 입었어요.",
+                explanation_vn: "Chiếc quần bò mà chị gái đã từng mặc (thói quen trong quá khứ)."
+            },
+            {
+                id: 3,
+                item: "부츠 (Ủng)",
+                icon: "👢",
+                question: "이건 엄마가 젊었을 때 ______ 부츠예요.",
+                options: ["신는", "신던", "신은"],
+                correct: "신던",
+                explanation_kr: "엄마가 옛날에 신었어요.",
+                explanation_vn: "Đôi ủng mẹ đã từng đi khi còn trẻ (hồi tưởng quá khứ)."
+            },
+            {
+                id: 4,
+                item: "책 (Sách)",
+                icon: "📚",
+                question: "선배가 ______ 책으로 공부했어요.",
+                options: ["보던", "본", "보는"],
+                correct: "보던",
+                explanation_kr: "선배가 공부했던 책이에요.",
+                explanation_vn: "Cuốn sách mà tiền bối đã từng xem/học."
+            }
+        ];
+
+        // --- State ---
+        let state = {
+            activeTab: 'learn',
+            showTranslation: false,
+            quizScore: 0,
+            currentQuizIndex: 0,
+            showResult: false,
+            selectedAnswer: null,
+            quizFinished: false
+        };
+
+        // --- Render Functions ---
+
+        function renderApp() {
+            const contentDiv = document.getElementById('app-content');
+            const footerTip = document.getElementById('footer-tip');
+            
+            // Update Tab Styles
+            const learnTab = document.getElementById('tab-learn');
+            const practiceTab = document.getElementById('tab-practice');
+            
+            if (state.activeTab === 'learn') {
+                learnTab.className = "flex items-center justify-center flex-1 py-3 text-sm font-medium transition-colors duration-200 text-blue-600 border-b-2 border-blue-600 bg-blue-50";
+                practiceTab.className = "flex items-center justify-center flex-1 py-3 text-sm font-medium transition-colors duration-200 text-gray-500 hover:text-gray-700";
+                contentDiv.innerHTML = renderLearnSection();
+                footerTip.classList.remove('hidden');
+                updateTranslationVisibility();
+            } else {
+                learnTab.className = "flex items-center justify-center flex-1 py-3 text-sm font-medium transition-colors duration-200 text-gray-500 hover:text-gray-700";
+                practiceTab.className = "flex items-center justify-center flex-1 py-3 text-sm font-medium transition-colors duration-200 text-blue-600 border-b-2 border-blue-600 bg-blue-50";
+                contentDiv.innerHTML = renderPracticeSection();
+                footerTip.classList.add('hidden');
+            }
+            
+            // Update Translation Button
+            const transBtn = document.getElementById('translation-btn');
+            const transText = document.getElementById('translation-text');
+            if (state.showTranslation) {
+                transBtn.className = "flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-blue-100 text-blue-700 border border-blue-200 cursor-pointer";
+                transText.textContent = "Tiếng Việt ON";
+            } else {
+                transBtn.className = "flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-gray-100 text-gray-500 border border-gray-200 cursor-pointer";
+                transText.textContent = "Tiếng Việt OFF";
+            }
+
+            // Re-initialize icons
+            lucide.createIcons();
+        }
+
+        function renderLearnSection() {
+            const vnClass = state.showTranslation ? "block animate-fade-in" : "hidden";
+            return `
+                <div class="space-y-6">
+                    <!-- Main Concept Box -->
+                    <div class="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-xl p-6 shadow-sm">
+                        <h2 class="text-2xl font-bold text-blue-800 mb-2">${grammarPoint.title}</h2>
+                        <p class="text-gray-800 font-bold mb-1">${grammarPoint.meaning_kr}</p>
+                        <p class="text-blue-600 font-medium mb-4 text-sm ${vnClass}">
+                            ${grammarPoint.meaning_vn}
+                        </p>
+                        
+                        <div class="bg-white p-4 rounded-lg border border-blue-100 text-sm text-gray-700 leading-relaxed mt-2 whitespace-pre-line">
+                            <p>${grammarPoint.description_kr}</p>
+                            <p class="text-blue-600 mt-2 pt-2 border-t border-blue-50 ${vnClass}">
+                                ${grammarPoint.description_vn}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Situational Example (Coffee) -->
+                    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mr-3">
+                                <i data-lucide="volume-2" class="w-5 h-5"></i>
+                            </div>
+                            <h3 class="font-bold text-gray-800">상황 1: 커피 (Cà phê)</h3>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="bg-gray-50 p-4 rounded-lg relative">
+                                <div class="absolute -left-2 top-4 w-1 h-8 bg-blue-500 rounded-r"></div>
+                                <p class="text-lg font-bold text-gray-800 mb-1">
+                                    "내가 <span class="text-blue-600">마시던</span> 커피가 어디 갔지?"
+                                </p>
+                                <p class="text-blue-600 text-sm mb-2 ${vnClass}">${grammarPoint.examples[0].vn}</p>
+                                
+                                <div class="mt-3 text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded-full inline-block">
+                                    의미: ${grammarPoint.examples[0].context_kr}
+                                    <span class="mt-1 pt-1 border-t border-blue-200 text-blue-700 ${state.showTranslation ? 'block' : 'hidden'}">${grammarPoint.examples[0].context_vn}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Construction Rule -->
+                    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                        <h3 class="font-bold text-gray-800 mb-4 flex items-center">
+                            <i data-lucide="graduation-cap" class="w-5 h-5 mr-2 text-green-600"></i>
+                            만드는 법 (Quy tắc)
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 p-3 rounded-lg text-center">
+                                <span class="block text-xs text-gray-500 uppercase tracking-wide">기본형</span>
+                                <span class="font-bold text-gray-800">마시다</span>
+                                <span class="block text-xs text-gray-400 mt-1 ${vnClass}">(uống)</span>
+                            </div>
+                            <div class="flex items-center justify-center">
+                                <i data-lucide="arrow-right" class="text-gray-400"></i>
+                            </div>
+                            <div class="bg-blue-50 p-3 rounded-lg text-center border border-blue-100">
+                                <span class="block text-xs text-blue-500 uppercase tracking-wide">'-던' 추가</span>
+                                <span class="font-bold text-blue-800">마시던</span>
+                                <span class="block text-xs text-blue-400 mt-1 ${vnClass}">(đang uống dở)</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center text-sm text-gray-500">
+                            '다' 없어요 + '던' 있어요
+                            <span class="block text-xs text-blue-400 mt-1 ${vnClass}">Bỏ '다' + Thêm '던'</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPracticeSection() {
+            if (state.quizFinished) {
+                return `
+                    <div class="text-center py-12">
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600">
+                            <i data-lucide="check" class="w-10 h-10"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">참 잘했어요!</h2>
+                        <p class="text-gray-500 text-sm mb-2 ${state.showTranslation ? 'block' : 'hidden'}">Làm tốt lắm!</p>
+                        <p class="text-gray-600 mb-8">점수: ${state.quizScore} / ${quizData.length}</p>
+                        <button onclick="resetQuiz()" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center mx-auto">
+                            <i data-lucide="rotate-ccw" class="w-4 h-4 mr-2"></i>
+                            다시 하기
+                        </button>
+                    </div>
+                `;
+            }
+
+            const currentQuiz = quizData[state.currentQuizIndex];
+            const vnClass = state.showTranslation ? "block" : "hidden";
+
+            let optionsHtml = currentQuiz.options.map(option => {
+                let btnClass = "border-gray-200 hover:border-blue-300 hover:bg-blue-50";
+                let iconHtml = "";
+
+                if (state.showResult) {
+                    if (option === currentQuiz.correct) {
+                        btnClass = "border-green-500 bg-green-50 text-green-700";
+                        iconHtml = '<i data-lucide="check" class="w-5 h-5 text-green-600"></i>';
+                    } else if (option === state.selectedAnswer) {
+                        btnClass = "border-red-300 bg-red-50 text-red-700";
+                        iconHtml = '<i data-lucide="x" class="w-5 h-5 text-red-500"></i>';
+                    } else {
+                        btnClass = "border-gray-100 text-gray-400";
+                    }
+                }
+
+                return `
+                    <button 
+                        onclick="handleAnswer('${option}')" 
+                        ${state.showResult ? 'disabled' : ''}
+                        class="w-full p-4 rounded-lg border-2 text-left transition-all mb-3 flex justify-between items-center ${btnClass}">
+                        <span class="font-medium">${option}</span>
+                        ${iconHtml}
+                    </button>
+                `;
+            }).join('');
+
+            return `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-gray-500">문제 ${state.currentQuizIndex + 1}/${quizData.length}</span>
+                        <span class="text-sm font-medium text-blue-600">점수: ${state.quizScore}</span>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                        <!-- Visual Aid -->
+                        <div class="flex justify-center mb-6">
+                            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center text-5xl shadow-inner">
+                                ${currentQuiz.icon}
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-center text-gray-500 text-sm mb-6 uppercase tracking-wide font-semibold">${currentQuiz.item}</h3>
+
+                        <!-- Question -->
+                        <div class="mb-8 text-center">
+                            <p class="text-lg font-medium leading-relaxed text-gray-800">
+                            ${currentQuiz.question.split('______').map((part, i) => `
+                                ${part}
+                                ${i === 0 ? `<span class="inline-block border-b-2 border-blue-400 px-2 min-w-[60px] text-blue-600 font-bold mx-1">${state.selectedAnswer || "______"}</span>` : ''}
+                            `).join('')}
+                            </p>
+                        </div>
+
+                        <!-- Options -->
+                        <div class="grid grid-cols-1">
+                            ${optionsHtml}
+                        </div>
+
+                        <!-- Explanation -->
+                        ${state.showResult ? `
+                            <div class="mt-6 animate-fade-in">
+                                <div class="bg-blue-50 p-4 rounded-lg mb-4 text-sm text-blue-800 flex items-start flex-col">
+                                    <div class="flex items-start mb-2">
+                                        <i data-lucide="help-circle" class="w-5 h-5 mr-2 flex-shrink-0 mt-0.5"></i>
+                                        <span>${currentQuiz.explanation_kr}</span>
+                                    </div>
+                                    <div class="pl-7 pt-2 border-t border-blue-200 text-blue-600 w-full ${vnClass}">
+                                        ${currentQuiz.explanation_vn}
+                                    </div>
+                                </div>
+                                <button onclick="nextQuiz()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center">
+                                    다음 문제
+                                    <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- Logic Handlers ---
+
+        function setTab(tab) {
+            state.activeTab = tab;
+            renderApp();
+        }
+
+        function toggleTranslation() {
+            state.showTranslation = !state.showTranslation;
+            updateTranslationVisibility();
+            // Re-render to update all translation fields
+            renderApp();
+        }
+
+        function updateTranslationVisibility() {
+            const tipTrans = document.getElementById('tip-translation');
+            if (tipTrans) {
+                if (state.showTranslation) tipTrans.classList.remove('hidden');
+                else tipTrans.classList.add('hidden');
+            }
+        }
+
+        function handleAnswer(option) {
+            if (state.showResult) return;
+            state.selectedAnswer = option;
+            state.showResult = true;
+            if (option === quizData[state.currentQuizIndex].correct) {
+                state.quizScore++;
+            }
+            renderApp();
+        }
+
+        function nextQuiz() {
+            state.selectedAnswer = null;
+            state.showResult = false;
+            if (state.currentQuizIndex < quizData.length - 1) {
+                state.currentQuizIndex++;
+            } else {
+                state.quizFinished = true;
+            }
+            renderApp();
+        }
+
+        function resetQuiz() {
+            state.quizScore = 0;
+            state.currentQuizIndex = 0;
+            state.showResult = false;
+            state.selectedAnswer = null;
+            state.quizFinished = false;
+            renderApp();
+        }
+
+        // --- Initial Render & Events ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderApp();
+            
+            // Translation Toggle Event
+            document.getElementById('translation-btn').addEventListener('click', toggleTranslation);
+        });
+
+    </script>
+</body>
+</html>
