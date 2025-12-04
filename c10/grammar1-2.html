@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-NB76SV96');</script>
+<!-- End Google Tag Manager -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>먹던 사과, 먹은 사과 (-던 vs -(으)ㄴ) 학습 게임</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .feedback-anim {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .quiz-option {
+            transition: all 0.2s;
+        }
+        #review-modal, #explanation-area {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes combo-pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        .combo-effect {
+            animation: combo-pop 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="relative bg-white w-full max-w-4xl p-6 sm:p-8 rounded-2xl shadow-lg text-center">
+        
+        <header class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">먹던 사과, 먹은 사과</h1>
+            <p id="header-subtitle" class="text-gray-500 mt-2">그림을 보고 알맞은 문법을 선택하세요.</p>
+        </header>
+        
+        <div id="combo-area" class="hidden absolute top-6 right-8 text-2xl font-bold text-orange-500"></div>
+
+        <main id="game-area">
+            <!-- 1단계: 퀴즈 영역 -->
+            <div id="quiz-area">
+                <div class="flex justify-center items-center mb-4">
+                    <div id="single-image-container" class="w-full md:w-1/2 bg-gray-200 rounded-lg border overflow-hidden" style="height: 300px;">
+                        <!-- 한 개의 이미지가 여기에 표시됩니다 -->
+                    </div>
+                </div>
+                 <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-md mb-6">
+                    <p id="quiz-question" class="text-blue-800 text-lg"></p>
+                </div>
+                <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- 퀴즈 선택지가 여기에 들어갑니다 -->
+                </div>
+                <div id="quiz-feedback" class="mt-4 text-lg h-8"></div>
+            </div>
+
+            <!-- 2단계: 설명 영역 -->
+            <div id="explanation-area" class="hidden">
+                 <p class="text-2xl font-bold mb-4">정답 확인!</p>
+                 <div class="flex flex-col md:flex-row justify-center items-center gap-4 mb-4">
+                    <div class="w-full md:w-1/2">
+                        <p class="font-semibold mb-2">미완료 (-던)</p>
+                        <div id="explanation-incomplete-img" class="bg-gray-200 rounded-lg border overflow-hidden" style="height: 250px;"></div>
+                    </div>
+                    <div class="w-full md:w-1/2">
+                        <p class="font-semibold mb-2">완료 (-(으)ㄴ)</p>
+                        <div id="explanation-complete-img" class="bg-gray-200 rounded-lg border overflow-hidden" style="height: 250px;"></div>
+                    </div>
+                </div>
+                <div id="explanation-text" class="bg-gray-50 p-4 rounded-lg mb-4 text-left"></div>
+                <button id="next-btn" class="mt-4 bg-purple-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-purple-600 transition-colors duration-300 shadow-md">다음 문제</button>
+            </div>
+        </main>
+
+        <!-- 게임 종료 화면 -->
+        <div id="game-end-area" class="hidden">
+            <p class="text-3xl font-bold text-green-500 mb-2">🎉 모든 문제를 완료했습니다!</p>
+            <p class="text-gray-600 mb-6">결과를 확인하고 틀린 문제는 복습해보세요.</p>
+            <div id="results-table-container" class="mb-8 border rounded-lg overflow-hidden"></div>
+            <button id="restart-btn" class="bg-blue-500 text-white font-bold py-4 px-10 rounded-lg hover:bg-blue-600 transition-colors duration-300 shadow-xl text-lg">다시 시작하기</button>
+        </div>
+    </div>
+
+    <!-- 복습 모달 -->
+    <div id="review-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-4xl p-6 rounded-2xl shadow-lg relative text-center">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+            <h2 class="text-2xl font-bold mb-4">다시 보기</h2>
+             <div class="flex flex-col md:flex-row justify-center items-center gap-4 mb-4">
+                <div class="w-full md:w-1/2">
+                    <p class="font-semibold mb-2">미완료 (-던)</p>
+                    <div id="review-incomplete-img" class="bg-gray-200 rounded-lg border overflow-hidden" style="height: 250px;"></div>
+                </div>
+                 <div class="w-full md:w-1/2">
+                    <p class="font-semibold mb-2">완료 (-(으)ㄴ)</p>
+                    <div id="review-complete-img" class="bg-gray-200 rounded-lg border overflow-hidden" style="height: 250px;"></div>
+                </div>
+            </div>
+            <div id="review-explanation" class="bg-gray-50 p-4 rounded-lg mb-4 text-left"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- SVG 그림 함수들 ---
+        const drawings = {
+            appleBitten: () => `<g transform="translate(150 120) scale(1.8)"><path d="M 50 0 C 10 0, 0 40, 0 60 C 0 100, 40 110, 50 110 C 60 110, 100 100, 100 60 C 100 40, 90 0, 50 0 Z" fill="#E74C3C"/><path d="M 45 -5 C 50 -15, 55 -5, 45 -5" fill="#784212"/><path d="M 10 30 C 20 20, 30 20, 40 30 C 30 40, 20 40, 10 30 Z" fill="#F9EBEA"/></g>`,
+            appleCore: () => `<g transform="translate(180 130) scale(1.5)"><path d="M 0 0 C 10 10, 10 70, 0 80 L 10 80 C 20 70, 20 10, 10 0 Z" fill="#F9EBEA"/><circle cx="5" cy="30" r="2" fill="black"/><circle cx="5" cy="50" r="2" fill="black"/><path d="M 2 0 C 5 -10, 8 0, 2 0" fill="#784212"/></g>`,
+            coffeeHalf: () => `<g transform="translate(150 100)"><path d="M 0 0 H 100 V 120 H 0 Z" fill="white" stroke="black" stroke-width="2"/><rect x="5" y="60" width="90" height="55" fill="#A1887F"/></g>`,
+            coffeeEmpty: () => `<g transform="translate(150 100)"><path d="M 0 0 H 100 V 120 H 0 Z" fill="white" stroke="black" stroke-width="2"/></g>`,
+            bookOpen: () => `<g transform="translate(100 80)"><path d="M 20 10 L 100 0 L 100 160 L 20 170 Z" fill="white" stroke="black" stroke-width="2"/><path d="M 180 10 L 100 0 L 100 160 L 180 170 Z" fill="white" stroke="black" stroke-width="2"/><rect x="95" y="0" width="10" height="80" fill="#E74C3C"/></g>`,
+            bookClosed: () => `<g transform="translate(150 80)"><rect x="0" y="0" width="100" height="170" fill="#2980B9"/><rect x="0" y="0" width="10" height="170" fill="#1F618D"/></g>`,
+            paintingHalf: () => `<g transform="translate(100 70)"><rect x="0" y="0" width="200" height="150" fill="white" stroke="black" stroke-width="2"/><path d="M 0 150 L 200 150 L 100 50 Z" fill="#27AE60"/><rect x="0" y="0" width="100" height="150" fill="#5DADE2"/></g>`,
+            paintingDone: () => `<g transform="translate(90 60)"><rect x="0" y="0" width="220" height="170" fill="#795548"/><rect x="10" y="10" width="200" height="150" fill="#5DADE2"/><path d="M 10 160 L 210 160 L 110 60 Z" fill="#27AE60"/><circle cx="170" cy="50" r="15" fill="yellow"/></g>`,
+            letterHalf: () => `<g transform="translate(100 80)"><rect x="0" y="0" width="200" height="200" fill="white" stroke="#bdc3c7" stroke-width="1"/><path d="M 20 40 H 180 M 20 60 H 180 M 20 80 H 100" stroke="#34495e" stroke-width="2" fill="none"/></g>`,
+            letterDone: () => `<g transform="translate(100 80)"><rect x="0" y="0" width="200" height="120" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/><path d="M 0 0 L 100 60 L 200 0" stroke="#bdc3c7" stroke-width="1" fill="none"/></g>`,
+        };
+
+        const scenarios = [
+            { id: 'apple', images: { incomplete: 'appleBitten', complete: 'appleCore' }, explanation: "아직 먹는 중인 상태는 '먹던', 먹는 행동이 완전히 끝난 상태는 '먹은'으로 표현합니다.", parts: { incomplete: { question: "이것은 내가 ( ) 사과이다.", options: ["먹던", "먹은"], answer: "먹던" }, complete: { question: "이것은 내가 다 ( ) 사과이다.", options: ["먹던", "먹은"], answer: "먹은" } } },
+            { id: 'coffee', images: { incomplete: 'coffeeHalf', complete: 'coffeeEmpty' }, explanation: "아직 마시는 중인 상태는 '마시던', 마시는 행동이 완전히 끝난 상태는 '마신'으로 표현합니다.", parts: { incomplete: { question: "자리에 와 보니 내가 ( ) 커피가 없었다.", options: ["마시던", "마신"], answer: "마시던" }, complete: { question: "내가 다 ( ) 커피는 이미 버렸다.", options: ["마시던", "마신"], answer: "마신" } } },
+            { id: 'book', images: { incomplete: 'bookOpen', complete: 'bookClosed' }, explanation: "아직 읽는 중인 상태는 '읽던', 읽는 행동이 완전히 끝난 상태는 '읽은'으로 표현합니다.", parts: { incomplete: { question: "어제 ( ) 책을 오늘 마저 읽어야 한다.", options: ["읽던", "읽은"], answer: "읽던" }, complete: { question: "어제 다 ( ) 책을 친구에게 빌려주었다.", options: ["읽던", "읽은"], answer: "읽은" } } },
+            { id: 'painting', images: { incomplete: 'paintingHalf', complete: 'paintingDone' }, explanation: "아직 그리는 중인 상태는 '그리던', 그리는 행동이 완전히 끝난 상태는 '그린'으로 표현합니다.", parts: { incomplete: { question: "내가 오랫동안 ( ) 그림이 아직 미완성이다.", options: ["그리던", "그린"], answer: "그리던" }, complete: { question: "어제 다 ( ) 그림을 오늘 선물했다.", options: ["그리던", "그린"], answer: "그린" } } },
+            { id: 'letter', images: { incomplete: 'letterHalf', complete: 'letterDone' }, explanation: "아직 쓰는 중인 상태는 '쓰던', 쓰는 행동이 완전히 끝난 상태는 '쓴'으로 표현합니다.", parts: { incomplete: { question: "내가 ( ) 편지를 동생이 훔쳐봤다.", options: ["쓰던", "쓴"], answer: "쓰던" }, complete: { question: "다 ( ) 편지를 봉투에 넣었다.", options: ["쓰던", "쓴"], answer: "쓴" } } }
+        ];
+
+        // HTML 요소
+        const headerSubtitle = document.getElementById('header-subtitle');
+        const gameArea = document.getElementById('game-area');
+        const gameEndArea = document.getElementById('game-end-area');
+        const comboArea = document.getElementById('combo-area');
+        const quizArea = document.getElementById('quiz-area');
+        const singleImageContainer = document.getElementById('single-image-container');
+        const explanationArea = document.getElementById('explanation-area');
+        const explanationIncompleteImg = document.getElementById('explanation-incomplete-img');
+        const explanationCompleteImg = document.getElementById('explanation-complete-img');
+        const explanationText = document.getElementById('explanation-text');
+        const quizQuestion = document.getElementById('quiz-question');
+        const quizOptions = document.getElementById('quiz-options');
+        const quizFeedback = document.getElementById('quiz-feedback');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const resultsTableContainer = document.getElementById('results-table-container');
+
+        const reviewModal = document.getElementById('review-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const reviewIncompleteImg = document.getElementById('review-incomplete-img');
+        const reviewCompleteImg = document.getElementById('review-complete-img');
+        const reviewExplanation = document.getElementById('review-explanation');
+
+        let currentQuestion;
+        let questionCount = 0;
+        let allQuestions = [];
+        let gameResults = [];
+        let comboCount = 0;
+        
+        function buildImageSvg(imageType) {
+            const drawFunc = drawings[imageType];
+            return `<svg width="100%" height="100%" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${drawFunc()}</svg>`;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function setupNewGame() {
+            questionCount = 0;
+            gameResults = [];
+            comboCount = 0;
+            updateComboDisplay();
+            
+            allQuestions = [];
+            scenarios.forEach(scenario => {
+                allQuestions.push({ type: 'incomplete', scenarioId: scenario.id, ...scenario.parts.incomplete });
+                allQuestions.push({ type: 'complete', scenarioId: scenario.id, ...scenario.parts.complete });
+            });
+            shuffleArray(allQuestions);
+            
+            gameEndArea.style.display = 'none';
+            gameArea.style.display = 'block';
+            loadNextQuestion();
+        }
+
+        function loadNextQuestion() {
+            if (questionCount >= allQuestions.length) {
+                showEndScreen();
+                return;
+            }
+
+            quizArea.style.display = 'block';
+            explanationArea.style.display = 'none';
+            quizFeedback.innerHTML = '';
+            headerSubtitle.textContent = `문제 ${questionCount + 1}/${allQuestions.length}: 그림을 보고 알맞은 문법을 선택하세요.`;
+            
+            currentQuestion = allQuestions[questionCount];
+            const originalScenario = scenarios.find(s => s.id === currentQuestion.scenarioId);
+            
+            const imageType = originalScenario.images[currentQuestion.type];
+            singleImageContainer.innerHTML = buildImageSvg(imageType);
+
+            quizQuestion.textContent = currentQuestion.question;
+
+            quizOptions.innerHTML = '';
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'quiz-option w-full p-4 border-2 rounded-lg text-lg font-semibold hover:bg-gray-100';
+                button.onclick = () => checkQuizAnswer(option, button);
+                quizOptions.appendChild(button);
+            });
+        }
+        
+        function checkQuizAnswer(selectedOption, selectedButton) {
+            Array.from(quizOptions.children).forEach(btn => btn.disabled = true);
+            const isCorrect = selectedOption === currentQuestion.answer;
+            gameResults.push({ question: currentQuestion, isCorrect: isCorrect, selected: selectedOption });
+
+            if (isCorrect) {
+                comboCount++;
+                quizFeedback.textContent = '정답입니다! 아래 설명을 확인하세요.';
+                quizFeedback.className = 'mt-4 text-lg h-8 text-green-600 font-bold feedback-anim';
+                selectedButton.classList.add('bg-green-200', 'border-green-400');
+            } else {
+                comboCount = 0;
+                quizFeedback.textContent = `아쉽지만, 정답은 '${currentQuestion.answer}'입니다.`;
+                quizFeedback.className = 'mt-4 text-lg h-8 text-red-500 feedback-anim';
+                selectedButton.classList.add('bg-red-200', 'border-red-400');
+            }
+            updateComboDisplay();
+            setTimeout(showExplanation, 1500);
+        }
+
+        function updateComboDisplay() {
+            if (comboCount > 1) {
+                comboArea.textContent = `🔥 ${comboCount} COMBO!`;
+                comboArea.classList.remove('hidden');
+                comboArea.classList.add('combo-effect');
+                setTimeout(() => comboArea.classList.remove('combo-effect'), 300);
+            } else {
+                comboArea.classList.add('hidden');
+            }
+        }
+
+        function showExplanation() {
+            quizArea.style.display = 'none';
+            explanationArea.style.display = 'block';
+
+            const originalScenario = scenarios.find(s => s.id === currentQuestion.scenarioId);
+            explanationIncompleteImg.innerHTML = buildImageSvg(originalScenario.images.incomplete);
+            explanationCompleteImg.innerHTML = buildImageSvg(originalScenario.images.complete);
+
+            const incompleteSentence = originalScenario.parts.incomplete.question.replace('( )', `<span class='font-bold text-red-500'>${originalScenario.parts.incomplete.answer}</span>`);
+            const completeSentence = originalScenario.parts.complete.question.replace('( )', `<span class='font-bold text-red-500'>${originalScenario.parts.complete.answer}</span>`);
+
+            explanationText.innerHTML = `<p class="font-bold text-gray-800 mb-2">설명:</p><p>${originalScenario.explanation}</p>
+            <p class="mt-3"><span class="font-bold text-blue-600">미완료:</span> ${incompleteSentence}</p>
+            <p class="mt-1"><span class="font-bold text-blue-600">완료:</span> ${completeSentence}</p>`;
+
+            nextBtn.textContent = (questionCount === allQuestions.length - 1) ? '결과 보기' : '다음 문제';
+            nextBtn.style.display = 'inline-block';
+        }
+
+        function showEndScreen() {
+            gameArea.style.display = 'none';
+            gameEndArea.style.display = 'block';
+            comboArea.classList.add('hidden');
+            
+            let tableHTML = `<table class="w-full text-left table-auto"><thead class="bg-gray-100"><tr><th class="p-3">문제</th><th class="p-3 text-center">선택</th><th class="p-3 text-center">결과</th><th class="p-3 text-center">복습</th></tr></thead><tbody>`;
+            
+            gameResults.forEach((result, index) => {
+                const isCorrect = result.isCorrect;
+                tableHTML += `<tr class="border-b"><td class="p-3 text-sm">${result.question.question.replace('( )', `(${result.question.answer})`)}</td><td class="p-3 text-center text-sm">${result.selected}</td><td class="p-3 text-center font-bold ${isCorrect ? 'text-green-500' : 'text-red-500'}">${isCorrect ? 'O' : 'X'}</td><td class="p-3 text-center"><button class="review-btn bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm py-1 px-3 rounded-md" data-index="${index}">보기</button></td></tr>`;
+            });
+
+            tableHTML += `</tbody></table>`;
+            resultsTableContainer.innerHTML = tableHTML;
+        }
+        
+        function openReviewModal(index) {
+            const result = gameResults[index];
+            const originalScenario = scenarios.find(s => s.id === result.question.scenarioId);
+            
+            reviewIncompleteImg.innerHTML = buildImageSvg(originalScenario.images.incomplete);
+            reviewCompleteImg.innerHTML = buildImageSvg(originalScenario.images.complete);
+            
+            const incompleteSentence = originalScenario.parts.incomplete.question.replace('( )', `<span class='font-bold text-red-500'>${originalScenario.parts.incomplete.answer}</span>`);
+            const completeSentence = originalScenario.parts.complete.question.replace('( )', `<span class='font-bold text-red-500'>${originalScenario.parts.complete.answer}</span>`);
+
+            reviewExplanation.innerHTML = `<p class="font-bold text-gray-800 mb-2">설명:</p><p>${originalScenario.explanation}</p>
+            <p class="mt-3"><span class="font-bold text-blue-600">미완료:</span> ${incompleteSentence}</p>
+            <p class="mt-1"><span class="font-bold text-blue-600">완료:</span> ${completeSentence}</p>`;
+            reviewModal.style.display = 'flex';
+        }
+
+        function closeReviewModal() {
+            reviewModal.style.display = 'none';
+        }
+
+        resultsTableContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('review-btn')) {
+                const index = e.target.dataset.index;
+                openReviewModal(index);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            questionCount++;
+            loadNextQuestion();
+        });
+        restartBtn.addEventListener('click', setupNewGame);
+        closeModalBtn.addEventListener('click', closeReviewModal);
+
+        window.onload = setupNewGame;
+    </script>
+
+</body>
+</html>
+
