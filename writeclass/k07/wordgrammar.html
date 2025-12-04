@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>특별한 물건 글쓰기 도우미</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f0fdf4; }
+        .card-flip { perspective: 1000px; }
+        .card-inner { transition: transform 0.6s; transform-style: preserve-3d; }
+        .flipped .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back { backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .card-back { transform: rotateY(180deg); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Data: Vocabulary
+        const vocabData = [
+            {
+                category: "1. 물건 이름",
+                items: [
+                    { word: "노트북", meaning: "Laptop computer" },
+                    { word: "무선 이어폰", meaning: "Wireless earphones" },
+                    { word: "지갑", meaning: "Wallet" },
+                    { word: "손목시계", meaning: "Wristwatch" },
+                    { word: "기념품", meaning: "Souvenir" }
+                ]
+            },
+            {
+                category: "2. 시기 & 장소",
+                items: [
+                    { word: "입학하다", meaning: "To enter school" },
+                    { word: "졸업하다", meaning: "To graduate" },
+                    { word: "면세점", meaning: "Duty-free shop" },
+                    { word: "벼룩시장", meaning: "Flea market" },
+                    { word: "인터넷 쇼핑몰", meaning: "Online shopping mall" }
+                ]
+            },
+            {
+                category: "3. 이유 & 특징",
+                items: [
+                    { word: "튼튼하다", meaning: "To be strong/sturdy" },
+                    { word: "편리하다", meaning: "To be convenient" },
+                    { word: "독특하다", meaning: "To be unique" },
+                    { word: "추억이 담기다", meaning: "To contain memories" },
+                    { word: "소중하다", meaning: "To be precious" }
+                ]
+            }
+        ];
+
+        // Data: Grammar
+        const grammarData = [
+            {
+                title: "-(으)ㄹ 때 (시간)",
+                usage: "어떤 행동이나 상태가 계속되는 동안이나 시간을 나타냅니다.",
+                example: "대학교에 입학했을 때 이 노트북을 샀습니다."
+            },
+            {
+                title: "-기 위해서 (목적)",
+                usage: "어떤 일을 하는 목적이나 의도를 나타냅니다.",
+                example: "한국어를 공부하기 위해서 전자사전을 샀습니다."
+            },
+            {
+                title: "-아/어서 (이유)",
+                usage: "앞의 내용이 뒤의 내용의 원인이나 이유가 될 때 사용합니다.",
+                example: "디자인이 마음에 들어서 이 옷을 샀습니다."
+            },
+            {
+                title: "-게 생기다 (추측/모습)",
+                usage: "사물의 모양이나 생김새를 묘사할 때 사용합니다.",
+                example: "이 인형은 아주 귀엽게 생겼습니다."
+            },
+            {
+                title: "-아/어 두다 (상태 유지)",
+                usage: "어떤 행동을 끝내고 그 결과를 유지함을 나타냅니다.",
+                example: "책상 위에 사진을 올려 두었습니다."
+            }
+        ];
+
+        // Data: Quiz
+        const quizData = [
+            {
+                question: "다음 빈칸에 알맞은 말을 고르세요.\n'저는 한국어 공부를 (    ) 이 책을 샀습니다.'",
+                options: ["하기 위해서", "하니까", "하지만", "하는데"],
+                answer: 0
+            },
+            {
+                question: "다음 중 '물건의 특징'을 나타내는 말이 아닌 것은?",
+                options: ["튼튼하다", "가볍다", "편리하다", "입학하다"],
+                answer: 3
+            },
+            {
+                question: "문장을 완성하세요.\n'이 시계는 3년 전에 백화점(    ) 샀습니다.'",
+                options: ["은", "에서", "이", "을"],
+                answer: 1
+            },
+            {
+                question: "비슷한 말을 고르세요. '이 물건은 저에게 아주 [소중합니다].'",
+                options: ["비쌉니다", "특별합니다", "무겁습니다", "새롭습니다"],
+                answer: 1
+            }
+        ];
+
+        // Component: Header
+        const Header = () => (
+            <header className="bg-green-600 text-white p-4 shadow-md text-center">
+                <h1 className="text-2xl font-bold">📝 특별한 물건 쓰기 준비</h1>
+                <p className="text-green-100 text-sm mt-1">한국어 3급 어휘 및 문법 학습</p>
+            </header>
+        );
+
+        // Component: Flashcard
+        const Flashcard = ({ item }) => {
+            const [isFlipped, setIsFlipped] = useState(false);
+            return (
+                <div 
+                    className={`card-flip h-32 w-full cursor-pointer ${isFlipped ? 'flipped' : ''}`} 
+                    onClick={() => setIsFlipped(!isFlipped)}
+                >
+                    <div className="card-inner relative w-full h-full text-center shadow-lg rounded-xl bg-white border border-green-200">
+                        <div className="card-front flex items-center justify-center p-4">
+                            <span className="text-lg font-bold text-gray-800">{item.word}</span>
+                        </div>
+                        <div className="card-back bg-green-100 flex items-center justify-center p-4 rounded-xl">
+                            <span className="text-md text-green-800 font-medium">{item.meaning}</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Component: Vocab Section
+        const VocabSection = () => (
+            <div className="space-y-6">
+                <h2 className="text-xl font-bold text-gray-800 border-b-2 border-green-500 pb-2">📚 주요 어휘 학습</h2>
+                {vocabData.map((cat, idx) => (
+                    <div key={idx} className="bg-white p-4 rounded-lg shadow-sm">
+                        <h3 className="text-lg font-semibold text-green-700 mb-3">{cat.category}</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {cat.items.map((item, i) => (
+                                <Flashcard key={i} item={item} />
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+
+        // Component: Grammar Section
+        const GrammarSection = () => (
+            <div className="space-y-6">
+                <h2 className="text-xl font-bold text-gray-800 border-b-2 border-green-500 pb-2">💡 핵심 문법 노트</h2>
+                <div className="grid gap-4">
+                    {grammarData.map((g, idx) => (
+                        <div key={idx} className="bg-white p-5 rounded-lg shadow-sm border-l-4 border-green-500">
+                            <h3 className="text-lg font-bold text-green-700">{g.title}</h3>
+                            <p className="text-gray-600 mt-1 mb-2 text-sm">{g.usage}</p>
+                            <div className="bg-green-50 p-3 rounded text-gray-800 text-sm">
+                                <span className="font-bold mr-2">예문:</span>
+                                {g.example}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+
+        // Component: Quiz Section
+        const QuizSection = () => {
+            const [currentQ, setCurrentQ] = useState(0);
+            const [score, setScore] = useState(0);
+            const [showScore, setShowScore] = useState(false);
+            const [feedback, setFeedback] = useState(null);
+
+            const handleAnswer = (optionIndex) => {
+                const isCorrect = optionIndex === quizData[currentQ].answer;
+                if (isCorrect) {
+                    setScore(score + 1);
+                    setFeedback("정답입니다! 🎉");
+                } else {
+                    setFeedback("틀렸습니다. 다시 생각해 보세요. 🤔");
+                }
+                
+                setTimeout(() => {
+                    setFeedback(null);
+                    if (currentQ < quizData.length - 1) {
+                        setCurrentQ(currentQ + 1);
+                    } else {
+                        setShowScore(true);
+                    }
+                }, 1500);
+            };
+
+            const resetQuiz = () => {
+                setCurrentQ(0);
+                setScore(0);
+                setShowScore(false);
+            };
+
+            return (
+                <div className="max-w-xl mx-auto">
+                    <h2 className="text-xl font-bold text-gray-800 border-b-2 border-green-500 pb-2 mb-6">✅ 실력 확인 퀴즈</h2>
+                    
+                    {showScore ? (
+                        <div className="bg-white p-8 rounded-lg shadow text-center">
+                            <h3 className="text-2xl font-bold text-gray-800 mb-4">결과 확인</h3>
+                            <p className="text-lg mb-6">총 {quizData.length}문제 중 <span className="text-green-600 font-bold">{score}</span>문제를 맞혔어요!</p>
+                            <button onClick={resetQuiz} className="bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition">다시 풀기</button>
+                        </div>
+                    ) : (
+                        <div className="bg-white p-6 rounded-lg shadow relative">
+                            <div className="flex justify-between text-sm text-gray-500 mb-4">
+                                <span>문제 {currentQ + 1} / {quizData.length}</span>
+                                <span>점수: {score}</span>
+                            </div>
+                            <h3 className="text-lg font-medium text-gray-800 mb-6 whitespace-pre-line leading-relaxed">{quizData[currentQ].question}</h3>
+                            <div className="grid gap-3">
+                                {quizData[currentQ].options.map((opt, idx) => (
+                                    <button 
+                                        key={idx} 
+                                        onClick={() => handleAnswer(idx)}
+                                        className="w-full text-left p-3 border rounded hover:bg-green-50 hover:border-green-300 transition"
+                                    >
+                                        {idx + 1}. {opt}
+                                    </button>
+                                ))}
+                            </div>
+                            {feedback && (
+                                <div className="absolute inset-0 bg-white/90 flex items-center justify-center rounded-lg">
+                                    <p className={`text-xl font-bold ${feedback.includes("정답") ? "text-green-600" : "text-red-500"}`}>{feedback}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // Component: Writing Helper
+        const WritingHelper = () => {
+            const steps = [
+                { label: "1. 물건 이름", placeholder: "예: 입학 선물로 받은 노트북" },
+                { label: "2. 언제/어디에서", placeholder: "예: 작년에 한국에 왔을 때 면세점에서 샀습니다." },
+                { label: "3. 산 이유", placeholder: "예: 한국어 공부를 열심히 하기 위해서 샀습니다." },
+                { label: "4. 특징", placeholder: "예: 가볍고 디자인이 아주 심플합니다." },
+                { label: "5. 특별한 이유", placeholder: "예: 부모님이 사 주신 것이라서 저에게 소중합니다." },
+            ];
+
+            return (
+                <div className="space-y-6">
+                    <h2 className="text-xl font-bold text-gray-800 border-b-2 border-green-500 pb-2">✍️ 글쓰기 연습</h2>
+                    <p className="text-gray-600 text-sm">배운 어휘와 문법을 사용해서 짧은 문장을 만들어 보세요.</p>
+                    <div className="grid gap-6">
+                        {steps.map((step, idx) => (
+                            <div key={idx} className="bg-white p-4 rounded-lg shadow-sm">
+                                <label className="block text-green-700 font-bold mb-2">{step.label}</label>
+                                <textarea 
+                                    className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-green-400 focus:outline-none" 
+                                    placeholder={step.placeholder}
+                                    rows="2"
+                                ></textarea>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="bg-green-100 p-4 rounded-lg mt-4">
+                        <h4 className="font-bold text-green-800 mb-2">💡 선생님의 팁 (접속사 활용)</h4>
+                        <p className="text-sm text-green-700">
+                            문장을 연결할 때 <strong>'그리고', '그래서', '하지만'</strong>을 사용하면 더 자연스러운 글이 됩니다.<br/>
+                            예: "가볍습니다. <strong>그리고</strong> 튼튼합니다."
+                        </p>
+                    </div>
+                </div>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('vocab');
+
+            const renderContent = () => {
+                switch(activeTab) {
+                    case 'vocab': return <VocabSection />;
+                    case 'grammar': return <GrammarSection />;
+                    case 'quiz': return <QuizSection />;
+                    case 'writing': return <WritingHelper />;
+                    default: return <VocabSection />;
+                }
+            };
+
+            return (
+                <div className="min-h-screen pb-20">
+                    <Header />
+                    
+                    {/* Navigation Tabs */}
+                    <div className="sticky top-0 z-10 bg-white shadow-sm">
+                        <div className="flex justify-around max-w-3xl mx-auto">
+                            {['vocab', 'grammar', 'quiz', 'writing'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    className={`flex-1 py-4 text-sm md:text-base font-medium transition-colors border-b-4 ${
+                                        activeTab === tab 
+                                        ? 'border-green-600 text-green-700 bg-green-50' 
+                                        : 'border-transparent text-gray-500 hover:text-green-600'
+                                    }`}
+                                >
+                                    {tab === 'vocab' && '📖 어휘'}
+                                    {tab === 'grammar' && '💡 문법'}
+                                    {tab === 'quiz' && '✅ 퀴즈'}
+                                    {tab === 'writing' && '✍️ 쓰기'}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Main Content Area */}
+                    <main className="max-w-3xl mx-auto p-4 md:p-6 mt-2">
+                        {renderContent()}
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="text-center text-gray-400 text-sm py-8 mt-8 border-t">
+                        <p>한국어 3급 쓰기 수업 보조 자료</p>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
