@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학급 사진 갤러리</title>
+    <!-- Tailwind CSS (디자인용) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 아이콘 (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* 커스텀 스크롤바 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* 이미지 로딩 애니메이션 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 썸네일 호버 효과 */
+        .photo-card:hover .overlay {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans">
+
+    <!-- 헤더 -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i data-lucide="image" class="text-blue-600 w-6 h-6"></i>
+                <h1 class="text-xl font-bold text-slate-800">우리 반 사진첩</h1>
+            </div>
+            <div class="text-sm text-slate-500">
+                총 <span id="photo-count" class="font-bold text-blue-600">0</span>장
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 갤러리 영역 -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 안내 메시지 (이미지가 없을 경우) -->
+        <div id="empty-message" class="hidden text-center py-20">
+            <i data-lucide="image-off" class="w-16 h-16 mx-auto text-slate-300 mb-4"></i>
+            <p class="text-lg text-slate-500">표시할 사진이 없습니다.</p>
+            <p class="text-sm text-slate-400 mt-2">코드 내의 'imageList' 배열에 파일명을 추가해주세요.</p>
+        </div>
+
+        <!-- 갤러리 그리드 -->
+        <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <!-- 자바스크립트로 이미지가 여기에 추가됩니다 -->
+        </div>
+    </main>
+
+    <!-- 라이트박스 (크게 보기 모달) -->
+    <div id="lightbox" class="fixed inset-0 z-50 bg-black/90 hidden backdrop-blur-sm transition-opacity duration-300 opacity-0" onclick="closeLightbox(event)">
+        <!-- 닫기 버튼 -->
+        <button class="absolute top-4 right-4 text-white hover:text-gray-300 z-50 p-2 bg-black/50 rounded-full" onclick="closeLightbox(null, true)">
+            <i data-lucide="x" class="w-8 h-8"></i>
+        </button>
+
+        <!-- 이미지 컨테이너 -->
+        <div class="flex items-center justify-center w-full h-full p-4">
+            <img id="lightbox-img" src="" alt="큰 이미지" class="max-w-full max-h-[90vh] object-contain shadow-2xl rounded-sm transition-transform duration-300 scale-95">
+        </div>
+
+        <!-- 하단 컨트롤 바 -->
+        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white flex justify-between items-end">
+            <div>
+                <p id="lightbox-caption" class="text-lg font-medium mb-1">파일명.jpg</p>
+                <p class="text-xs text-gray-300">이미지 뷰어</p>
+            </div>
+            <a id="download-btn" href="#" download class="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full font-bold hover:bg-gray-200 transition-colors text-sm">
+                <i data-lucide="download" class="w-4 h-4"></i> 다운로드
+            </a>
+        </div>
+    </div>
+
+    <!-- 푸터 -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-8 text-center text-slate-500 text-sm">
+        <p>&copy; 2024 학급 사진 갤러리. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // [설정 영역] 선생님, 여기서 사진 목록을 수정하세요!
+        // ==========================================
+        
+        // 1. 사진이 들어있는 폴더 경로 (현재 html 파일과 같은 위치라면 './' 사용, 하위 폴더면 './images/' 등)
+        const photoFolder = './'; 
+
+        // 2. 사진 파일명 목록 (실제 파일 이름과 똑같이 적어주세요, 확장자 포함)
+        // 예시: ['IMG_001.jpg', 'pic_trip.png', 'photo_1.jpeg']
+        // 테스트를 위해 외부 이미지 URL을 넣어두었으나, 실제 사용 시에는 로컬 파일명을 넣으세요.
+        const imageList = [
+            'https://sometime4224-hnu.github.io/hnu-3B-korean-winter/writeclass/k07/picture/pre (1).png',
+            'https://sometime4224-hnu.github.io/hnu-3B-korean-winter/writeclass/k07/picture/pre (2).png',
+            'https://sometime4224-hnu.github.io/hnu-3B-korean-winter/writeclass/k07/picture/pre (3).png',
+            'https://sometime4224-hnu.github.io/hnu-3B-korean-winter/writeclass/k07/picture/pre (4).png',
+            'https://sometime4224-hnu.github.io/hnu-3B-korean-winter/writeclass/k07/picture/snt (1).png',
+            'https://sometime4224-hnu.github.io/hnu-3B-korean-winter/writeclass/k07/picture/snt (2).png',
+            'https://sometime4224-hnu.github.io/hnu-3B-korean-winter/writeclass/k07/picture/snt (3).png',
+            'https://sometime4224-hnu.github.io/hnu-3B-korean-winter/writeclass/k07/picture/th (1).png',
+            'https://sometime4224-hnu.github.io/hnu-3B-korean-winter/writeclass/k07/picture/th (2).png',
+            'https://sometime4224-hnu.github.io/hnu-3B-korean-winter/writeclass/k07/picture/th (3).png'
+        ];
+
+        // ==========================================
+        // [기능 구현 영역] 이 아래는 수정하지 않아도 됩니다.
+        // ==========================================
+
+        const galleryGrid = document.getElementById('gallery-grid');
+        const emptyMessage = document.getElementById('empty-message');
+        const photoCount = document.getElementById('photo-count');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxCaption = document.getElementById('lightbox-caption');
+        const downloadBtn = document.getElementById('download-btn');
+
+        // 아이콘 초기화
+        lucide.createIcons();
+
+        // 갤러리 렌더링 함수
+        function initGallery() {
+            photoCount.textContent = imageList.length;
+
+            if (imageList.length === 0) {
+                emptyMessage.classList.remove('hidden');
+                return;
+            }
+
+            imageList.forEach((filename, index) => {
+                // 이미지 전체 경로 생성 (http로 시작하면 그대로, 아니면 폴더 경로 결합)
+                const fullPath = filename.startsWith('http') ? filename : photoFolder + filename;
+                
+                // 카드 요소 생성
+                const card = document.createElement('div');
+                card.className = 'photo-card group relative aspect-[4/3] overflow-hidden rounded-xl bg-gray-200 cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 fade-in';
+                card.onclick = () => openLightbox(fullPath, filename);
+
+                // 이미지 요소
+                const img = document.createElement('img');
+                img.src = fullPath;
+                img.alt = filename;
+                img.className = 'w-full h-full object-cover transition-transform duration-500 group-hover:scale-110';
+                img.loading = "lazy"; // 성능 최적화
+                
+                // 이미지 로드 에러 처리
+                img.onerror = function() {
+                    this.parentElement.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-full text-slate-400 bg-slate-100">
+                            <i data-lucide="image-off" class="w-8 h-8 mb-2"></i>
+                            <span class="text-xs text-center px-2 break-all">${filename}<br>로딩 실패</span>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                };
+
+                // 오버레이 (호버 시 돋보기)
+                const overlay = document.createElement('div');
+                overlay.className = 'overlay absolute inset-0 bg-black/30 opacity-0 transition-opacity duration-300 flex items-center justify-center';
+                overlay.innerHTML = `<i data-lucide="zoom-in" class="text-white w-10 h-10"></i>`;
+
+                card.appendChild(img);
+                card.appendChild(overlay);
+                galleryGrid.appendChild(card);
+            });
+            
+            // 동적으로 생성된 아이콘 렌더링
+            lucide.createIcons();
+        }
+
+        // 라이트박스 열기
+        function openLightbox(src, filename) {
+            lightboxImg.src = src;
+            
+            // URL에서 파일명만 깔끔하게 추출하여 표시 (URL 디코딩으로 %20 등을 공백으로 변환)
+            const displayName = filename.split('/').pop();
+            lightboxCaption.textContent = decodeURIComponent(displayName);
+            
+            downloadBtn.href = src; // 다운로드 링크 연결
+            
+            // 화면 표시
+            lightbox.classList.remove('hidden');
+            // 약간의 지연 후 투명도 애니메이션
+            requestAnimationFrame(() => {
+                lightbox.classList.remove('opacity-0');
+                lightboxImg.classList.remove('scale-95');
+                lightboxImg.classList.add('scale-100');
+            });
+            
+            document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+        }
+
+        // 라이트박스 닫기
+        function closeLightbox(event, force = false) {
+            // 이미지 자체를 클릭했을 때는 닫히지 않게 함 (배경 클릭시에만 닫힘) unless force is true
+            if (!force && event.target.tagName === 'IMG') return;
+
+            lightbox.classList.add('opacity-0');
+            lightboxImg.classList.remove('scale-100');
+            lightboxImg.classList.add('scale-95');
+
+            setTimeout(() => {
+                lightbox.classList.add('hidden');
+                lightboxImg.src = ''; // 메모리 정리
+                document.body.style.overflow = ''; // 스크롤 복구
+            }, 300);
+        }
+
+        // 키보드 ESC로 닫기 지원
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !lightbox.classList.contains('hidden')) {
+                closeLightbox(null, true);
+            }
+        });
+
+        // 실행
+        initGallery();
+
+    </script>
+</body>
+</html>
