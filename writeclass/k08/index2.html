@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국어 이메일 쓰기 연습 2 (심화)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0fdf4;
+        }
+        .tab-active {
+            border-bottom: 3px solid #15803d;
+            color: #15803d;
+            font-weight: 700;
+            background-color: #f0fdf4;
+        }
+        .tab-inactive {
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Style for the inline vocabulary translation */
+        .vocab-word {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.1;
+            vertical-align: middle;
+            margin: 0 2px;
+        }
+        .vocab-main {
+            font-weight: bold;
+        }
+        .vocab-sub {
+            font-size: 0.65rem;
+            color: #16a34a; /* Green-600 */
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body class="bg-green-50 min-h-screen pb-10">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-10">
+        <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold text-green-800 flex items-center">
+                    <i class="fas fa-envelope-open-text mr-2"></i>
+                    <span id="ui-title">이메일 쓰기 연습 2</span>
+                </h1>
+                <span id="ui-subtitle" class="text-sm text-green-600 font-medium bg-green-100 px-3 py-1 rounded-full inline-block mt-1">심화 과정</span>
+            </div>
+            
+            <!-- Language Toggle -->
+            <button onclick="toggleLanguage()" class="flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg transition-colors border border-gray-300">
+                <i class="fas fa-globe text-gray-600"></i>
+                <span id="lang-label" class="text-sm font-bold text-gray-700">Tiếng Việt</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-3xl mx-auto px-4 py-6">
+        
+        <!-- Introduction -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6 border-l-4 border-green-500">
+            <h2 id="ui-guide-title" class="text-lg font-bold text-gray-800 mb-2">학습 안내</h2>
+            <p id="ui-guide-desc" class="text-gray-600 text-sm md:text-base leading-relaxed">
+                제시된 <span class="text-red-500 font-bold">반말 문장</span>을 상황에 맞는 <span class="text-green-600 font-bold">격식 있는 표현</span>으로 고쳐 써 보세요.<br>
+                주인공의 이름은 <strong>'흐엉'</strong>입니다.
+            </p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex space-x-2 border-b border-gray-200 mb-6 overflow-x-auto pb-2">
+            <button onclick="switchTab('sick_leave')" id="tab-sick_leave" class="tab-active py-2 px-4 rounded-t-lg transition-colors duration-200 flex items-center justify-center min-w-[120px]">
+                <span>4. </span>
+                <span class="vocab-word mx-1"><span class="vocab-main">병결</span><span class="vocab-sub">nghỉ ốm</span></span>
+                <span>신청</span>
+            </button>
+            <button onclick="switchTab('admission')" id="tab-admission" class="tab-inactive py-2 px-4 rounded-t-lg transition-colors duration-200 flex items-center justify-center min-w-[120px] hover:text-green-600">
+                <span>5. </span>
+                <span class="vocab-word mx-1"><span class="vocab-main">입학</span><span class="vocab-sub">nhập học</span></span>
+                <span class="vocab-word mx-1"><span class="vocab-main">상담</span><span class="vocab-sub">tư vấn</span></span>
+            </button>
+            <button onclick="switchTab('work_inquiry')" id="tab-work_inquiry" class="tab-inactive py-2 px-4 rounded-t-lg transition-colors duration-200 flex items-center justify-center min-w-[120px] hover:text-green-600">
+                <span>6. </span>
+                <span class="vocab-word mx-1"><span class="vocab-main">업무</span><span class="vocab-sub">công việc</span></span>
+                <span>방법 문의</span>
+            </button>
+        </div>
+
+        <!-- Question Container -->
+        <div id="questions-container" class="space-y-6">
+            <!-- Questions will be injected here via JavaScript -->
+        </div>
+
+        <!-- Bottom Reset -->
+        <div class="mt-8 text-center">
+            <button onclick="resetAll()" class="text-sm text-gray-500 hover:text-green-600 underline flex items-center justify-center mx-auto">
+                <i class="fas fa-redo mr-1"></i><span id="ui-reset">모든 입력 초기화</span>
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        let currentLang = 'ko'; // 'ko' or 'vi'
+
+        // Helper function to create vocabulary HTML
+        function v(word, meaning) {
+            return `<span class="vocab-word"><span class="vocab-main">${word}</span><span class="vocab-sub">${meaning}</span></span>`;
+        }
+
+        const uiTranslations = {
+            ko: {
+                title: "이메일 쓰기 연습 2",
+                subtitle: "심화 과정",
+                guideTitle: "학습 안내",
+                guideDesc: `제시된 <span class="text-red-500 font-bold">반말 문장</span>을 상황에 맞는 <span class="text-green-600 font-bold">격식 있는 표현</span>으로 고쳐 써 보세요.<br>주인공의 이름은 <strong>'흐엉'</strong>입니다.`,
+                reset: "모든 입력 초기화",
+                questionLabel: "문제",
+                informalLabel: "반말 표현 (친구에게):",
+                formalLabel: "격식 있는 표현 (담당자/상사에게):",
+                placeholder: "여기에 정중한 표현으로 바꿔 써보세요...",
+                checkBtn: "정답 확인",
+                answerLabel: "모범 답안:",
+                resetConfirm: "작성한 내용을 모두 지우시겠습니까?"
+            },
+            vi: {
+                title: "Luyện viết Email 2",
+                subtitle: "Khóa học nâng cao",
+                guideTitle: "Hướng dẫn học tập",
+                guideDesc: `Hãy viết lại các <span class="text-red-500 font-bold">câu văn nói thân mật</span> dưới đây thành <span class="text-green-600 font-bold">văn phong trang trọng</span> phù hợp với hoàn cảnh.<br>Tên nhân vật chính là <strong>'Hương'</strong>.`,
+                reset: "Xóa tất cả nội dung",
+                questionLabel: "Câu hỏi",
+                informalLabel: "Cách nói thân mật (với bạn bè):",
+                formalLabel: "Cách nói trang trọng (với cấp trên/người phụ trách):",
+                placeholder: "Hãy thử viết lại bằng biểu hiện trang trọng tại đây...",
+                checkBtn: "Kiểm tra đáp án",
+                answerLabel: "Đáp án mẫu:",
+                resetConfirm: "Bạn có chắc chắn muốn xóa tất cả nội dung đã viết không?"
+            }
+        };
+
+        const scenarios = {
+            sick_leave: [
+                {
+                    id: 'sick-1',
+                    context: { ko: '상태 설명', vi: 'Giải thích tình trạng' },
+                    original: '선생님, 나 오늘 몸이 너무 아파서 못 가.',
+                    answer: '선생님, 제가 오늘 몸이 좋지 않아서(편찮아서) 출석하기 어렵습니다.',
+                    tip: { 
+                        ko: "'아파서' → '몸이 좋지 않아서', '못 가' → '출석하기 어렵습니다'가 더 격식 있습니다.", 
+                        vi: "'몸이 좋지 않아서' và '출석하기 어렵습니다' trang trọng hơn." 
+                    }
+                },
+                {
+                    id: 'sick-2',
+                    context: { ko: '불참 사유', vi: 'Lý do vắng mặt' },
+                    original: '아침에 열도 많이 나고 머리가 아파.',
+                    answer: '아침부터 고열이 나고 두통이 심합니다.',
+                    tip: { 
+                        ko: "구체적인 증상은 '고열(sốt cao)', '두통(đau đầu)' 같은 한자어 명사를 쓰면 좋습니다.", 
+                        vi: "Nên dùng từ Hán Hàn như '고열', '두통' để diễn tả triệu chứng cụ thể." 
+                    }
+                },
+                {
+                    id: 'sick-3',
+                    context: { ko: '병원 방문', vi: 'Đi bệnh viện' },
+                    original: '지금 병원에 갔다 오려고 해.',
+                    answer: '지금 병원에 다녀오려고 합니다. / 병원 진료를 받으러 가고 있습니다.',
+                    tip: { 
+                        ko: "'갔다 올게'보다는 '다녀오려고 합니다' 또는 '진료를 받다'를 사용합니다.", 
+                        vi: "Sử dụng '다녀오려고 합니다' hoặc '진료를 받다' thay vì '갔다 올게'." 
+                    }
+                },
+                {
+                    id: 'sick-4',
+                    context: { ko: `증빙 서류(${v('진단서','giấy chẩn đoán')})`, vi: 'Giấy tờ chứng minh' },
+                    original: '병원 가서 진단서 받아서 낼게.',
+                    answer: '병원에서 진단서를 발급받아 제출하겠습니다.',
+                    tip: { 
+                        ko: "'받아서' → '발급받아', '낼게' → '제출하겠습니다'를 사용하세요.", 
+                        vi: "Hãy dùng '발급받아' thay cho '받아서', '제출하겠습니다' thay cho '낼게'." 
+                    }
+                },
+                {
+                    id: 'sick-5',
+                    context: { ko: '죄송한 마음', vi: 'Bày tỏ sự xin lỗi' },
+                    original: '갑자기 수업 빠져서 진짜 미안해.',
+                    answer: '갑작스럽게 결석하게 되어 죄송합니다.',
+                    tip: { 
+                        ko: "'빠지다' → '결석하다', '미안해' → '죄송합니다'로 바꿉니다.", 
+                        vi: "Đổi '빠지다' → '결석하다', '미안해' → '죄송합니다'." 
+                    }
+                },
+                {
+                    id: 'sick-6',
+                    context: { ko: '향후 계획', vi: 'Kế hoạch tiếp theo' },
+                    original: '내일은 꼭 학교 갈게.',
+                    answer: '내일은 차질 없이 등교하겠습니다(출석하겠습니다).',
+                    tip: { 
+                        ko: "'꼭 갈게'는 '차질 없이 등교하겠습니다'로 표현하면 매우 신뢰감을 줍니다.", 
+                        vi: "'차질 없이 등교하겠습니다' mang lại cảm giác tin cậy hơn '꼭 갈게'." 
+                    }
+                }
+            ],
+            admission: [
+                {
+                    id: 'adm-1',
+                    context: { ko: '자기소개', vi: 'Giới thiệu bản thân' },
+                    original: '안녕? 나 베트남에서 온 흐엉이라고 해.',
+                    answer: '안녕하십니까? 저는 베트남에서 온 흐엉이라고 합니다.',
+                    tip: { 
+                        ko: "처음 연락하는 담당자에게는 정중하게 '안녕하십니까?'로 시작합니다.", 
+                        vi: "Bắt đầu trang trọng bằng '안녕하십니까?' với người phụ trách lần đầu liên lạc." 
+                    }
+                },
+                {
+                    id: 'adm-2',
+                    context: { ko: '관심 표현', vi: 'Bày tỏ quan tâm' },
+                    original: '홈페이지 봤는데 너네 학교 대학원에 가고 싶어.',
+                    answer: '홈페이지를 보고 귀교(귀 대학)의 대학원에 진학하고 싶어 연락드렸습니다.',
+                    tip: { 
+                        ko: "상대방의 학교를 높여 부를 때는 '귀교(quý trường)'라는 표현을 씁니다.", 
+                        vi: "Dùng từ '귀교' để tôn xưng trường của đối phương." 
+                    }
+                },
+                {
+                    id: 'adm-3',
+                    context: { ko: `${v('상담','tư vấn')} 요청`, vi: 'Yêu cầu tư vấn' },
+                    original: '궁금한 게 있어서 상담 좀 하고 싶어.',
+                    answer: '문의할 사항이 있어 입학 상담을 요청드리고 싶습니다.',
+                    tip: { 
+                        ko: "'궁금한 게 있어서' → '문의할 사항이 있어'로 격식 있게 표현합니다.", 
+                        vi: "Diễn đạt trang trọng '문의할 사항이 있어' thay vì '궁금한 게 있어서'." 
+                    }
+                },
+                {
+                    id: 'adm-4',
+                    context: { ko: '일정 문의', vi: 'Hỏi lịch trình' },
+                    original: '다음 주 언제 시간 돼?',
+                    answer: '혹시 다음 주에 언제 시간이 괜찮으십니까?',
+                    tip: { 
+                        ko: "상대방의 시간을 물을 때는 '언제 시간이 괜찮으십니까?'가 가장 좋습니다.", 
+                        vi: "Câu '언제 시간이 괜찮으십니까?' là tốt nhất khi hỏi thời gian của người khác." 
+                    }
+                },
+                {
+                    id: 'adm-5',
+                    context: { ko: '방문 가능 여부', vi: 'Hỏi khả năng đến thăm' },
+                    original: '내가 학교 사무실로 찾아가도 돼?',
+                    answer: '제가 학교 행정실로 직접 방문해도 되겠습니까?',
+                    tip: { 
+                        ko: "'사무실'은 학교에서 보통 '행정실'이나 '과 사무실'로 부릅니다.", 
+                        vi: "Trong trường học, văn phòng thường được gọi là '행정실' hoặc '과 사무실'." 
+                    }
+                },
+                {
+                    id: 'adm-6',
+                    context: { ko: '답장 요청', vi: 'Yêu cầu hồi âm' },
+                    original: '보고 나서 답장 좀 줘.',
+                    answer: '확인 후 회신 부탁드립니다.',
+                    tip: { 
+                        ko: "'답장 줘'는 '회신 부탁드립니다'로 쓰는 것이 이메일의 기본 예절입니다.", 
+                        vi: "'회신 부탁드립니다' thay cho '답장 줘' là phép lịch sự cơ bản trong email." 
+                    }
+                }
+            ],
+            work_inquiry: [
+                {
+                    id: 'work-1',
+                    context: { ko: '수신자 호칭', vi: 'Cách xưng hô' },
+                    original: '김 대리, 나 흐엉이야.',
+                    answer: '김 대리님, 안녕하십니까? 흐엉입니다.',
+                    tip: { 
+                        ko: "직함(대리, 과장 등) 뒤에는 반드시 '님'을 붙여야 합니다.", 
+                        vi: "Nhất định phải thêm '님' vào sau chức danh (대리, 과장...)." 
+                    }
+                },
+                {
+                    id: 'work-2',
+                    context: { ko: '용건', vi: 'Việc cần nói' },
+                    original: '이번 달 보고서 쓰는 것 때문에 메일 써.',
+                    answer: '이번 달 보고서 작성 건으로 메일 드립니다.',
+                    tip: { 
+                        ko: "'~ 때문에'보다는 '~ 건으로(về việc)'라고 하면 전문적인 느낌을 줍니다.", 
+                        vi: "Dùng '~ 건으로' sẽ mang lại cảm giác chuyên nghiệp hơn '~ 때문에'." 
+                    }
+                },
+                {
+                    id: 'work-3',
+                    context: { ko: '문제 상황', vi: 'Tình huống vấn đề' },
+                    original: '이거 어떻게 하는지 하나도 모르겠어.',
+                    answer: '이 업무를 어떻게 처리해야 하는지 잘 모르겠습니다.',
+                    tip: { 
+                        ko: "'이거' → '이 업무', '어떻게 하는지' → '어떻게 처리해야 하는지'로 구체화합니다.", 
+                        vi: "Cụ thể hóa bằng '이 업무' và '어떻게 처리해야 하는지'." 
+                    }
+                },
+                {
+                    id: 'work-4',
+                    context: { ko: '도움 요청', vi: 'Nhờ giúp đỡ' },
+                    original: '시간 날 때 방법 좀 가르쳐 줘.',
+                    answer: '시간 괜찮으실 때 작성 방법(절차)을 지도해 주실 수 있습니까?',
+                    tip: { 
+                        ko: "업무를 배울 때는 '가르쳐 주다'보다 '지도하다'나 '안내하다'를 씁니다.", 
+                        vi: "Khi học việc, dùng '지도하다' hoặc '안내하다' thay vì '가르쳐 주다'." 
+                    }
+                },
+                {
+                    id: 'work-5',
+                    context: { ko: '양해 구하기', vi: 'Mong thông cảm' },
+                    original: '처음이라서 잘 못하겠어.',
+                    answer: '아직 업무에 익숙하지 않아서 어려움이 있습니다.',
+                    tip: { 
+                        ko: "'처음이라' → '익숙하지 않아서'라고 표현하면 겸손하고 노력하는 태도가 보입니다.", 
+                        vi: "Dùng '익숙하지 않아서' sẽ thể hiện thái độ khiêm tốn và cầu tiến." 
+                    }
+                },
+                {
+                    id: 'work-6',
+                    context: { ko: '마무리 인사', vi: 'Chào kết thúc' },
+                    original: '바쁜데 귀찮게 해서 미안.',
+                    answer: '바쁘시겠지만 도와주시면 감사하겠습니다.',
+                    tip: { 
+                        ko: "업무 메일에서는 '귀찮게 해서 미안'보다 '도와주시면 감사하겠습니다'가 긍정적입니다.", 
+                        vi: "Trong email công việc, '도와주시면 감사하겠습니다' tích cực hơn là xin lỗi vì làm phiền." 
+                    }
+                }
+            ]
+        };
+
+        function switchTab(tabName) {
+            // Reset visuals
+            document.getElementById('tab-sick_leave').className = "tab-inactive py-2 px-4 rounded-t-lg transition-colors duration-200 flex items-center justify-center min-w-[120px] hover:text-green-600";
+            document.getElementById('tab-admission').className = "tab-inactive py-2 px-4 rounded-t-lg transition-colors duration-200 flex items-center justify-center min-w-[120px] hover:text-green-600";
+            document.getElementById('tab-work_inquiry').className = "tab-inactive py-2 px-4 rounded-t-lg transition-colors duration-200 flex items-center justify-center min-w-[120px] hover:text-green-600";
+
+            // Set active
+            document.getElementById(`tab-${tabName}`).className = "tab-active py-2 px-4 rounded-t-lg transition-colors duration-200 flex items-center justify-center min-w-[120px]";
+
+            currentTab = tabName;
+            renderQuestions();
+        }
+
+        let currentTab = 'sick_leave';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ko' ? 'vi' : 'ko';
+            updateUI();
+            renderQuestions();
+        }
+
+        function updateUI() {
+            const texts = uiTranslations[currentLang];
+            const btnLabel = document.getElementById('lang-label');
+            btnLabel.textContent = currentLang === 'ko' ? 'Tiếng Việt' : '한국어';
+
+            document.getElementById('ui-title').textContent = texts.title;
+            document.getElementById('ui-subtitle').textContent = texts.subtitle;
+            document.getElementById('ui-guide-title').textContent = texts.guideTitle;
+            document.getElementById('ui-guide-desc').innerHTML = texts.guideDesc;
+            document.getElementById('ui-reset').textContent = texts.reset;
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            
+            // Save current input values
+            const currentInputs = {};
+            document.querySelectorAll('textarea').forEach(el => {
+                currentInputs[el.id] = el.value;
+            });
+            // Save visible answers
+            const visibleAnswers = [];
+            document.querySelectorAll('[id^="answer-"]').forEach(el => {
+                if(!el.classList.contains('hidden')) {
+                    visibleAnswers.push(el.id);
+                }
+            });
+
+            container.innerHTML = '';
+            const data = scenarios[currentTab];
+            const texts = uiTranslations[currentLang];
+
+            data.forEach((item, index) => {
+                const contextText = item.context[currentLang];
+                const tipText = item.tip[currentLang];
+
+                const html = `
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 fade-in" style="animation-delay: ${index * 0.1}s">
+                        <div class="bg-gray-50 px-5 py-3 border-b border-gray-100 flex justify-between items-center">
+                            <span class="text-xs font-bold text-gray-500 uppercase tracking-wide flex items-center">
+                                Q${index + 1}. ${contextText}
+                            </span>
+                            <span class="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded">${texts.questionLabel}</span>
+                        </div>
+                        <div class="p-5">
+                            <div class="mb-4">
+                                <p class="text-gray-500 text-sm mb-1">${texts.informalLabel}</p>
+                                <div class="text-lg font-medium text-gray-800 bg-yellow-50 p-3 rounded-lg border border-yellow-100">
+                                    "${item.original}"
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-green-700 mb-1">
+                                    <i class="fas fa-pencil-alt mr-1"></i>${texts.formalLabel}
+                                </label>
+                                <textarea id="input-${item.id}" rows="2" 
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all placeholder-gray-300"
+                                    placeholder="${texts.placeholder}"></textarea>
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <button onclick="toggleAnswer('${item.id}')" 
+                                    class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center">
+                                    <i class="fas fa-check-circle mr-2"></i>${texts.checkBtn}
+                                </button>
+                            </div>
+
+                            <!-- Answer Section -->
+                            <div id="answer-${item.id}" class="hidden mt-4 pt-4 border-t border-dashed border-gray-200">
+                                <div class="bg-green-50 p-4 rounded-lg">
+                                    <p class="text-sm text-green-800 font-bold mb-1">💡 ${texts.answerLabel}</p>
+                                    <p class="text-green-900 text-lg mb-3">"${item.answer}"</p>
+                                    <div class="flex items-start">
+                                        <i class="fas fa-info-circle text-green-600 mt-0.5 mr-2 flex-shrink-0"></i>
+                                        <p class="text-sm text-green-700 leading-relaxed">${tipText}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+
+            // Restore inputs and visibility
+            Object.keys(currentInputs).forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.value = currentInputs[id];
+            });
+            visibleAnswers.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.remove('hidden');
+            });
+        }
+
+        function toggleAnswer(id) {
+            const answerDiv = document.getElementById(`answer-${id}`);
+            if (answerDiv.classList.contains('hidden')) {
+                answerDiv.classList.remove('hidden');
+                answerDiv.classList.add('fade-in');
+            } else {
+                answerDiv.classList.add('hidden');
+            }
+        }
+
+        function resetAll() {
+            const texts = uiTranslations[currentLang];
+            if(confirm(texts.resetConfirm)) {
+                document.querySelectorAll('textarea').forEach(el => el.value = '');
+                document.querySelectorAll('[id^="answer-"]').forEach(el => el.classList.add('hidden'));
+            }
+        }
+
+        // Initialize
+        window.onload = function() {
+            renderQuestions();
+        };
+
+    </script>
+</body>
+</html>
