@@ -1,352 +1,534 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Settings, X, Check, Trophy, Users, RefreshCw } from 'lucide-react';
-
-// 카드 컴포넌트
-const Card = ({ id, isFlipped, result, onClick, disabled }) => {
-  return (
-    <div 
-      className={`relative h-32 w-full cursor-pointer transition-all duration-500 [transform-style:preserve-3d] ${isFlipped ? '[transform:rotateY(180deg)]' : ''} ${disabled ? 'cursor-not-allowed' : 'hover:-translate-y-1'}`}
-      onClick={() => !disabled && onClick(id)}
-    >
-      {/* 카드 뒷면 (클릭 전) */}
-      <div className="absolute inset-0 w-full h-full bg-indigo-600 rounded-xl shadow-md border-4 border-indigo-200 flex items-center justify-center [backface-visibility:hidden]">
-        <span className="text-3xl font-bold text-white opacity-50">{id + 1}</span>
-      </div>
-
-      {/* 카드 앞면 (결과) */}
-      <div className={`absolute inset-0 w-full h-full rounded-xl shadow-lg flex flex-col items-center justify-center p-2 [backface-visibility:hidden] [transform:rotateY(180deg)] ${result === 'winner' ? 'bg-yellow-100 border-4 border-yellow-400' : 'bg-gray-100 border-2 border-gray-300'}`}>
-        {result === 'winner' ? (
-          <>
-            <Trophy className="w-8 h-8 text-yellow-600 mb-1 animate-bounce" />
-            <span className="font-extrabold text-xl text-yellow-700">반장!</span>
-          </>
-        ) : (
-          <span className="text-gray-400 font-bold text-lg">꽝</span>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// 학생 명단 아이템 컴포넌트
-const StudentItem = ({ name, status, index }) => {
-  let baseClass = "flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-all duration-300 ";
-  
-  if (status === 'current') {
-    baseClass += "bg-indigo-600 text-white shadow-lg scale-105 border-l-4 border-yellow-400";
-  } else if (status === 'done') {
-    baseClass += "bg-gray-100 text-gray-400 line-through";
-  } else {
-    baseClass += "bg-white text-gray-600 border border-gray-100";
-  }
-
-  return (
-    <div className={baseClass}>
-      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${status === 'current' ? 'bg-white text-indigo-600 font-bold' : 'bg-gray-200'}`}>
-        {index + 1}
-      </div>
-      <span className="truncate">{name}</span>
-      {status === 'current' && <span className="ml-auto text-xs bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-full animate-pulse">선택 중</span>}
-    </div>
-  );
-};
-
-// 폭죽 효과
-const Confetti = ({ active }) => {
-  if (!active) return null;
-  return (
-    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
-      {[...Array(50)].map((_, i) => (
-        <div
-          key={i}
-          className="absolute animate-confetti"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `-5%`,
-            backgroundColor: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'][Math.floor(Math.random() * 5)],
-            width: '10px',
-            height: '10px',
-            animationDelay: `${Math.random() * 2}s`,
-            animationDuration: `${2 + Math.random() * 3}s`
-          }}
-        />
-      ))}
-    </div>
-  );
-};
-
-export default function App() {
-  const initialNames = [
-    "짠 푹 콴", "타 티 민 트", "응웬 반 푹", "응웬 응억 마이",
-    "쿠엇반탕", "응웬 티 응웻 응아", "응우옌 민 히에우", "응웬 티엔 헙",
-    "응웬 티 타잉 짱", "응웬 디엔 닷", "팜 꾸옥 상", "보 쑤안 타이",
-    "버 느 꾸잉", "짠 당 구인 프엉", "후잉 레 꾸억 안", "쩐아잉즈엉",
-    "응웬 비엣 꾸억", "레 부 하", "응우옌 티 지앙", "짠 티 캄 리",
-    "또 티 후엔 짱", "쯔엉 티 튀 홍"
-  ];
-
-  const [cards, setCards] = useState([]);
-  const [shuffledStudents, setShuffledStudents] = useState([]);
-  const [currentTurnIndex, setCurrentTurnIndex] = useState(0);
-  
-  const [targetWinnerName, setTargetWinnerName] = useState(null); // 조작된 당첨자 이름
-  const [preAssignedWinningCardId, setPreAssignedWinningCardId] = useState(null); // 랜덤 모드일 때 당첨 카드 ID
-  
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [gameStatus, setGameStatus] = useState('ready'); // ready, playing, ended
-  const [hasFirstCardFlipped, setHasFirstCardFlipped] = useState(false);
-
-  // 게임 초기화
-  const initGame = useCallback(() => {
-    // 1. 카드 생성 (순수한 카드, 내용은 아직 결정되지 않음 or 랜덤 모드면 미리 결정)
-    const newCards = Array(initialNames.length).fill(null).map((_, i) => ({
-      id: i,
-      isFlipped: false,
-      result: null // 'winner' or 'loser' or null
-    }));
-    setCards(newCards);
-
-    // 2. 학생 명단 섞기
-    const shuffled = [...initialNames].sort(() => Math.random() - 0.5);
-    setShuffledStudents(shuffled);
-
-    // 3. 상태 초기화
-    setCurrentTurnIndex(0);
-    setGameStatus('ready');
-    setHasFirstCardFlipped(false);
-    
-    // 4. (랜덤 모드일 경우를 대비해) 미리 당첨 카드 번호 하나 뽑아두기
-    const randomWinnerId = Math.floor(Math.random() * initialNames.length);
-    setPreAssignedWinningCardId(randomWinnerId);
-
-  }, []);
-
-  useEffect(() => {
-    initGame();
-  }, [initGame]);
-
-  const handleCardClick = (cardId) => {
-    if (gameStatus === 'ended') return;
-    
-    // 이미 뒤집힌 카드는 무시
-    const clickedCard = cards.find(c => c.id === cardId);
-    if (clickedCard.isFlipped) return;
-
-    // 첫 카드 뒤집힘 표시 (설정 잠금용)
-    if (!hasFirstCardFlipped) {
-      setHasFirstCardFlipped(true);
-      setGameStatus('playing');
-    }
-
-    const currentStudent = shuffledStudents[currentTurnIndex];
-    let isWinner = false;
-
-    // 승패 결정 로직
-    if (targetWinnerName) {
-      // 조작 모드: 현재 순서가 타겟 학생이면 무조건 당첨, 아니면 무조건 꽝
-      if (currentStudent === targetWinnerName) {
-        isWinner = true;
-      } else {
-        isWinner = false;
-      }
-    } else {
-      // 랜덤 모드: 미리 뽑아둔 카드 ID와 일치하면 당첨
-      if (cardId === preAssignedWinningCardId) {
-        isWinner = true;
-      } else {
-        isWinner = false;
-      }
-    }
-
-    // 카드 상태 업데이트
-    setCards(prev => prev.map(card => {
-      if (card.id === cardId) {
-        return { ...card, isFlipped: true, result: isWinner ? 'winner' : 'loser' };
-      }
-      return card;
-    }));
-
-    if (isWinner) {
-      setGameStatus('ended');
-    } else {
-      // 다음 차례로 넘기기
-      if (currentTurnIndex < shuffledStudents.length - 1) {
-        setCurrentTurnIndex(prev => prev + 1);
-      } else {
-        // 모든 학생이 다 뽑았는데 당첨자가 없는 경우 (조작 모드 오류 등 방지)
-        // 마지막 카드였다면 게임 종료
-        setGameStatus('ended'); 
-      }
-    }
-  };
-
-  const handleSecretSelect = (name) => {
-    if (targetWinnerName === name) {
-      setTargetWinnerName(null);
-    } else {
-      setTargetWinnerName(name);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-100 flex flex-col font-sans overflow-hidden">
-      <style>{`
-        @keyframes confetti {
-          0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
-        .animate-confetti {
-          animation-name: confetti;
-          animation-timing-function: linear;
-          animation-iteration-count: infinite;
-        }
-      `}</style>
-      
-      <Confetti active={gameStatus === 'ended'} />
-
-      {/* 헤더 */}
-      <header className="bg-white shadow-sm px-6 py-4 z-20 shrink-0">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="bg-indigo-600 text-white p-2 rounded-xl shadow-indigo-200 shadow-lg">
-              <Users size={24} />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-800">우리 반 반장 뽑기</h1>
-              <p className="text-xs text-slate-400">카드를 선택해 주인공이 되어보세요</p>
-            </div>
-          </div>
-          
-          <button 
-            onClick={initGame}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-medium transition-colors shadow-sm active:scale-95"
-          >
-            <RefreshCw size={16} />
-            <span>다시 섞기</span>
-          </button>
-        </div>
-      </header>
-
-      {/* 메인 컨텐츠 영역 */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden max-w-7xl mx-auto w-full">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우리 반 반장 뽑기</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
         
-        {/* 왼쪽: 카드 그리드 영역 */}
-        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
-          {gameStatus === 'ended' && (
-            <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-2xl p-6 text-center shadow-sm animate-bounce">
-              <h2 className="text-3xl font-bold text-yellow-700 mb-2">🎉 축하합니다! 🎉</h2>
-              <p className="text-xl text-yellow-800">
-                새로운 반장은 <span className="font-black underline decoration-wavy decoration-yellow-500">{shuffledStudents[currentTurnIndex]}</span> 학생입니다!
-              </p>
-            </div>
-          )}
-          
-          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3 sm:gap-4 pb-20">
-            {cards.map(card => (
-              <Card 
-                key={card.id} 
-                {...card} 
-                onClick={handleCardClick}
-                disabled={gameStatus === 'ended' || (card.isFlipped)} 
-              />
-            ))}
-          </div>
-        </main>
+        /* 3D Flip Animation Utilities */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
 
-        {/* 오른쪽: 학생 순서 리스트 */}
-        <aside className="w-full lg:w-80 bg-white border-t lg:border-t-0 lg:border-l border-gray-200 flex flex-col h-[30vh] lg:h-auto shadow-xl lg:shadow-none z-10">
-          <div className="p-4 bg-gray-50 border-b border-gray-200 font-bold text-gray-700 flex justify-between items-center">
-            <span>순서 리스트</span>
-            <span className="text-xs font-normal text-gray-500 bg-white px-2 py-1 rounded border">
-              {currentTurnIndex + 1} / {initialNames.length}
-            </span>
-          </div>
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
-            {shuffledStudents.map((name, idx) => {
-              let status = 'waiting';
-              if (idx < currentTurnIndex) status = 'done';
-              if (idx === currentTurnIndex && gameStatus !== 'ended') status = 'current';
-              if (gameStatus === 'ended' && idx === currentTurnIndex) status = 'current'; // Winner keeps highlight
+        /* Confetti Canvas */
+        #confetti-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 50;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 h-screen flex flex-col overflow-hidden text-slate-800">
 
-              return (
-                <StudentItem 
-                  key={name} 
-                  name={name} 
-                  index={idx}
-                  status={status}
-                />
-              );
-            })}
-          </div>
-        </aside>
+    <canvas id="confetti-canvas"></canvas>
 
-      </div>
-
-      {/* 비밀 설정 버튼 (우측 하단) */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <button 
-          onClick={() => !hasFirstCardFlipped && setIsSettingsOpen(true)}
-          disabled={hasFirstCardFlipped}
-          className={`p-2 rounded-full transition-all duration-300 ${hasFirstCardFlipped ? 'cursor-not-allowed opacity-0' : 'hover:bg-gray-200 cursor-pointer opacity-10 hover:opacity-50 text-gray-500'}`}
-          title={hasFirstCardFlipped ? "게임 진행 중에는 변경 불가" : "설정"}
-        >
-          <Settings size={20} />
-        </button>
-      </div>
-
-      {/* 비밀 설정 모달 */}
-      {isSettingsOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                <Settings size={18} />
-                당첨자 지정 (관리자용)
-              </h3>
-              <button onClick={() => setIsSettingsOpen(false)} className="text-gray-400 hover:text-gray-600">
-                <X size={20} />
-              </button>
+    <!-- Header -->
+    <header class="bg-white shadow-sm px-6 py-4 z-20 shrink-0 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-lg shadow-indigo-200">
+                    <i data-lucide="users" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-800 tracking-tight">우리 반 반장 뽑기</h1>
+                    <p class="text-xs text-slate-400">카드를 선택해 주인공이 되어보세요</p>
+                </div>
             </div>
             
-            <div className="p-4 bg-blue-50 text-sm text-blue-800 border-b border-blue-100">
-              <p>지정된 학생 순서가 되면 <strong>어떤 카드를 뽑더라도</strong> 당첨됩니다. 첫 카드를 뒤집기 전까지만 설정 가능합니다.</p>
-            </div>
-
-            <div className="overflow-y-auto flex-1 p-2">
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setTargetWinnerName(null)}
-                  className={`p-3 rounded-lg text-sm font-medium border text-left flex justify-between items-center ${targetWinnerName === null ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'bg-white border-gray-200 hover:bg-gray-50'}`}
-                >
-                  <span>🎲 랜덤 확률</span>
-                  {targetWinnerName === null && <Check size={16} />}
-                </button>
-                
-                {initialNames.map(name => (
-                  <button
-                    key={name}
-                    onClick={() => handleSecretSelect(name)}
-                    className={`p-3 rounded-lg text-sm font-medium border text-left flex justify-between items-center transition-colors ${targetWinnerName === name ? 'bg-indigo-50 border-indigo-500 text-indigo-700 ring-1 ring-indigo-500' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700'}`}
-                  >
-                    <span className="truncate">{name}</span>
-                    {targetWinnerName === name && <Check size={16} />}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-2">
-              <button 
-                onClick={() => setIsSettingsOpen(false)}
-                className="px-6 py-2 bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-900 transition-colors"
-              >
-                설정 완료
-              </button>
-            </div>
-          </div>
+            <button onclick="resetGame()" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition-all hover:shadow-sm active:scale-95 group">
+                <i data-lucide="refresh-cw" class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500"></i>
+                <span>다시 섞기</span>
+            </button>
         </div>
-      )}
+    </header>
+
+    <!-- Main Content (Responsive Layout) -->
+    <!-- lg:flex-row makes it horizontal on large screens -->
+    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden max-w-7xl mx-auto w-full">
+        
+        <!-- Left: Card Grid Area -->
+        <main class="flex-1 p-4 lg:p-8 overflow-y-auto relative bg-slate-100/50">
+            <!-- Winner Notification Banner -->
+            <div id="winner-banner" class="hidden mb-6 bg-yellow-50 border border-yellow-200 rounded-2xl p-6 text-center shadow-sm animate-bounce">
+                <h2 class="text-3xl font-extrabold text-yellow-600 mb-2">🎉 축하합니다! 🎉</h2>
+                <p class="text-xl text-yellow-800">
+                    새로운 반장은 <span id="winner-name" class="font-black underline decoration-wavy decoration-yellow-500 text-2xl"></span> 학생입니다!
+                </p>
+            </div>
+            
+            <!-- Cards Container -->
+            <div id="card-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 pb-20">
+                <!-- Cards will be injected here via JS -->
+            </div>
+        </main>
+
+        <!-- Right: Student List Area -->
+        <aside class="w-full lg:w-80 bg-white border-t lg:border-t-0 lg:border-l border-slate-200 flex flex-col h-[35vh] lg:h-auto shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] lg:shadow-none z-10">
+            <div class="p-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700 flex justify-between items-center shadow-sm z-10">
+                <span class="flex items-center gap-2"><i data-lucide="list-ordered" class="w-4 h-4"></i> 순서 리스트</span>
+                <span id="turn-counter" class="text-xs font-normal text-slate-500 bg-white px-2 py-1 rounded border">
+                    0 / 0
+                </span>
+            </div>
+            <div id="student-list" class="flex-1 overflow-y-auto p-3 space-y-2 bg-white">
+                <!-- Student items injected here -->
+            </div>
+        </aside>
+
     </div>
-  );
-}
+
+    <!-- Settings Button (Stealth Mode) -->
+    <div class="fixed bottom-4 right-4 z-50">
+        <button id="settings-btn" onclick="openSettings()" 
+            class="p-2 rounded-full text-slate-400 bg-transparent hover:bg-slate-200 transition-all duration-300 opacity-10 hover:opacity-100"
+            title="설정 (게임 시작 전만 가능)">
+            <i data-lucide="settings" class="w-6 h-6"></i>
+        </button>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="settings-2" class="w-5 h-5"></i>
+                    관리자 설정
+                </h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <div class="p-4 bg-indigo-50 text-sm text-indigo-800 border-b border-indigo-100 leading-relaxed">
+                <p>1. <strong>결석</strong> 학생은 게임 명단에서 제외됩니다.</p>
+                <p>2. <strong>당첨자 지정</strong> 시 해당 학생은 무조건 당첨됩니다.</p>
+            </div>
+
+            <!-- List Header -->
+            <div class="grid grid-cols-12 gap-2 px-4 py-2 bg-slate-100 text-xs font-bold text-slate-500 border-b">
+                <div class="col-span-2 text-center">결석</div>
+                <div class="col-span-7">이름</div>
+                <div class="col-span-3 text-center">당첨 지정</div>
+            </div>
+
+            <div id="settings-list" class="overflow-y-auto flex-1 p-2 space-y-1">
+                <!-- Settings items injected here -->
+            </div>
+
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
+                <button onclick="saveAndRestart()" class="px-6 py-2 bg-slate-800 text-white rounded-lg font-medium hover:bg-slate-900 transition-colors shadow-lg shadow-slate-300">
+                    저장 및 재시작
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Data & State ---
+        const initialNames = [
+            "짠 푹 콴", "타 티 민 트", "응웬 반 푹", "응웬 응억 마이",
+            "쿠엇반탕", "응웬 티 응웻 응아", "응우옌 민 히에우", "응웬 티엔 헙",
+            "응웬 티 타잉 짱", "응웬 디엔 닷", "팜 꾸옥 상", "보 쑤안 타이",
+            "버 느 꾸잉", "짠 당 구인 프엉", "후잉 레 꾸억 안", "쩐아잉즈엉",
+            "응웬 비엣 꾸억", "레 부 하", "응우옌 티 지앙", "짠 티 캄 리",
+            "또 티 후엔 짱", "쯔엉 티 튀 홍"
+        ];
+
+        let state = {
+            activeStudents: [], // 결석 제외된 학생들 (섞인 순서)
+            excludedNames: new Set(), // 결석자 이름 집합
+            targetWinner: null, // 조작된 당첨자 이름
+            cards: [],
+            turnIndex: 0,
+            gameStatus: 'ready', // ready, playing, ended
+            randomWinnerCardId: -1 // 랜덤 모드일 때 당첨 카드 ID
+        };
+
+        // --- Core Logic ---
+
+        function initGame() {
+            // 1. Filter excluded students
+            const presentStudents = initialNames.filter(name => !state.excludedNames.has(name));
+            
+            // 2. Shuffle students
+            state.activeStudents = [...presentStudents].sort(() => Math.random() - 0.5);
+            
+            // 3. Setup Cards
+            state.cards = Array.from({ length: state.activeStudents.length }, (_, i) => ({
+                id: i,
+                flipped: false,
+                result: null
+            }));
+
+            // 4. Random Winner Setup (if no target or target is absent)
+            // 만약 지정된 당첨자가 결석이면 랜덤 모드로 전환
+            if (state.targetWinner && state.excludedNames.has(state.targetWinner)) {
+                state.targetWinner = null; 
+            }
+            state.randomWinnerCardId = Math.floor(Math.random() * state.cards.length);
+
+            // 5. Reset State
+            state.turnIndex = 0;
+            state.gameStatus = 'ready';
+            
+            // 6. UI Update
+            stopConfetti();
+            renderCards();
+            renderStudentList();
+            renderSettingsList(); // Update settings UI in case logic changed
+            updateHeaderInfo();
+            document.getElementById('winner-banner').classList.add('hidden');
+            
+            // Reset Settings Button (Enable)
+            const settingsBtn = document.getElementById('settings-btn');
+            settingsBtn.disabled = false;
+            settingsBtn.classList.remove('opacity-0', 'cursor-not-allowed');
+            settingsBtn.classList.add('opacity-10', 'hover:opacity-100', 'cursor-pointer');
+            settingsBtn.title = "설정 (게임 시작 전만 가능)";
+        }
+
+        function handleCardClick(cardId) {
+            if (state.gameStatus === 'ended') return;
+            
+            const card = state.cards[cardId];
+            if (card.flipped) return;
+
+            // Start Game (First Move) -> Lock Settings
+            if (state.gameStatus === 'ready') {
+                state.gameStatus = 'playing';
+                lockSettings();
+            }
+
+            const currentStudentName = state.activeStudents[state.turnIndex];
+            let isWinner = false;
+
+            // --- Determine Result ---
+            if (state.targetWinner) {
+                // 조작 모드
+                isWinner = (currentStudentName === state.targetWinner);
+            } else {
+                // 랜덤 모드
+                isWinner = (cardId === state.randomWinnerCardId);
+            }
+
+            // Update Card State
+            card.flipped = true;
+            card.result = isWinner ? 'winner' : 'loser';
+
+            // Render Card Flip
+            updateCardUI(cardId);
+
+            if (isWinner) {
+                endGame(currentStudentName);
+            } else {
+                // Next Turn
+                state.turnIndex++;
+                if (state.turnIndex >= state.activeStudents.length) {
+                    // All cards flipped but no winner? (Should not happen logic-wise but safe guard)
+                    state.gameStatus = 'ended';
+                }
+                renderStudentList(); // Highlight next student
+                updateHeaderInfo();
+            }
+        }
+
+        function endGame(winnerName) {
+            state.gameStatus = 'ended';
+            document.getElementById('winner-name').innerText = winnerName;
+            document.getElementById('winner-banner').classList.remove('hidden');
+            renderStudentList(); // Update list to show winner styling
+            startConfetti();
+        }
+
+        function lockSettings() {
+            const btn = document.getElementById('settings-btn');
+            btn.disabled = true;
+            btn.classList.remove('opacity-10', 'hover:opacity-100', 'cursor-pointer');
+            btn.classList.add('opacity-0', 'cursor-not-allowed');
+            btn.title = "게임 진행 중에는 변경 불가";
+        }
+
+        // --- UI Rendering ---
+
+        function renderCards() {
+            const grid = document.getElementById('card-grid');
+            grid.innerHTML = '';
+
+            state.cards.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = `group perspective-1000 w-full h-32 cursor-pointer`;
+                
+                // Inner Container for flip
+                const inner = document.createElement('div');
+                inner.id = `card-inner-${card.id}`;
+                inner.className = `relative w-full h-full transition-transform duration-700 transform-style-3d shadow-md rounded-xl hover:-translate-y-1 transition-all`;
+                
+                // Front (Hidden face/Result) - Actually Back in 3D terms if flipped 180
+                const resultFace = document.createElement('div');
+                resultFace.className = `absolute inset-0 w-full h-full rounded-xl backface-hidden rotate-y-180 flex flex-col items-center justify-center border-2 bg-gray-100 border-gray-300`;
+                
+                // Back (Visible face/Number)
+                const numberFace = document.createElement('div');
+                numberFace.className = `absolute inset-0 w-full h-full bg-indigo-600 rounded-xl border-4 border-indigo-300 flex items-center justify-center backface-hidden`;
+                numberFace.innerHTML = `<span class="text-3xl font-bold text-white opacity-40">${card.id + 1}</span>`;
+
+                inner.appendChild(numberFace);
+                inner.appendChild(resultFace);
+                cardEl.appendChild(inner);
+
+                cardEl.onclick = () => handleCardClick(card.id);
+                grid.appendChild(cardEl);
+            });
+        }
+
+        function updateCardUI(cardId) {
+            const inner = document.getElementById(`card-inner-${cardId}`);
+            const card = state.cards[cardId];
+            
+            // Flip
+            inner.classList.add('rotate-y-180');
+            inner.parentElement.classList.remove('cursor-pointer');
+
+            // Set Content
+            const resultFace = inner.children[1];
+            if (card.result === 'winner') {
+                resultFace.className = `absolute inset-0 w-full h-full rounded-xl backface-hidden rotate-y-180 flex flex-col items-center justify-center border-4 bg-yellow-50 border-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.5)]`;
+                resultFace.innerHTML = `
+                    <i data-lucide="trophy" class="w-10 h-10 text-yellow-600 mb-1 animate-bounce"></i>
+                    <span class="font-black text-xl text-yellow-700">반장!</span>
+                `;
+            } else {
+                resultFace.innerHTML = `<span class="text-gray-400 font-bold text-lg">꽝</span>`;
+            }
+            lucide.createIcons();
+        }
+
+        function renderStudentList() {
+            const list = document.getElementById('student-list');
+            list.innerHTML = '';
+
+            state.activeStudents.forEach((name, idx) => {
+                const el = document.createElement('div');
+                let styleClass = "flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-all duration-300 border ";
+                
+                // Status Logic
+                if (state.gameStatus === 'ended' && state.cards.some(c => c.result === 'winner') && idx === state.turnIndex) {
+                    // Winner
+                    styleClass += "bg-yellow-100 border-yellow-400 text-yellow-900 shadow-md transform scale-105 z-10";
+                } else if (idx === state.turnIndex && state.gameStatus !== 'ended') {
+                    // Current Turn
+                    styleClass += "bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105 z-10";
+                } else if (idx < state.turnIndex) {
+                    // Done
+                    styleClass += "bg-gray-50 text-gray-400 border-gray-100 line-through";
+                } else {
+                    // Waiting
+                    styleClass += "bg-white text-gray-600 border-gray-100";
+                }
+
+                el.className = styleClass;
+                
+                // Number badge
+                const numBadgeClass = (idx === state.turnIndex && state.gameStatus !== 'ended') 
+                    ? "bg-white text-indigo-600 font-bold" 
+                    : "bg-gray-200 text-gray-500";
+
+                el.innerHTML = `
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs ${numBadgeClass}">
+                        ${idx + 1}
+                    </div>
+                    <span class="truncate flex-1">${name}</span>
+                    ${(idx === state.turnIndex && state.gameStatus !== 'ended') ? '<span class="text-[10px] bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-full animate-pulse font-bold">선택 중</span>' : ''}
+                    ${(state.gameStatus === 'ended' && idx === state.turnIndex) ? '<i data-lucide="crown" class="w-4 h-4 text-yellow-600"></i>' : ''}
+                `;
+                list.appendChild(el);
+            });
+            
+            // Scroll to current
+            if (state.turnIndex > 0) {
+                const currentEl = list.children[state.turnIndex];
+                if (currentEl) currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            lucide.createIcons();
+        }
+
+        function updateHeaderInfo() {
+            const total = state.activeStudents.length;
+            const current = Math.min(state.turnIndex + 1, total);
+            document.getElementById('turn-counter').innerText = `${current} / ${total}`;
+        }
+
+        // --- Settings Modal Logic ---
+
+        function openSettings() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+            renderSettingsList();
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function toggleAbsence(name) {
+            if (state.excludedNames.has(name)) state.excludedNames.delete(name);
+            else state.excludedNames.add(name);
+            
+            // If excluded person was target winner, unselect target winner
+            if (state.excludedNames.has(state.targetWinner)) {
+                state.targetWinner = null;
+            }
+            renderSettingsList();
+        }
+
+        function toggleTargetWinner(name) {
+            if (state.excludedNames.has(name)) return; // Cannot select absent person
+            
+            if (state.targetWinner === name) state.targetWinner = null;
+            else state.targetWinner = name;
+            renderSettingsList();
+        }
+
+        function renderSettingsList() {
+            const container = document.getElementById('settings-list');
+            container.innerHTML = '';
+
+            initialNames.forEach(name => {
+                const isAbsent = state.excludedNames.has(name);
+                const isTarget = state.targetWinner === name;
+
+                const row = document.createElement('div');
+                row.className = `grid grid-cols-12 gap-2 items-center p-2 rounded border text-sm ${isAbsent ? 'bg-gray-100 opacity-60' : 'bg-white hover:bg-slate-50 border-slate-200'}`;
+
+                // Checkbox for Absence
+                const absentCol = document.createElement('div');
+                absentCol.className = 'col-span-2 flex justify-center';
+                absentCol.innerHTML = `
+                    <input type="checkbox" ${isAbsent ? 'checked' : ''} 
+                        class="w-4 h-4 text-red-500 rounded border-gray-300 focus:ring-red-500 cursor-pointer"
+                        onclick="toggleAbsence('${name}')">
+                `;
+
+                // Name
+                const nameCol = document.createElement('div');
+                nameCol.className = 'col-span-7 font-medium px-2';
+                nameCol.innerText = name;
+
+                // Radio-like Button for Winner Target
+                const targetCol = document.createElement('div');
+                targetCol.className = 'col-span-3 flex justify-center';
+                
+                const targetBtn = document.createElement('button');
+                targetBtn.className = `w-full py-1 rounded text-xs font-bold transition-colors ${
+                    isTarget 
+                    ? 'bg-indigo-600 text-white' 
+                    : (isAbsent ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white border border-gray-300 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600')
+                }`;
+                targetBtn.innerText = isTarget ? '지정됨' : '선택';
+                if (!isAbsent) {
+                    targetBtn.onclick = () => toggleTargetWinner(name);
+                }
+
+                targetCol.appendChild(targetBtn);
+
+                row.appendChild(absentCol);
+                row.appendChild(nameCol);
+                row.appendChild(targetCol);
+                container.appendChild(row);
+            });
+        }
+
+        function saveAndRestart() {
+            closeSettings();
+            initGame();
+        }
+
+        function resetGame() {
+            if (confirm("게임을 초기화하고 다시 섞으시겠습니까?")) {
+                initGame();
+            }
+        }
+
+        // --- Effects (Confetti) ---
+        // Simple Canvas Confetti Implementation
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let confettiAnimationId = null;
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function startConfetti() {
+            resizeCanvas();
+            particles = [];
+            const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+            
+            for(let i=0; i<150; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    size: Math.random() * 5 + 5,
+                    speedY: Math.random() * 3 + 2,
+                    speedX: Math.random() * 2 - 1,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 5 - 2.5
+                });
+            }
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, i) => {
+                p.y += p.speedY;
+                p.x += p.speedX;
+                p.rotation += p.rotationSpeed;
+                
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation * Math.PI / 180);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                ctx.restore();
+
+                if (p.y > canvas.height) {
+                    p.y = -10;
+                    p.x = Math.random() * canvas.width;
+                }
+            });
+            confettiAnimationId = requestAnimationFrame(animateConfetti);
+        }
+
+        function stopConfetti() {
+            if (confettiAnimationId) cancelAnimationFrame(confettiAnimationId);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // --- Init ---
+        window.onload = () => {
+            lucide.createIcons();
+            initGame();
+        };
+
+    </script>
+</body>
+</html>
 
