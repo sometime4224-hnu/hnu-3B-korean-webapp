@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우리 반 반장 뽑기 (공정)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        
+        /* 3D 카드 스타일 */
+        .card-perspective { perspective: 1000px; }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        /* 카드 앞면 (번호) */
+        .card-front {
+            background-color: #4f46e5;
+            border: 4px solid #a5b4fc;
+            z-index: 2;
+        }
+
+        /* 카드 뒷면 (결과) */
+        .card-back {
+            background-color: #f3f4f6;
+            border: 2px solid #d1d5db;
+            transform: rotateY(180deg);
+            z-index: 1;
+        }
+
+        /* 뒤집힘 상태 */
+        .card-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        /* 폭죽 캔버스 */
+        #confetti-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 50;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 h-screen flex flex-col overflow-hidden text-slate-800">
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- 헤더 -->
+    <header class="bg-white shadow-sm px-6 py-4 z-20 shrink-0 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-lg shadow-indigo-200">
+                    <i data-lucide="users" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-800 tracking-tight">우리 반 반장 뽑기</h1>
+                    <p class="text-xs text-slate-400">100% 랜덤, 공정한 추첨</p>
+                </div>
+            </div>
+            
+            <button onclick="resetGame()" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition-all hover:shadow-sm active:scale-95 group">
+                <i data-lucide="refresh-cw" class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500"></i>
+                <span>다시 섞기</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 (좌우 배치) -->
+    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden max-w-7xl mx-auto w-full">
+        
+        <!-- 왼쪽: 카드 그리드 -->
+        <main class="flex-1 p-4 lg:p-8 overflow-y-auto relative bg-slate-100/50">
+            <!-- 당첨 배너 -->
+            <div id="winner-banner" class="hidden mb-6 bg-yellow-50 border border-yellow-200 rounded-2xl p-6 text-center shadow-sm animate-bounce">
+                <h2 class="text-3xl font-extrabold text-yellow-600 mb-2">🎉 축하합니다! 🎉</h2>
+                <p class="text-xl text-yellow-800">
+                    새로운 반장은 <span id="winner-name" class="font-black underline decoration-wavy decoration-yellow-500 text-2xl"></span> 학생입니다!
+                </p>
+            </div>
+            
+            <!-- 카드 컨테이너 -->
+            <div id="card-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 pb-20">
+                <!-- JS Injection -->
+            </div>
+        </main>
+
+        <!-- 오른쪽: 명단 리스트 -->
+        <aside class="w-full lg:w-80 bg-white border-t lg:border-t-0 lg:border-l border-slate-200 flex flex-col h-[35vh] lg:h-auto shadow-sm z-10">
+            <div class="p-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700 flex justify-between items-center shadow-sm z-10">
+                <span class="flex items-center gap-2"><i data-lucide="list-ordered" class="w-4 h-4"></i> 순서 리스트</span>
+                <span id="turn-counter" class="text-xs font-normal text-slate-500 bg-white px-2 py-1 rounded border">
+                    0 / 0
+                </span>
+            </div>
+            <div id="student-list" class="flex-1 overflow-y-auto p-3 space-y-2 bg-white">
+                <!-- JS Injection -->
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- 설정 버튼 (이제는 숨기지 않고 명확하게 보여줍니다) -->
+    <div class="fixed bottom-4 right-4 z-50">
+        <button id="settings-btn" onclick="openSettings()" 
+            class="flex items-center gap-2 px-4 py-3 bg-white text-slate-700 rounded-full shadow-lg border border-slate-200 hover:bg-slate-50 transition-all active:scale-95"
+            title="결석자 관리 (게임 시작 전만 가능)">
+            <i data-lucide="user-x" class="w-5 h-5"></i>
+            <span class="font-bold text-sm">명단 관리</span>
+        </button>
+    </div>
+
+    <!-- 설정 모달 -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="user-cog" class="w-5 h-5"></i>
+                    학생 명단 관리
+                </h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <div class="p-4 bg-indigo-50 text-sm text-indigo-800 border-b border-indigo-100">
+                <p>결석한 학생을 체크하면 게임 명단에서 제외됩니다.</p>
+            </div>
+
+            <!-- 리스트 헤더 -->
+            <div class="grid grid-cols-12 gap-2 px-4 py-2 bg-slate-100 text-xs font-bold text-slate-500 border-b">
+                <div class="col-span-3 text-center">결석 체크</div>
+                <div class="col-span-9">이름</div>
+            </div>
+
+            <div id="settings-list" class="overflow-y-auto flex-1 p-2 space-y-1">
+                <!-- JS Injection -->
+            </div>
+
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
+                <button onclick="saveAndRestart()" class="px-6 py-2 bg-slate-800 text-white rounded-lg font-medium hover:bg-slate-900 transition-colors shadow-lg shadow-slate-300">
+                    저장 및 재시작
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- SVG 아이콘 ---
+        const ICONS = {
+            trophy: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-600 mb-1 animate-bounce"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>`,
+            crown: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-600"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"></path></svg>`
+        };
+
+        // --- 데이터 및 상태 ---
+        const initialNames = [
+            "짠 푹 콴", "타 티 민 트", "응웬 반 푹", "응웬 응억 마이",
+            "쿠엇반탕", "응웬 티 응웻 응아", "응우옌 민 히에우", "응웬 티엔 헙",
+            "응웬 티 타잉 짱", "응웬 디엔 닷", "팜 꾸옥 상", "보 쑤안 타이",
+            "버 느 꾸잉", "짠 당 구인 프엉", "후잉 레 꾸억 안", "쩐아잉즈엉",
+            "응웬 비엣 꾸억", "레 부 하", "응우옌 티 지앙", "짠 티 캄 리",
+            "또 티 후엔 짱", "쯔엉 티 튀 홍"
+        ];
+
+        let state = {
+            activeStudents: [],
+            excludedNames: new Set(),
+            cards: [],
+            turnIndex: 0,
+            gameStatus: 'ready', // ready, playing, ended
+            randomWinnerCardId: -1
+        };
+
+        // --- 게임 초기화 로직 ---
+        function initGame() {
+            // 1. 결석자 제외
+            const presentStudents = initialNames.filter(name => !state.excludedNames.has(name));
+            
+            // 2. 학생 섞기
+            state.activeStudents = [...presentStudents].sort(() => Math.random() - 0.5);
+            
+            // 3. 카드 생성
+            state.cards = Array.from({ length: state.activeStudents.length }, (_, i) => ({
+                id: i,
+                flipped: false,
+                result: null
+            }));
+
+            // 4. 당첨 카드 번호 지정 (순수 랜덤)
+            state.randomWinnerCardId = Math.floor(Math.random() * state.cards.length);
+
+            // 5. 상태 초기화
+            state.turnIndex = 0;
+            state.gameStatus = 'ready';
+            
+            // 6. UI 업데이트
+            stopConfetti();
+            renderCards();
+            renderStudentList();
+            renderSettingsList();
+            updateHeaderInfo();
+            document.getElementById('winner-banner').classList.add('hidden');
+            
+            // 설정 버튼 활성화
+            const settingsBtn = document.getElementById('settings-btn');
+            settingsBtn.disabled = false;
+            settingsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            settingsBtn.classList.add('hover:bg-slate-50', 'active:scale-95');
+            settingsBtn.title = "결석자 관리 (게임 시작 전만 가능)";
+        }
+
+        // --- 카드 클릭 핸들러 ---
+        function handleCardClick(cardId) {
+            if (state.gameStatus === 'ended') return;
+            
+            const card = state.cards[cardId];
+            if (card.flipped) return;
+
+            // 1. 시각적 즉시 반응
+            const innerEl = document.getElementById(`card-inner-${cardId}`);
+            if (innerEl) {
+                innerEl.classList.add('is-flipped');
+                innerEl.parentElement.classList.remove('cursor-pointer');
+            }
+
+            // 2. 게임 시작 시 설정 잠금
+            if (state.gameStatus === 'ready') {
+                state.gameStatus = 'playing';
+                lockSettings();
+            }
+
+            // 3. 승패 결정 (순수 랜덤)
+            const isWinner = (cardId === state.randomWinnerCardId);
+            const currentStudentName = state.activeStudents[state.turnIndex];
+
+            // 4. 데이터 업데이트
+            card.flipped = true;
+            card.result = isWinner ? 'winner' : 'loser';
+            
+            updateCardContent(cardId, isWinner);
+
+            if (isWinner) {
+                endGame(currentStudentName);
+            } else {
+                state.turnIndex++;
+                if (state.turnIndex >= state.activeStudents.length) {
+                    state.gameStatus = 'ended';
+                }
+                renderStudentList();
+                updateHeaderInfo();
+            }
+        }
+
+        function endGame(winnerName) {
+            state.gameStatus = 'ended';
+            document.getElementById('winner-name').innerText = winnerName;
+            document.getElementById('winner-banner').classList.remove('hidden');
+            renderStudentList();
+            startConfetti();
+        }
+
+        function lockSettings() {
+            const btn = document.getElementById('settings-btn');
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            btn.classList.remove('hover:bg-slate-50', 'active:scale-95');
+            btn.title = "게임 진행 중에는 변경 불가";
+        }
+
+        // --- 렌더링 함수들 ---
+        function renderCards() {
+            const grid = document.getElementById('card-grid');
+            grid.innerHTML = '';
+
+            state.cards.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = `card-perspective w-full h-32 cursor-pointer group`;
+                
+                const inner = document.createElement('div');
+                inner.id = `card-inner-${card.id}`;
+                inner.className = `card-inner`;
+                
+                const frontFace = document.createElement('div');
+                frontFace.className = `card-face card-front`;
+                frontFace.innerHTML = `<span class="text-3xl font-bold text-white opacity-40">${card.id + 1}</span>`;
+                
+                const backFace = document.createElement('div');
+                backFace.id = `result-face-${card.id}`;
+                backFace.className = `card-face card-back`;
+                backFace.innerHTML = `<span class="text-gray-400 font-bold text-lg">꽝</span>`;
+
+                inner.appendChild(frontFace);
+                inner.appendChild(backFace);
+                cardEl.appendChild(inner);
+
+                cardEl.onclick = function() { handleCardClick(card.id); };
+                
+                grid.appendChild(cardEl);
+            });
+        }
+
+        function updateCardContent(cardId, isWinner) {
+            const resultFace = document.getElementById(`result-face-${cardId}`);
+            if (!resultFace) return;
+
+            if (isWinner) {
+                resultFace.style.backgroundColor = '#fffbeb';
+                resultFace.style.borderColor = '#facc15';
+                resultFace.style.boxShadow = '0 0 20px rgba(250, 204, 21, 0.5)';
+                resultFace.innerHTML = `
+                    ${ICONS.trophy}
+                    <span class="font-black text-xl text-yellow-700">반장!</span>
+                `;
+            } else {
+                resultFace.innerHTML = `<span class="text-gray-400 font-bold text-lg">꽝</span>`;
+            }
+        }
+
+        function renderStudentList() {
+            const list = document.getElementById('student-list');
+            list.innerHTML = '';
+
+            state.activeStudents.forEach((name, idx) => {
+                const el = document.createElement('div');
+                let styleClass = "flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-all duration-300 border ";
+                
+                if (state.gameStatus === 'ended' && state.cards.some(c => c.result === 'winner') && idx === state.turnIndex) {
+                    styleClass += "bg-yellow-100 border-yellow-400 text-yellow-900 shadow-md transform scale-105 z-10";
+                } else if (idx === state.turnIndex && state.gameStatus !== 'ended') {
+                    styleClass += "bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105 z-10";
+                } else if (idx < state.turnIndex) {
+                    styleClass += "bg-gray-50 text-gray-400 border-gray-100 line-through";
+                } else {
+                    styleClass += "bg-white text-gray-600 border-gray-100";
+                }
+
+                el.className = styleClass;
+                
+                const numBadgeClass = (idx === state.turnIndex && state.gameStatus !== 'ended') 
+                    ? "bg-white text-indigo-600 font-bold" 
+                    : "bg-gray-200 text-gray-500";
+
+                const crownIcon = (state.gameStatus === 'ended' && idx === state.turnIndex) ? ICONS.crown : '';
+
+                el.innerHTML = `
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs ${numBadgeClass}">
+                        ${idx + 1}
+                    </div>
+                    <span class="truncate flex-1">${name}</span>
+                    ${(idx === state.turnIndex && state.gameStatus !== 'ended') ? '<span class="text-[10px] bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-full animate-pulse font-bold">선택 중</span>' : ''}
+                    ${crownIcon}
+                `;
+                list.appendChild(el);
+            });
+            
+            if (state.turnIndex > 0) {
+                const currentEl = list.children[state.turnIndex];
+                if (currentEl) currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function updateHeaderInfo() {
+            const total = state.activeStudents.length;
+            const current = Math.min(state.turnIndex + 1, total);
+            document.getElementById('turn-counter').innerText = `${current} / ${total}`;
+        }
+
+        // --- 설정(명단 관리) 모달 로직 ---
+        function openSettings() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+            renderSettingsList();
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function toggleAbsence(name) {
+            if (state.excludedNames.has(name)) state.excludedNames.delete(name);
+            else state.excludedNames.add(name);
+            renderSettingsList();
+        }
+
+        function renderSettingsList() {
+            const container = document.getElementById('settings-list');
+            container.innerHTML = '';
+
+            initialNames.forEach(name => {
+                const isAbsent = state.excludedNames.has(name);
+
+                const row = document.createElement('div');
+                row.className = `grid grid-cols-12 gap-2 items-center p-2 rounded border text-sm ${isAbsent ? 'bg-gray-100 opacity-60' : 'bg-white hover:bg-slate-50 border-slate-200'}`;
+
+                const absentCol = document.createElement('div');
+                absentCol.className = 'col-span-3 flex justify-center';
+                absentCol.innerHTML = `
+                    <input type="checkbox" ${isAbsent ? 'checked' : ''} 
+                        class="w-5 h-5 text-red-500 rounded border-gray-300 focus:ring-red-500 cursor-pointer accent-red-500"
+                        onclick="toggleAbsence('${name}')">
+                `;
+
+                const nameCol = document.createElement('div');
+                nameCol.className = 'col-span-9 font-medium px-2 text-slate-700';
+                nameCol.innerText = name;
+
+                row.appendChild(absentCol);
+                row.appendChild(nameCol);
+                container.appendChild(row);
+            });
+        }
+
+        function saveAndRestart() {
+            closeSettings();
+            initGame();
+        }
+
+        function resetGame() {
+            if (confirm("게임을 초기화하고 다시 섞으시겠습니까?")) {
+                initGame();
+            }
+        }
+
+        // --- 폭죽 효과 ---
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let confettiAnimationId = null;
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function startConfetti() {
+            resizeCanvas();
+            particles = [];
+            const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+            
+            for(let i=0; i<150; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    size: Math.random() * 5 + 5,
+                    speedY: Math.random() * 3 + 2,
+                    speedX: Math.random() * 2 - 1,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 5 - 2.5
+                });
+            }
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, i) => {
+                p.y += p.speedY;
+                p.x += p.speedX;
+                p.rotation += p.rotationSpeed;
+                
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation * Math.PI / 180);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                ctx.restore();
+
+                if (p.y > canvas.height) {
+                    p.y = -10;
+                    p.x = Math.random() * canvas.width;
+                }
+            });
+            confettiAnimationId = requestAnimationFrame(animateConfetti);
+        }
+
+        function stopConfetti() {
+            if (confettiAnimationId) cancelAnimationFrame(confettiAnimationId);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        window.onload = () => {
+            lucide.createIcons();
+            initGame();
+        };
+
+    </script>
+</body>
+</html>
+
