@@ -6,24 +6,54 @@
     <title>우리 반 반장 뽑기</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
+    <!-- Lucide Icons (초기 로딩용) -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; }
         
-        /* 3D Flip Animation Utilities */
-        .perspective-1000 { perspective: 1000px; }
-        .transform-style-3d { transform-style: preserve-3d; }
-        .backface-hidden { backface-visibility: hidden; }
-        .rotate-y-180 { transform: rotateY(180deg); }
+        /* 3D Flip Core Styles */
+        .card-perspective { perspective: 1000px; }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 0.75rem; /* rounded-xl */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
         
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        /* Front Face (Number) */
+        .card-front {
+            background-color: #4f46e5; /* indigo-600 */
+            border: 4px solid #a5b4fc; /* indigo-300 */
+            z-index: 2;
+        }
+
+        /* Back Face (Result) */
+        .card-back {
+            background-color: #f3f4f6; /* gray-100 */
+            border: 2px solid #d1d5db; /* gray-300 */
+            transform: rotateY(180deg);
+            z-index: 1;
+        }
+
+        /* Flipped State */
+        .card-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
 
         /* Confetti Canvas */
         #confetti-canvas {
@@ -56,8 +86,7 @@
         </div>
     </header>
 
-    <!-- Main Content (Responsive Layout) -->
-    <!-- lg:flex-row makes it horizontal on large screens -->
+    <!-- Main Content -->
     <div class="flex-1 flex flex-col lg:flex-row overflow-hidden max-w-7xl mx-auto w-full">
         
         <!-- Left: Card Grid Area -->
@@ -138,6 +167,13 @@
     </div>
 
     <script>
+        // --- Inline SVG Icons (Performance) ---
+        const ICONS = {
+            trophy: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-600 mb-1 animate-bounce"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>`,
+            crown: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-600"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"></path></svg>`,
+            check: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`
+        };
+
         // --- Data & State ---
         const initialNames = [
             "짠 푹 콴", "타 티 민 트", "응웬 반 푹", "응웬 응억 마이",
@@ -149,13 +185,13 @@
         ];
 
         let state = {
-            activeStudents: [], // 결석 제외된 학생들 (섞인 순서)
-            excludedNames: new Set(), // 결석자 이름 집합
-            targetWinner: null, // 조작된 당첨자 이름
+            activeStudents: [],
+            excludedNames: new Set(),
+            targetWinner: null,
             cards: [],
             turnIndex: 0,
             gameStatus: 'ready', // ready, playing, ended
-            randomWinnerCardId: -1 // 랜덤 모드일 때 당첨 카드 ID
+            randomWinnerCardId: -1
         };
 
         // --- Core Logic ---
@@ -174,8 +210,7 @@
                 result: null
             }));
 
-            // 4. Random Winner Setup (if no target or target is absent)
-            // 만약 지정된 당첨자가 결석이면 랜덤 모드로 전환
+            // 4. Random Winner Setup
             if (state.targetWinner && state.excludedNames.has(state.targetWinner)) {
                 state.targetWinner = null; 
             }
@@ -189,11 +224,11 @@
             stopConfetti();
             renderCards();
             renderStudentList();
-            renderSettingsList(); // Update settings UI in case logic changed
+            renderSettingsList();
             updateHeaderInfo();
             document.getElementById('winner-banner').classList.add('hidden');
             
-            // Reset Settings Button (Enable)
+            // Enable Settings Button
             const settingsBtn = document.getElementById('settings-btn');
             settingsBtn.disabled = false;
             settingsBtn.classList.remove('opacity-0', 'cursor-not-allowed');
@@ -201,47 +236,52 @@
             settingsBtn.title = "설정 (게임 시작 전만 가능)";
         }
 
+        // --- CLICK HANDLER (Fixed for Immediate Response) ---
         function handleCardClick(cardId) {
             if (state.gameStatus === 'ended') return;
             
+            // Data Check
             const card = state.cards[cardId];
             if (card.flipped) return;
 
-            // Start Game (First Move) -> Lock Settings
+            // 1. VISUAL UPDATE FIRST (Immediate Feedback)
+            const innerEl = document.getElementById(`card-inner-${cardId}`);
+            if (innerEl) {
+                // Directly manipulate DOM class for speed
+                innerEl.classList.add('is-flipped');
+                innerEl.parentElement.classList.remove('cursor-pointer');
+            }
+
+            // 2. Lock Settings on First Move
             if (state.gameStatus === 'ready') {
                 state.gameStatus = 'playing';
                 lockSettings();
             }
 
+            // 3. Game Logic
             const currentStudentName = state.activeStudents[state.turnIndex];
             let isWinner = false;
 
-            // --- Determine Result ---
             if (state.targetWinner) {
-                // 조작 모드
                 isWinner = (currentStudentName === state.targetWinner);
             } else {
-                // 랜덤 모드
                 isWinner = (cardId === state.randomWinnerCardId);
             }
 
-            // Update Card State
+            // 4. Update State & Content
             card.flipped = true;
             card.result = isWinner ? 'winner' : 'loser';
-
-            // Render Card Flip
-            updateCardUI(cardId);
+            
+            updateCardContent(cardId, isWinner);
 
             if (isWinner) {
                 endGame(currentStudentName);
             } else {
-                // Next Turn
                 state.turnIndex++;
                 if (state.turnIndex >= state.activeStudents.length) {
-                    // All cards flipped but no winner? (Should not happen logic-wise but safe guard)
                     state.gameStatus = 'ended';
                 }
-                renderStudentList(); // Highlight next student
+                renderStudentList();
                 updateHeaderInfo();
             }
         }
@@ -250,7 +290,7 @@
             state.gameStatus = 'ended';
             document.getElementById('winner-name').innerText = winnerName;
             document.getElementById('winner-banner').classList.remove('hidden');
-            renderStudentList(); // Update list to show winner styling
+            renderStudentList();
             startConfetti();
         }
 
@@ -270,51 +310,52 @@
 
             state.cards.forEach(card => {
                 const cardEl = document.createElement('div');
-                cardEl.className = `group perspective-1000 w-full h-32 cursor-pointer`;
+                cardEl.className = `card-perspective w-full h-32 cursor-pointer group`;
                 
-                // Inner Container for flip
                 const inner = document.createElement('div');
                 inner.id = `card-inner-${card.id}`;
-                inner.className = `relative w-full h-full transition-transform duration-700 transform-style-3d shadow-md rounded-xl hover:-translate-y-1 transition-all`;
+                inner.className = `card-inner`;
                 
-                // Front (Hidden face/Result) - Actually Back in 3D terms if flipped 180
-                const resultFace = document.createElement('div');
-                resultFace.className = `absolute inset-0 w-full h-full rounded-xl backface-hidden rotate-y-180 flex flex-col items-center justify-center border-2 bg-gray-100 border-gray-300`;
+                // Front Face (Number)
+                const frontFace = document.createElement('div');
+                frontFace.className = `card-face card-front`;
+                frontFace.innerHTML = `<span class="text-3xl font-bold text-white opacity-40">${card.id + 1}</span>`;
                 
-                // Back (Visible face/Number)
-                const numberFace = document.createElement('div');
-                numberFace.className = `absolute inset-0 w-full h-full bg-indigo-600 rounded-xl border-4 border-indigo-300 flex items-center justify-center backface-hidden`;
-                numberFace.innerHTML = `<span class="text-3xl font-bold text-white opacity-40">${card.id + 1}</span>`;
+                // Back Face (Result)
+                const backFace = document.createElement('div');
+                backFace.id = `result-face-${card.id}`;
+                backFace.className = `card-face card-back`;
+                backFace.innerHTML = `<span class="text-gray-400 font-bold text-lg">꽝</span>`; // Default content
 
-                inner.appendChild(numberFace);
-                inner.appendChild(resultFace);
+                inner.appendChild(frontFace);
+                inner.appendChild(backFace);
                 cardEl.appendChild(inner);
 
-                cardEl.onclick = () => handleCardClick(card.id);
+                // Direct binding for speed
+                cardEl.onclick = function() { handleCardClick(card.id); };
+                
                 grid.appendChild(cardEl);
             });
         }
 
-        function updateCardUI(cardId) {
-            const inner = document.getElementById(`card-inner-${cardId}`);
-            const card = state.cards[cardId];
-            
-            // Flip
-            inner.classList.add('rotate-y-180');
-            inner.parentElement.classList.remove('cursor-pointer');
+        function updateCardContent(cardId, isWinner) {
+            const resultFace = document.getElementById(`result-face-${cardId}`);
+            if (!resultFace) return;
 
-            // Set Content
-            const resultFace = inner.children[1];
-            if (card.result === 'winner') {
-                resultFace.className = `absolute inset-0 w-full h-full rounded-xl backface-hidden rotate-y-180 flex flex-col items-center justify-center border-4 bg-yellow-50 border-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.5)]`;
+            if (isWinner) {
+                // Update styles for winner
+                resultFace.style.backgroundColor = '#fffbeb'; // yellow-50
+                resultFace.style.borderColor = '#facc15'; // yellow-400
+                resultFace.style.boxShadow = '0 0 20px rgba(250, 204, 21, 0.5)';
+                
                 resultFace.innerHTML = `
-                    <i data-lucide="trophy" class="w-10 h-10 text-yellow-600 mb-1 animate-bounce"></i>
+                    ${ICONS.trophy}
                     <span class="font-black text-xl text-yellow-700">반장!</span>
                 `;
             } else {
+                // Ensure loser styles (already default, but safe to enforce)
                 resultFace.innerHTML = `<span class="text-gray-400 font-bold text-lg">꽝</span>`;
             }
-            lucide.createIcons();
         }
 
         function renderStudentList() {
@@ -325,27 +366,23 @@
                 const el = document.createElement('div');
                 let styleClass = "flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-all duration-300 border ";
                 
-                // Status Logic
                 if (state.gameStatus === 'ended' && state.cards.some(c => c.result === 'winner') && idx === state.turnIndex) {
-                    // Winner
                     styleClass += "bg-yellow-100 border-yellow-400 text-yellow-900 shadow-md transform scale-105 z-10";
                 } else if (idx === state.turnIndex && state.gameStatus !== 'ended') {
-                    // Current Turn
                     styleClass += "bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105 z-10";
                 } else if (idx < state.turnIndex) {
-                    // Done
                     styleClass += "bg-gray-50 text-gray-400 border-gray-100 line-through";
                 } else {
-                    // Waiting
                     styleClass += "bg-white text-gray-600 border-gray-100";
                 }
 
                 el.className = styleClass;
                 
-                // Number badge
                 const numBadgeClass = (idx === state.turnIndex && state.gameStatus !== 'ended') 
                     ? "bg-white text-indigo-600 font-bold" 
                     : "bg-gray-200 text-gray-500";
+
+                const crownIcon = (state.gameStatus === 'ended' && idx === state.turnIndex) ? ICONS.crown : '';
 
                 el.innerHTML = `
                     <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs ${numBadgeClass}">
@@ -353,17 +390,15 @@
                     </div>
                     <span class="truncate flex-1">${name}</span>
                     ${(idx === state.turnIndex && state.gameStatus !== 'ended') ? '<span class="text-[10px] bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-full animate-pulse font-bold">선택 중</span>' : ''}
-                    ${(state.gameStatus === 'ended' && idx === state.turnIndex) ? '<i data-lucide="crown" class="w-4 h-4 text-yellow-600"></i>' : ''}
+                    ${crownIcon}
                 `;
                 list.appendChild(el);
             });
             
-            // Scroll to current
             if (state.turnIndex > 0) {
                 const currentEl = list.children[state.turnIndex];
                 if (currentEl) currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-            lucide.createIcons();
         }
 
         function updateHeaderInfo() {
@@ -386,17 +421,12 @@
         function toggleAbsence(name) {
             if (state.excludedNames.has(name)) state.excludedNames.delete(name);
             else state.excludedNames.add(name);
-            
-            // If excluded person was target winner, unselect target winner
-            if (state.excludedNames.has(state.targetWinner)) {
-                state.targetWinner = null;
-            }
+            if (state.excludedNames.has(state.targetWinner)) state.targetWinner = null;
             renderSettingsList();
         }
 
         function toggleTargetWinner(name) {
-            if (state.excludedNames.has(name)) return; // Cannot select absent person
-            
+            if (state.excludedNames.has(name)) return;
             if (state.targetWinner === name) state.targetWinner = null;
             else state.targetWinner = name;
             renderSettingsList();
@@ -413,7 +443,6 @@
                 const row = document.createElement('div');
                 row.className = `grid grid-cols-12 gap-2 items-center p-2 rounded border text-sm ${isAbsent ? 'bg-gray-100 opacity-60' : 'bg-white hover:bg-slate-50 border-slate-200'}`;
 
-                // Checkbox for Absence
                 const absentCol = document.createElement('div');
                 absentCol.className = 'col-span-2 flex justify-center';
                 absentCol.innerHTML = `
@@ -422,12 +451,10 @@
                         onclick="toggleAbsence('${name}')">
                 `;
 
-                // Name
                 const nameCol = document.createElement('div');
                 nameCol.className = 'col-span-7 font-medium px-2';
                 nameCol.innerText = name;
 
-                // Radio-like Button for Winner Target
                 const targetCol = document.createElement('div');
                 targetCol.className = 'col-span-3 flex justify-center';
                 
@@ -463,7 +490,6 @@
         }
 
         // --- Effects (Confetti) ---
-        // Simple Canvas Confetti Implementation
         const canvas = document.getElementById('confetti-canvas');
         const ctx = canvas.getContext('2d');
         let confettiAnimationId = null;
@@ -524,7 +550,7 @@
 
         // --- Init ---
         window.onload = () => {
-            lucide.createIcons();
+            lucide.createIcons(); // Run once for header icons
             initGame();
         };
 
