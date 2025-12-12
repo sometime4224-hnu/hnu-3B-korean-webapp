@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Korean "Some" Culture (with Vietnamese)</title>
+    
+    <!-- Reveal.js & Plugins -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/white.min.css" id="theme">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Noto Sans KR (Korean), Noto Sans (Vietnamese support), Gaegu -->
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans:wght@400;700&family=Noto+Sans+KR:wght@300;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- Custom Theme Design --- */
+        :root {
+            --primary-color: #FF6B6B; /* 설레는 핑크/코랄 */
+            --secondary-color: #4ECDC4; /* 민트 */
+            --text-dark: #2d3436;
+            --vn-text: #636e72; /* 베트남어 텍스트 색상 (회색조) */
+            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+        }
+
+        body {
+            background: var(--bg-gradient);
+            font-family: 'Noto Sans KR', 'Noto Sans', sans-serif !important; /* 한글+베트남어 폰트 */
+        }
+
+        .reveal { color: var(--text-dark); }
+        
+        /* Typography */
+        .reveal h1, .reveal h2, .reveal h3 {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: var(--text-dark);
+            text-transform: none;
+        }
+
+        /* 베트남어 보조 텍스트 스타일 */
+        .vn-sub {
+            font-family: 'Noto Sans', sans-serif;
+            font-size: 0.6em; /* 한국어보다 작게 */
+            color: var(--vn-text);
+            font-weight: 400;
+            display: block; /* 줄바꿈 */
+            margin-top: 5px;
+        }
+
+        .handwriting {
+            font-family: 'Gaegu', cursive;
+            color: var(--primary-color);
+        }
+
+        .highlight {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .text-blue { color: #3498db; }
+        
+        /* Card Styling */
+        .card-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            flex: 1;
+            min-width: 250px;
+            transition: transform 0.3s ease;
+        }
+        .card:hover { transform: translateY(-5px); }
+        .card i { font-size: 2em; margin-bottom: 10px; color: var(--secondary-color); }
+        .card h4 { font-size: 1.3em; margin-bottom: 5px; font-weight: bold; }
+
+        /* Checklist Style */
+        .checklist-item {
+            background: rgba(255, 255, 255, 0.8);
+            border-left: 5px solid var(--primary-color);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 0 10px 10px 0;
+            text-align: left;
+            font-size: 0.85em;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* Chat Bubble Style */
+        .chat-bubble {
+            background: #ffeaa7;
+            padding: 15px 25px;
+            border-radius: 20px;
+            border-bottom-left-radius: 2px;
+            display: inline-block;
+            margin: 10px;
+            font-family: 'Gaegu', cursive;
+            font-size: 1.4em;
+            position: relative;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Comparison Box */
+        .vs-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+        .vs-item {
+            width: 40%;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        .vs-western { background: #dfe6e9; }
+        .vs-korean { background: #ffe0e0; border: 2px solid var(--primary-color); }
+
+    </style>
+</head>
+<body>
+
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Slide 1: Intro -->
+            <section>
+                <div style="font-size: 3em; margin-bottom: 20px;">💓</div>
+                <h3>한국의 연애 문화</h3>
+                <span class="vn-sub">Văn hóa hẹn hò của Hàn Quốc</span>
+                
+                <h1 style="font-size: 3.5em; margin-top: 20px;">'썸'이란 무엇인가요?</h1>
+                <h2 class="text-blue">(Some)</h2>
+                <hr style="width: 100px; border: 2px solid var(--primary-color);">
+                <p>한국의 가장 설레는 단계를 소개합니다.</p>
+                <span class="vn-sub">Giới thiệu về giai đoạn rung động nhất ở Hàn Quốc.</span>
+            </section>
+
+            <!-- Slide 2: Definition -->
+            <section>
+                <h2>1. '썸'의 뜻</h2>
+                <span class="vn-sub">Định nghĩa của "Some"</span>
+
+                <div class="fragment fade-up">
+                    <p style="font-size: 1.5em; margin-top: 30px;">
+                        <i class="fas fa-quote-left highlight"></i> 
+                        영어 <span class="highlight">"Something"</span>에서 유래
+                    </p>
+                    <span class="vn-sub">Xuất phát từ từ tiếng Anh "Something"</span>
+                </div>
+                
+                <div class="card-container" style="margin-top: 40px;">
+                    <div class="card fragment" style="background-color: #fff0f0;">
+                        <i class="fas fa-magic" style="color: var(--primary-color);"></i>
+                        <h4 class="highlight">애매한 관계</h4>
+                        <span class="vn-sub">Mối quan hệ mập mờ</span>
+                        <hr>
+                        <p style="font-size: 0.8em; font-weight: bold;">"내 꺼인 듯 내 꺼 아닌"</p>
+                        <span class="vn-sub" style="font-size: 0.7em;">Trên tình bạn, dưới tình yêu</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 3: Checklist (Interactive) -->
+            <section>
+                <h2>2. 나도 지금 '썸'일까?</h2>
+                <span class="vn-sub">Liệu mình có đang "Some" không?</span>
+                
+                <div style="width: 90%; margin: 0 auto; margin-top: 20px;">
+                    <div class="checklist-item fragment fade-right">
+                        <i class="fas fa-mobile-alt highlight" style="margin-right: 10px;"></i>
+                        <strong>매일 연락한다</strong> (아침부터 밤까지)
+                        <span class="vn-sub">Liên lạc mỗi ngày (Từ sáng đến tối)</span>
+                    </div>
+                    <div class="checklist-item fragment fade-right">
+                        <i class="fas fa-utensils highlight" style="margin-right: 10px;"></i>
+                        <strong>"밥 먹었어?"</strong> = 관심의 표현
+                        <span class="vn-sub">Hỏi "Bạn ăn cơm chưa?" = Biểu hiện sự quan tâm</span>
+                    </div>
+                    <div class="checklist-item fragment fade-right">
+                        <i class="fas fa-film highlight" style="margin-right: 10px;"></i>
+                        <strong>단둘이 만난다</strong> (영화, 카페, 맛집)
+                        <span class="vn-sub">Gặp gỡ riêng hai người (Xem phim, cà phê, ăn uống)</span>
+                    </div>
+                    <div class="checklist-item fragment fade-right">
+                        <i class="fas fa-angry highlight" style="margin-right: 10px;"></i>
+                        <strong>질투가 난다</strong> (하지만 화낼 자격은 없음)
+                        <span class="vn-sub">Thấy ghen tuông (Nhưng không có quyền giận dỗi)</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 4: Vocabulary -->
+            <section>
+                <h2>3. 필수 한국어 단어</h2>
+                <span class="vn-sub">Từ vựng tiếng Hàn cần thiết</span>
+                <div class="card-container" style="margin-top: 20px;">
+                    <div class="card fragment zoom-in">
+                        <h4>썸남 / 썸녀</h4>
+                        <span class="vn-sub">Ssome-nam / Ssome-nyeo</span>
+                        <hr>
+                        <p style="font-size: 0.7em;">썸을 타는 남자 / 여자</p>
+                        <span class="vn-sub">Chàng trai / Cô gái đang tìm hiểu</span>
+                    </div>
+                    <div class="card fragment zoom-in">
+                        <h4>밀당</h4>
+                        <span class="vn-sub">Mil-dang</span>
+                        <hr>
+                        <p style="font-size: 0.7em;">밀고 당기기</p>
+                        <span class="vn-sub">Thả thính / Kéo đẩy tình cảm</span>
+                    </div>
+                    <div class="card fragment zoom-in">
+                        <h4>어장관리</h4>
+                        <span class="vn-sub">Eojang-gwanli</span>
+                        <hr>
+                        <p style="font-size: 0.7em;">여러 명과 동시에 썸 타기 🚩</p>
+                        <span class="vn-sub">Quản lý hồ cá / Bắt cá nhiều tay</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 5: The Confession -->
+            <section>
+                <h2>4. 썸의 끝은?</h2>
+                <span class="vn-sub">Kết thúc của "Some" là gì?</span>
+                
+                <div class="vs-box">
+                    <div class="vs-item vs-western fragment">
+                        <h4>🇺🇸 서양 스타일</h4>
+                        <span class="vn-sub">Phong cách phương Tây</span>
+                        <hr style="border-top: 1px dashed #999;">
+                        <p style="font-size: 0.7em;">자연스럽게 연인이 됨</p>
+                        <span class="vn-sub">Trở thành người yêu một cách tự nhiên</span>
+                    </div>
+                    
+                    <div style="font-size: 1.5em; font-weight: bold;">VS</div>
+                    
+                    <div class="vs-item vs-korean fragment">
+                        <h4>🇰🇷 한국 스타일</h4>
+                        <span class="vn-sub">Phong cách Hàn Quốc</span>
+                        <hr style="border-top: 1px dashed var(--primary-color);">
+                        <p class="highlight" style="font-size: 0.9em;">반드시 '고백'이 필요!</p>
+                        <span class="vn-sub">Nhất định phải có "Lời tỏ tình"!</span>
+                    </div>
+                </div>
+                
+                <div class="fragment" style="margin-top: 20px; background: #eaffe9; padding: 10px; border-radius: 10px;">
+                    <i class="fas fa-check-circle" style="color: green;"></i>
+                    <strong>오늘부터 1일</strong>
+                    <span class="vn-sub">Hôm nay là ngày đầu tiên hẹn hò</span>
+                </div>
+            </section>
+
+            <!-- Slide 6: Key Phrases -->
+            <section>
+                <h2>어떻게 고백하나요?</h2>
+                <span class="vn-sub">Tỏ tình như thế nào?</span>
+                
+                <div style="margin-top: 30px;">
+                    <div class="fragment">
+                        <div class="chat-bubble">
+                            나랑 사귈래? 💍
+                        </div>
+                        <p style="font-size: 0.8em; margin-bottom: 0;">"나랑 사귈래?"</p>
+                        <span class="vn-sub">Bạn hẹn hò với mình nha?</span>
+                    </div>
+                    
+                    <div class="fragment" style="margin-top: 20px;">
+                        <div class="chat-bubble" style="background: var(--primary-color); color: white;">
+                            우리 오늘부터 1일 할까? 🗓️
+                        </div>
+                        <p style="font-size: 0.8em; margin-bottom: 0;">"우리 오늘부터 1일 할까?"</p>
+                        <span class="vn-sub">Chúng mình bắt đầu ngày đầu tiên từ hôm nay nhé?</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 7: Quiz -->
+            <section data-background-color="#f8a5c2">
+                <h2 style="color: white; text-shadow: 2px 2px 0 rgba(0,0,0,0.1);">깜짝 퀴즈! 🧠</h2>
+                <span class="vn-sub" style="color: rgba(255,255,255,0.8);">Câu đố bất ngờ!</span>
+
+                <div style="background: white; padding: 30px; border-radius: 20px; margin-top: 30px;">
+                    <p style="font-size: 1em; font-weight: bold;">
+                        Q. 썸 탄 지 2달이 지났는데 아무 말이 없다면?
+                    </p>
+                    <span class="vn-sub">Q. Đã "Some" 2 tháng rồi mà đối phương không nói gì cả?</span>
+                    
+                    <ol style="text-align: left; font-size: 0.8em; margin-top: 20px; margin-left: 30px;">
+                        <li class="fragment">이름을 까먹어서 <span class="vn-sub" style="display:inline;">(Quên tên bạn rồi)</span></li>
+                        <li class="fragment highlight-red">헤어지고 싶어서 <span class="vn-sub" style="display:inline;">(Muốn chia tay)</span></li>
+                        <li class="fragment highlight-green"><strong>확실한 관계(고백)</strong>를 원해서! <span class="vn-sub" style="display:inline;">(Muốn xác định mối quan hệ!)</span></li>
+                    </ol>
+                </div>
+                <p class="fragment" style="color: white; font-weight: bold; margin-top: 20px;">
+                    정답: 3번! 직접 물어보세요. "우리 무슨 사이야?"
+                    <span class="vn-sub" style="color: rgba(255,255,255,0.9);">Đáp án: Số 3! Hãy hỏi thẳng: "Chúng ta là quan hệ gì?"</span>
+                </p>
+            </section>
+
+            <!-- Slide 8: Tips -->
+            <section>
+                <h2>💡 외국인을 위한 팁</h2>
+                <span class="vn-sub">Mẹo nhỏ cho người nước ngoài</span>
+                
+                <div class="card-container" style="margin-top: 20px;">
+                    <div class="card fragment">
+                        <i class="fas fa-shipping-fast"></i>
+                        <h4>답장은 빠르게</h4>
+                        <span class="vn-sub">Trả lời tin nhắn nhanh</span>
+                        <hr>
+                        <p style="font-size: 0.6em;">속도 = 관심</p>
+                        <span class="vn-sub">Tốc độ = Sự quan tâm</span>
+                    </div>
+                    <div class="card fragment">
+                        <i class="fas fa-hand-holding-heart"></i>
+                        <h4>스킨십은 천천히</h4>
+                        <span class="vn-sub">Tiếp xúc thân mật từ từ</span>
+                        <hr>
+                        <p style="font-size: 0.6em;">고백 전에는 손잡기 No!</p>
+                        <span class="vn-sub">Trước khi tỏ tình thì không nắm tay!</span>
+                    </div>
+                </div>
+                <h3 class="handwriting fragment" style="margin-top: 40px; font-size: 2em;">예쁜 사랑 하세요! ❤️</h3>
+                <span class="vn-sub fragment">Chúc bạn có một tình yêu đẹp!</span>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Reveal.js Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>
+    <script>
+        Reveal.initialize({
+            controls: true,
+            progress: true,
+            center: true,
+            hash: true,
+            transition: 'convex',
+            touch: true
+        });
+    </script>
+</body>
+</html>
+
